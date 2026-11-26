@@ -40,6 +40,9 @@ BEGIN
 END;
 $$;
 
+-- Fired by the trigger only; not callable through the API.
+REVOKE ALL ON FUNCTION public.workspaces_default_custom_fields() FROM PUBLIC, anon, authenticated;
+
 DROP TRIGGER IF EXISTS trg_workspaces_default_custom_fields ON public.workspaces;
 CREATE TRIGGER trg_workspaces_default_custom_fields
   AFTER INSERT ON public.workspaces
