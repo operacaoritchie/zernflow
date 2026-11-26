@@ -18,6 +18,7 @@ const triggerLabels: Record<string, string> = {
   welcome: "Welcome Message",
   default: "Default Reply",
   comment_keyword: "Comment Keyword",
+  live_comment: "Live Comment",
 };
 
 export function TriggerNode({ data, selected }: NodeProps) {

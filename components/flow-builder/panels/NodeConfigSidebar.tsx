@@ -50,7 +50,7 @@ function getFlowVariables({
   const triggerNode = nodes.find((n) => n.type === "trigger");
   const triggerType = (triggerNode?.data as Record<string, unknown> | undefined)
     ?.triggerType as string | undefined;
-  if (triggerType === "comment_keyword") {
+  if (triggerType === "comment_keyword" || triggerType === "live_comment") {
     variables.push("comment_id", "comment_text", "commenter_name", "post_id");
   }
 

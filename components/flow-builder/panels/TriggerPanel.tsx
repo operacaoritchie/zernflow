@@ -30,6 +30,7 @@ const triggerTypes: Array<{ value: TriggerType; label: string; description: stri
   { value: "welcome", label: "Welcome Message", description: "Triggered when a user starts a conversation" },
   { value: "default", label: "Default Reply", description: "Triggered when no other trigger matches" },
   { value: "comment_keyword", label: "Comment Keyword", description: "Triggered by keywords in post comments" },
+  { value: "live_comment", label: "Live Comment", description: "Triggered by keywords in comments during an Instagram Live" },
 ];
 
 const matchTypes: Array<{ value: "exact" | "contains" | "startsWith"; label: string }> = [
@@ -76,7 +77,8 @@ export function TriggerPanel({ data: rawData, onChange }: TriggerPanelProps) {
     [data, keywords, onChange]
   );
 
-  const showKeywords = triggerType === "keyword" || triggerType === "comment_keyword";
+  const showKeywords =
+    triggerType === "keyword" || triggerType === "comment_keyword" || triggerType === "live_comment";
   const showPayload = triggerType === "postback" || triggerType === "quick_reply";
 
   return (
@@ -196,6 +198,15 @@ export function TriggerPanel({ data: rawData, onChange }: TriggerPanelProps) {
           {keywords.length === 0 && (
             <p className="mt-2 text-xs text-muted-foreground">
               Add keywords that will trigger this flow. Press Enter or click + to add.
+            </p>
+          )}
+
+          {triggerType === "live_comment" && (
+            <p className="mt-3 rounded-lg border border-border bg-card p-3 text-xs text-muted-foreground">
+              Runs on comments made while the account is live on Instagram. Live comments
+              never run Comment Keyword flows, and post comments never run this one. The
+              Instagram account must be connected with Facebook Login, and{" "}
+              {"{{post_id}}"} is the live broadcast's media id.
             </p>
           )}
 
