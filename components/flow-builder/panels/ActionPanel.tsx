@@ -118,6 +118,9 @@ function SetFieldConfig({ data, onChange }: ActionSubPanelProps) {
           placeholder={t("act.fieldPlaceholder")}
           className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
         />
+        <p className="mt-1.5 text-[11px] text-muted-foreground/60">
+          {t("act.fieldTypeHint")}
+        </p>
       </div>
       <div>
         <label className="mb-2 block text-xs font-semibold text-foreground">

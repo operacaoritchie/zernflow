@@ -38,6 +38,7 @@ const operatorOptions = [
   { value: "exists" },
   { value: "gt" },
   { value: "lt" },
+  { value: "is_phone" },
 ];
 
 export function ConditionPanel({ data: rawData, onChange }: ConditionPanelProps) {
@@ -158,8 +159,8 @@ export function ConditionPanel({ data: rawData, onChange }: ConditionPanelProps)
                   ))}
                 </select>
 
-                {/* Value (hidden for "exists" operator) */}
-                {condition.operator !== "exists" && (
+                {/* Value (hidden for operators that take none) */}
+                {condition.operator !== "exists" && condition.operator !== "is_phone" && (
                   <input
                     type="text"
                     value={condition.value}

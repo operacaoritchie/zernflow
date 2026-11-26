@@ -240,7 +240,8 @@
       "contains": "contém",
       "exists": "existe",
       "gt": "maior que",
-      "lt": "menor que"
+      "lt": "menor que",
+      "is_phone": "é um telefone"
     },
     "condition": {
       "match": "Atender a",
@@ -353,10 +354,11 @@
       "distribute": "Distribuir igualmente",
       "totalWarning": "O total é {total}% (deveria ser 100%)",
       "addPath": "Adicionar caminho",
-      "smartDelayHint": "Pausa o flow e espera a resposta do usuário. Se não houver resposta dentro do prazo, segue para a próxima etapa.",
+      "smartDelayHint": "Pausa o flow e espera a resposta do contato. Quando ele responde, o flow segue pela saída de baixo.",
       "timeout": "Prazo",
-      "timeoutHint": "Se o usuário não responder nesse tempo, o flow continua.",
-      "handOff": "Transferir para um atendente humano"
+      "timeoutHint": "Se não houver resposta nesse tempo, o flow segue pela saída \"sem resposta\" à direita; sem nada ligado nela, o flow termina. No Instagram e no Facebook, mensagens automáticas só podem sair até 24 horas depois da última mensagem do contato.",
+      "handOff": "Transferir para um atendente humano",
+      "fieldTypeHint": "Campos de telefone, CPF, e-mail, número e link só salvam um valor do tipo certo (campos prontos: telefone, cpf, email). Um valor inválido não é salvo e o flow segue pela saída \"inválido\" à direita."
     },
     "msg": {
       "variableHint": "Clique para inserir uma variável. Caminhos com ponto, como {example}, leem campos de respostas JSON.",
@@ -433,6 +435,10 @@
       "sent": "Enviadas",
       "failed": "Falharam",
       "toggle": "Estatísticas"
+    },
+    "handles": {
+      "invalid": "inválido",
+      "timeout": "sem resposta"
     }
   },
   "channels": {
@@ -749,7 +755,14 @@
     "messagePlaceholderSaved": "Digite uma mensagem... (/ para respostas salvas)",
     "noSavedReplies": "Nenhuma resposta salva encontrada",
     "savedReplies": "Respostas salvas",
-    "send": "Enviar mensagem"
+    "send": "Enviar mensagem",
+    "window": {
+      "open": "Janela de 24h aberta · restam {time} para automações e respostas.",
+      "human": "Passou de 24h: as automações não enviam mais para este contato. Sua resposta sai como atendente humano (restam {time}).",
+      "closed": "Mais de 7 dias desde a última mensagem do contato. Dá para responder de novo quando ele escrever.",
+      "hours": "{count}h",
+      "days": "{count} dias"
+    }
   },
   "nav": {
     "home": "Início",

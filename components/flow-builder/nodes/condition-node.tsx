@@ -60,7 +60,7 @@ export function ConditionNode({ id, data, selected }: NodeProps) {
                     {t(`logic.${logic}`)}{" "}
                   </span>
                 )}
-                {c.field} {c.operator === "contains" || c.operator === "exists" ? t(`operators.${c.operator}`) : operatorLabels[c.operator] || c.operator} {c.value}
+                {c.field} {c.operator === "contains" || c.operator === "exists" ? t(`operators.${c.operator}`) : c.operator === "is_phone" ? t("operatorOptions.is_phone") : operatorLabels[c.operator] || c.operator} {c.value}
               </p>
             ))}
             {conditions.length > 2 && (

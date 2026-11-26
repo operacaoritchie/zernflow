@@ -604,6 +604,7 @@ export interface Database {
           status: ConversationStatus;
           assigned_to: string | null;
           last_message_at: string | null;
+          last_inbound_at: string | null;
           last_message_preview: string | null;
           unread_count: number;
           is_automation_paused: boolean;
@@ -620,6 +621,7 @@ export interface Database {
           status?: ConversationStatus;
           assigned_to?: string | null;
           last_message_at?: string | null;
+          last_inbound_at?: string | null;
           last_message_preview?: string | null;
           unread_count?: number;
           is_automation_paused?: boolean;
@@ -631,6 +633,7 @@ export interface Database {
           status?: ConversationStatus;
           assigned_to?: string | null;
           last_message_at?: string | null;
+          last_inbound_at?: string | null;
           last_message_preview?: string | null;
           unread_count?: number;
           is_automation_paused?: boolean;
