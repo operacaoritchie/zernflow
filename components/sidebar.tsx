@@ -13,6 +13,7 @@ import {
   BarChart3,
   Sprout,
   Plug,
+  FileText,
   Settings,
   LogOut,
   Moon,
@@ -51,6 +52,7 @@ const navigation = [
   { key: "analytics", href: "/dashboard/analytics", icon: BarChart3 },
   { key: "growth", href: "/dashboard/growth", icon: Sprout },
   { key: "channels", href: "/dashboard/channels", icon: Plug },
+  { key: "waTemplates", href: "/dashboard/whatsapp-templates", icon: FileText },
   { key: "settings", href: "/dashboard/settings", icon: Settings },
 ];
 

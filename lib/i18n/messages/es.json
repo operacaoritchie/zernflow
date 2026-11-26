@@ -135,7 +135,8 @@
       "enrollSequence": "Inscribir en secuencia",
       "commentReply": "Respuesta al comentario",
       "privateReply": "Respuesta privada",
-      "action": "Acción"
+      "action": "Acción",
+      "sendWhatsAppTemplate": "Plantilla de WhatsApp"
     },
     "triggerTypes": {
       "keyword": "Palabra clave",
@@ -185,7 +186,8 @@
       "handOff": "Transferir a un agente",
       "subscribe": "Suscribir contacto",
       "unsubscribe": "Cancelar suscripción del contacto",
-      "waitUpTo": "Esperar hasta {value} {unit}"
+      "waitUpTo": "Esperar hasta {value} {unit}",
+      "waTemplate": "{template} → {phone}"
     },
     "saveFailed": "No se pudo guardar",
     "deleteFailed": "No se pudo eliminar",
@@ -435,6 +437,25 @@
       "sent": "Enviados",
       "failed": "Fallidos",
       "toggle": "Estadísticas"
+    },
+    "wa": {
+      "description": "Envía una plantilla aprobada desde tu número de WhatsApp al teléfono guardado en el contacto. Funciona aunque el lead haya llegado por Instagram y nunca haya escrito en WhatsApp.",
+      "noChannel": "Conecta un número de WhatsApp para usar este paso.",
+      "goChannels": "Ir a Canales",
+      "number": "Número de WhatsApp",
+      "selectNumber": "Selecciona un número...",
+      "template": "Plantilla aprobada",
+      "reload": "Recargar plantillas",
+      "loading": "Cargando plantillas...",
+      "loadFailed": "No se pudieron cargar las plantillas.",
+      "selectTemplate": "Selecciona una plantilla...",
+      "noApproved": "Aún no hay plantillas aprobadas en este número.",
+      "manage": "Crear o revisar plantillas",
+      "phone": "Enviar al teléfono",
+      "phoneHint": "Usa el campo donde el flujo guardó el teléfono, p. ej. {{telefone_vaga}}. Los números sin código de país se tratan como de Brasil (55).",
+      "variables": "Variables de la plantilla",
+      "variablesHint": "Texto fijo o variables como {{contact_name}} o cualquier campo del contacto.",
+      "statusHint": "El flujo siempre continúa. El resultado queda en {{whatsapp_template_status}} (sent, failed o invalid_phone) para un nodo de Condición."
     },
     "handles": {
       "invalid": "inválido",
@@ -774,6 +795,7 @@
     "analytics": "Analítica",
     "growth": "Crecimiento",
     "channels": "Canales",
+    "waTemplates": "Plantillas WhatsApp",
     "settings": "Configuración",
     "lightMode": "Modo claro",
     "darkMode": "Modo oscuro",
@@ -975,6 +997,78 @@
       "waitEmail": "Esperar correo",
       "saveEmail": "Guardar correo",
       "addTag": "Añadir etiqueta \"lead\""
+    }
+  },
+  "waTemplates": {
+    "title": "Plantillas de WhatsApp",
+    "subtitle": "Crea plantillas y envíalas a Meta para su aprobación",
+    "explainer": "WhatsApp solo permite que una empresa inicie una conversación, o escriba tras 24 horas sin respuesta, con una plantilla aprobada por Meta. La revisión suele tardar de unos minutos a 24 horas. Solo las plantillas aprobadas se pueden usar en los flujos.",
+    "needWhatsApp": "Conecta primero un número de WhatsApp",
+    "needWhatsAppHint": "Las plantillas pertenecen a un número de WhatsApp Business conectado mediante Zernio.",
+    "goChannels": "Ir a Canales",
+    "number": "Número de WhatsApp",
+    "refresh": "Actualizar",
+    "new": "Nueva plantilla",
+    "loadFailed": "No se pudieron cargar las plantillas.",
+    "empty": "Aún no hay plantillas",
+    "emptyHint": "Crea tu primera plantilla y envíala para aprobación.",
+    "status": {
+      "PENDING": "En revisión",
+      "APPROVED": "Aprobada",
+      "REJECTED": "Rechazada",
+      "IN_APPEAL": "En apelación",
+      "PAUSED": "Pausada por Meta",
+      "DISABLED": "Desactivada",
+      "PENDING_DELETION": "Eliminándose"
+    },
+    "category": {
+      "MARKETING": "Marketing",
+      "UTILITY": "Utilidad",
+      "AUTHENTICATION": "Autenticación"
+    },
+    "categoryLabel": "Categoría",
+    "categoryHint": {
+      "MARKETING": "Ofertas, invitaciones y promociones. Revisión más estricta.",
+      "UTILITY": "Avisos sobre algo que la persona pidió, como un registro o una reserva.",
+      "AUTHENTICATION": "Solo códigos de verificación."
+    },
+    "variablesCount": {
+      "one": "{count} variable",
+      "other": "{count} variables"
+    },
+    "reason": "Motivo de Meta: {reason}",
+    "pendingHint": "Esperando a Meta. Usa Actualizar para comprobar de nuevo.",
+    "formTitle": "Nueva plantilla",
+    "name": "Nombre",
+    "nameSavedAs": "Se guardará como {name} (Meta solo acepta minúsculas, números y _).",
+    "language": "Idioma",
+    "languages": {
+      "pt_BR": "Portugués (Brasil)",
+      "en_US": "Inglés (EE. UU.)",
+      "en": "Inglés",
+      "es": "Español",
+      "es_MX": "Español (México)",
+      "es_AR": "Español (Argentina)"
+    },
+    "header": "Encabezado (opcional)",
+    "body": "Mensaje",
+    "bodyPlaceholder": "Hola {{1}}, tu plaza en el curso está reservada. Responde SÍ para confirmar.",
+    "bodyHint": "Usa {{1}}, {{2}}… para las partes que cambian según la persona, como el nombre.",
+    "addVariable": "Añadir variable",
+    "examplesHint": "Los revisores de Meta necesitan un ejemplo para cada variable.",
+    "exampleFor": "Ejemplo para {var}",
+    "footer": "Pie (opcional)",
+    "preview": "Vista previa",
+    "previewEmpty": "Tu mensaje aparecerá aquí.",
+    "submit": "Enviar para aprobación",
+    "submitting": "Enviando...",
+    "createFailed": "No se pudo enviar la plantilla.",
+    "errors": {
+      "invalid_name": "Escribe un nombre.",
+      "invalid_body": "El mensaje es obligatorio y puede tener hasta 1024 caracteres.",
+      "invalid_header": "El encabezado puede tener hasta 60 caracteres.",
+      "invalid_footer": "El pie puede tener hasta 60 caracteres.",
+      "examples_required": "Completa un ejemplo para cada variable."
     }
   }
 }

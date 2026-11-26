@@ -321,6 +321,10 @@ export function simulateFlow(
         else if (actionType === "removeTag") detail = `Remove tag: ${tagName}`;
         else if (actionType === "setCustomField")
           detail = `Set ${fieldSlug} = ${fieldValue}`;
+        else if (actionType === "sendWhatsAppTemplate")
+          detail = `WhatsApp template "${(data.templateName as string) || "?"}" → ${
+            interpolate((data.phone as string) || "", variables) || "?"
+          } (not sent in test)`;
         steps.push({
           nodeId: node.id,
           nodeType: "action",

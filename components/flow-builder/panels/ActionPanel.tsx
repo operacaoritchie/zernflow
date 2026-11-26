@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import type { NodeType } from "@/lib/types/database";
 import { EnrollSequencePanel } from "./EnrollSequencePanel";
 import { useT } from "@/lib/i18n/provider";
+import { SendWhatsAppTemplatePanel } from "./SendWhatsAppTemplatePanel";
 
 interface ActionPanelData {
   actionType?: NodeType;
@@ -65,6 +66,8 @@ export function ActionPanel({ data: rawData, onChange }: ActionPanelProps) {
       return <SmartDelayConfig data={data} onChange={onChange} />;
     case "enrollSequence":
       return <EnrollSequencePanel data={rawData} onChange={onChange} />;
+    case "sendWhatsAppTemplate":
+      return <SendWhatsAppTemplatePanel data={rawData} onChange={onChange} />;
     default:
       return (
         <p className="text-sm text-muted-foreground">
