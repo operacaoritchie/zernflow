@@ -637,6 +637,12 @@
       "privacy": "Os dados exportados são pessoais (LGPD). Guarde o arquivo com cuidado. Cada exportação fica registrada.",
       "cancel": "Cancelar",
       "download": "Baixar"
+    },
+    "pagination": {
+      "range": "{from}–{to} de {total}",
+      "page": "Página {page} de {pages}",
+      "previous": "Anterior",
+      "next": "Próxima"
     }
   },
   "errors": {

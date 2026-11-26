@@ -637,6 +637,12 @@
       "privacy": "Exported data is personal data. Store the file carefully. Every export is logged.",
       "cancel": "Cancel",
       "download": "Download"
+    },
+    "pagination": {
+      "range": "{from}–{to} of {total}",
+      "page": "Page {page} of {pages}",
+      "previous": "Previous",
+      "next": "Next"
     }
   },
   "errors": {

@@ -637,6 +637,12 @@
       "privacy": "Los datos exportados son personales. Guarda el archivo con cuidado. Cada exportación queda registrada.",
       "cancel": "Cancelar",
       "download": "Descargar"
+    },
+    "pagination": {
+      "range": "{from}–{to} de {total}",
+      "page": "Página {page} de {pages}",
+      "previous": "Anterior",
+      "next": "Siguiente"
     }
   },
   "errors": {
