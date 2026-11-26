@@ -342,18 +342,39 @@ async function processMessageEvent(
     );
 
     if (!handled) {
-      const trigger = await matchTrigger(supabase, {
-        channelId: channel.id,
-        workspaceId: channel.workspace_id,
-        conversationId: conversation.id,
-        message: incomingMessage,
-        isFirstMessage: !contact.existed,
-      });
-      if (trigger) {
+      // A flow paused on a "wait for reply" step must resume on ANY reply, not
+      // only on one that also matches a trigger. Without this, a plain "oi"
+      // matched nothing, executeFlow never ran, and the session stayed stuck.
+      // executeFlow resumes the waiting session itself when one exists.
+      const { data: waitingSession } = await supabase
+        .from("flow_sessions")
+        .select("id, flow_id")
+        .eq("contact_id", contactId)
+        .eq("channel_id", channel.id)
+        .eq("status", "active")
+        .eq("waiting_for_input", true)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const trigger = waitingSession
+        ? null
+        : await matchTrigger(supabase, {
+            channelId: channel.id,
+            workspaceId: channel.workspace_id,
+            conversationId: conversation.id,
+            message: incomingMessage,
+            isFirstMessage: !contact.existed,
+          });
+      const target = waitingSession
+        ? // Sessions do not store their trigger; the resume path never reads it.
+          { id: "", flow_id: waitingSession.flow_id }
+        : trigger;
+      if (target) {
         try {
           await executeFlow(supabase, {
-            triggerId: trigger.id,
-            flowId: trigger.flow_id,
+            triggerId: target.id,
+            flowId: target.flow_id,
             channelId: channel.id,
             contactId,
             conversationId: conversation.id,
