@@ -585,7 +585,59 @@
     "noNotes": "No notes yet",
     "notePlaceholder": "Add an internal note...",
     "addingNote": "Adding...",
-    "addNote": "Add note"
+    "addNote": "Add note",
+    "exportButton": "Export",
+    "export": {
+      "title": "Export contacts",
+      "subtitle": "Download a spreadsheet or a Meta Ads audience.",
+      "close": "Close",
+      "who": "Who",
+      "presets": {
+        "all": "All",
+        "instagram": "Instagram",
+        "leads": "Leads"
+      },
+      "presetHints": {
+        "all": "Every contact in the workspace.",
+        "instagram": "Only people who messaged or commented on Instagram.",
+        "leads": "People with the lead-vaga tag or a valid phone or e-mail."
+      },
+      "useFilters": "Apply the current filter ({filters})",
+      "format": "Format",
+      "formats": {
+        "full": {
+          "label": "Full spreadsheet (CSV)",
+          "hint": "Name, @, Instagram ID, phone, e-mail, tags and fields. Opens in Excel."
+        },
+        "ig_audience": {
+          "label": "Instagram audience (Meta Ads)",
+          "hint": "Instagram IDs only, one per line. No personal data."
+        },
+        "meta_customers": {
+          "label": "Meta customer list (leads)",
+          "hint": "Phone with country code, e-mail and name in Ads Manager format. Only people with a phone or e-mail."
+        }
+      },
+      "includeCpf": "Include CPF",
+      "howTo": "How to use it in Ads Manager",
+      "steps": {
+        "ig_audience": {
+          "1": "Audiences → Create audience → Custom audience → Customer list.",
+          "2": "Under Add list, choose \"Paste values\" and paste the IDs from the file.",
+          "3": "In mapping, pick the \"Instagram Scoped User ID\" identifier and the Facebook Page linked to the Instagram account.",
+          "4": "Import and wait a few minutes. Size shows from about 1,000 people."
+        },
+        "meta_customers": {
+          "1": "Audiences → Create audience → Custom audience → Customer list.",
+          "2": "Upload the downloaded CSV file.",
+          "3": "Check the mapping: email, phone, fn, ln and country are detected automatically.",
+          "4": "Import. Meta hashes the data before matching."
+        }
+      },
+      "privacy": "Exported data is personal data. Store the file carefully. Every export is logged.",
+      "cancel": "Cancel",
+      "download": "Download"
+    }
   },
   "errors": {
     "workspaceMismatch": "Workspace mismatch",

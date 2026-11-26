@@ -192,6 +192,40 @@ export interface Database {
           },
         ];
       };
+      export_logs: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          user_id: string | null;
+          format: string;
+          preset: string;
+          filters: Json;
+          row_count: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          user_id?: string | null;
+          format: string;
+          preset: string;
+          filters?: Json;
+          row_count?: number;
+          created_at?: string;
+        };
+        Update: {
+          row_count?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "export_logs_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       contacts: {
         Row: {
           id: string;
