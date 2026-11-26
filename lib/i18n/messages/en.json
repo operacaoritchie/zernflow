@@ -354,10 +354,11 @@
       "distribute": "Distribute evenly",
       "totalWarning": "Total is {total}% (should be 100%)",
       "addPath": "Add Path",
-      "smartDelayHint": "Pause the flow and wait for a user response. If no response is received within the timeout, continue to the next step.",
+      "smartDelayHint": "Pause the flow and wait for the contact's reply. A reply continues through the bottom output.",
       "timeout": "Timeout",
-      "timeoutHint": "If the user does not respond within this time, the flow will continue.",
-      "handOff": "Hand off to a human agent"
+      "timeoutHint": "If there is no reply within this time, the flow follows the \"no reply\" output on the right; with nothing connected there, it ends. Instagram and Facebook only allow automated messages up to 24 hours after the contact's last message.",
+      "handOff": "Hand off to a human agent",
+      "fieldTypeHint": "Phone, CPF, e-mail, number and URL fields only save a value of their type (ready-made fields: telefone, cpf, email). An invalid value is not saved and the flow follows the \"invalid\" output on the right."
     },
     "msg": {
       "variableHint": "Click to insert a variable. Dot paths like {example} read fields from JSON responses.",
@@ -434,6 +435,10 @@
       "sent": "Sent",
       "failed": "Failed",
       "toggle": "Analytics"
+    },
+    "handles": {
+      "invalid": "invalid",
+      "timeout": "no reply"
     }
   },
   "channels": {
@@ -750,7 +755,14 @@
     "messagePlaceholderSaved": "Type a message... (/ for saved replies)",
     "noSavedReplies": "No saved replies found",
     "savedReplies": "Saved replies",
-    "send": "Send message"
+    "send": "Send message",
+    "window": {
+      "open": "24-hour window open · {time} left for automated and manual replies.",
+      "human": "Past 24 hours: automations are paused for this contact. Your reply goes out as a human agent reply ({time} left).",
+      "closed": "More than 7 days since the contact's last message. You can reply again once they write.",
+      "hours": "{count}h",
+      "days": "{count} days"
+    }
   },
   "nav": {
     "home": "Home",

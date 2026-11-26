@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { isPhone } from "./phone";
+import { validateFieldValue } from "@/lib/field-validation";
+import { insideMessagingWindow } from "@/lib/messaging-window";
 import type { Database, Json } from "@/lib/types/database";
 import type {
   FlowNode,
@@ -7,6 +9,7 @@ import type {
   FlowExecutionContext,
   SendMessageNodeData,
   ConditionNodeData,
+  SmartDelayNodeData,
   DelayNodeData,
   TagNodeData,
   SetFieldNodeData,
@@ -160,10 +163,22 @@ const MAX_TRAVERSAL_DEPTH = 50;
 // without cancelling the session.
 export class FlowLoadError extends Error {}
 
+/** Output handles that only fire on a specific outcome. The plain output of a
+ *  node is any edge that does not use one of these. */
+const OUTCOME_HANDLES = new Set(["invalid", "timeout"]);
+
+function defaultEdge(edges: FlowEdge[], nodeId: string): FlowEdge | undefined {
+  return edges.find(
+    (e) => e.source === nodeId && !(e.sourceHandle && OUTCOME_HANDLES.has(e.sourceHandle))
+  );
+}
+
+
 export async function resumeSession(
   supabase: SupabaseClient<Database>,
   session: Database["public"]["Tables"]["flow_sessions"]["Row"],
-  context: FlowExecutionContext
+  context: FlowExecutionContext,
+  opts: { handle?: string } = {}
 ) {
   const { data: flow, error: flowError } = await supabase
     .from("flows")
@@ -257,8 +272,11 @@ export async function resumeSession(
     return;
   }
 
-  // Get next node after the current one
-  const nextEdge = edges.find((e) => e.source === currentNode.id);
+  // Get next node after the current one. A timed-out wait follows its
+  // "timeout" output instead of the normal one.
+  const nextEdge = opts.handle
+    ? edges.find((e) => e.source === currentNode.id && e.sourceHandle === opts.handle)
+    : defaultEdge(edges, currentNode.id);
   if (!nextEdge) {
     await completeSession(supabase, session.id);
     return;
@@ -348,7 +366,7 @@ async function traverseNodes(
       (e) => e.source === node.id && e.sourceHandle === handle
     );
   } else {
-    nextEdge = edges.find((e) => e.source === node.id);
+    nextEdge = defaultEdge(edges, node.id);
   }
 
   if (!nextEdge) {
@@ -402,12 +420,7 @@ async function executeNode(
     case "abSplit":
       return executeABSplit(node.data as ABSplitNodeData);
     case "smartDelay":
-      // Wait for next input
-      await supabase
-        .from("flow_sessions")
-        .update({ waiting_for_input: true, current_node_id: node.id })
-        .eq("id", sessionId);
-      return "pause";
+      return executeSmartDelay(supabase, node.data as SmartDelayNodeData, sessionId, node.id, context);
     case "enrollSequence":
       return executeEnrollSequence(supabase, node.data as EnrollSequenceNodeData, context);
     default:
@@ -526,6 +539,27 @@ async function executeSendMessage(
       return;
     }
     lateConversationId = conversation.late_conversation_id;
+  }
+
+  // Meta only allows automated messages within 24 hours of the contact's last
+  // message. Outside it the send would be refused; record why instead.
+  const { data: windowRow } = await supabase
+    .from("conversations")
+    .select("last_inbound_at, platform")
+    .eq("id", context.conversationId)
+    .maybeSingle();
+  if (!insideMessagingWindow(context.platform || windowRow?.platform, windowRow?.last_inbound_at)) {
+    console.warn(
+      `Skipped Send Message for conversation ${context.conversationId}: outside the 24-hour messaging window`
+    );
+    await supabase.from("analytics_events").insert({
+      workspace_id: context.workspaceId,
+      flow_id: context.flowId,
+      contact_id: context.contactId,
+      event_type: "message_blocked_window",
+      metadata: { lastInboundAt: windowRow?.last_inbound_at ?? null } as unknown as Json,
+    });
+    return;
   }
 
   for (const msg of data.messages) {
@@ -803,23 +837,83 @@ async function executeSetField(
   // Find field definition
   const { data: fieldDef } = await supabase
     .from("custom_field_definitions")
-    .select("id")
+    .select("id, type")
     .eq("workspace_id", context.workspaceId)
     .eq("slug", data.fieldSlug)
     .single();
 
   if (!fieldDef) return;
 
-  const value = interpolateVariables(data.value, context.variables || {});
+  const raw = interpolateVariables(data.value, context.variables || {});
+
+  // Phone, CPF, e-mail, number and URL fields only take a value of their
+  // type. An invalid one is not saved and the flow follows the node's
+  // "invalid" output (or stops there if nothing is connected to it).
+  const checked = validateFieldValue(fieldDef.type, raw);
+  if (!checked.ok) {
+    await supabase.from("analytics_events").insert({
+      workspace_id: context.workspaceId,
+      flow_id: context.flowId,
+      contact_id: context.contactId,
+      event_type: "field_invalid",
+      metadata: { fieldSlug: data.fieldSlug, fieldType: fieldDef.type, reason: checked.reason } as unknown as Json,
+    });
+    return "handle:invalid";
+  }
 
   await supabase.from("contact_custom_fields").upsert(
     {
       contact_id: context.contactId,
       field_id: fieldDef.id,
-      value,
+      value: checked.value,
     },
     { onConflict: "contact_id,field_id" }
   );
+}
+
+async function executeSmartDelay(
+  supabase: SupabaseClient<Database>,
+  data: SmartDelayNodeData,
+  sessionId: string,
+  nodeId: string,
+  context: FlowExecutionContext
+) {
+  // Wait for the contact's next message
+  await supabase
+    .from("flow_sessions")
+    .update({ waiting_for_input: true, current_node_id: nodeId })
+    .eq("id", sessionId);
+
+  // With a timeout set, a job fires it: if the contact still has not replied,
+  // the flow follows the node's "timeout" output (or ends).
+  const timeout = Number(data.timeout);
+  if (Number.isFinite(timeout) && timeout > 0) {
+    const unitMs: Record<string, number> = {
+      seconds: 1000,
+      minutes: 60 * 1000,
+      hours: 60 * 60 * 1000,
+      days: 24 * 60 * 60 * 1000,
+    };
+    const runAt = new Date(
+      Date.now() + timeout * (unitMs[data.timeoutUnit || "minutes"] || unitMs.minutes)
+    ).toISOString();
+    await supabase.from("scheduled_jobs").insert({
+      type: "smart_delay_timeout",
+      payload: {
+        sessionId,
+        nodeId,
+        channelId: context.channelId,
+        contactId: context.contactId,
+        conversationId: context.conversationId,
+        workspaceId: context.workspaceId,
+        lateConversationId: context.lateConversationId || null,
+        lateAccountId: context.lateAccountId || null,
+      },
+      run_at: runAt,
+    });
+  }
+
+  return "pause";
 }
 
 async function executeHttpRequest(

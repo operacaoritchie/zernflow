@@ -154,6 +154,10 @@ export function ActionNode({ id, data, selected }: NodeProps) {
   const summary = getSummary(nodeData, t);
 
   const isAbSplit = actionType === "abSplit";
+  // Extra output for an outcome: an invalid value on Set Field, no reply in
+  // time on a wait. The engine follows it only on that outcome.
+  const outcomeHandle =
+    actionType === "setCustomField" ? "invalid" : actionType === "smartDelay" ? "timeout" : null;
   const paths = isAbSplit ? nodeData.paths || [] : [];
 
   return (
@@ -205,6 +209,19 @@ export function ActionNode({ id, data, selected }: NodeProps) {
           position={Position.Bottom}
           className="!h-3 !w-3 !border-2 !border-gray-400 !bg-white"
         />
+      )}
+      {outcomeHandle && (
+        <>
+          <Handle
+            type="source"
+            position={Position.Right}
+            id={outcomeHandle}
+            className="!h-3 !w-3 !border-2 !border-amber-500 !bg-white"
+          />
+          <span className="pointer-events-none absolute -right-1 top-1/2 translate-x-full -translate-y-1/2 pl-2 text-[10px] font-medium text-amber-600">
+            {t(`handles.${outcomeHandle}`)}
+          </span>
+        </>
       )}
     </div>
   );

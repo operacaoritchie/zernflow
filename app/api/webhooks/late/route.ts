@@ -257,6 +257,8 @@ async function processMessageEvent(
         last_message_at: new Date().toISOString(),
         last_message_preview: preview,
         unread_count: 1,
+        // Opens (or renews) Meta's 24-hour window for automated messages.
+        last_inbound_at: msg.sentAt || new Date().toISOString(),
       },
       { onConflict: "channel_id,contact_id" }
     )
