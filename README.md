@@ -31,6 +31,14 @@ ZernFlow is an open-source alternative to ManyChat. Build visual chatbot flows, 
 - **A/B Testing** - Split test different message paths
 - **Webhooks & HTTP** - Connect to external APIs from your flows
 
+## Languages
+
+The interface is available in English, Portuguese (Brazil) and Spanish. Each person picks a language in the sidebar or in **Settings → General**; the choice is saved to their account and follows them to every device. Before anyone picks, ZernFlow uses the browser's language and falls back to English.
+
+Translations live in `lib/i18n/messages/<locale>.json`. To add a language, add its code to `lib/i18n/config.ts`, copy `en.json` to the new file, translate it and register it in `lib/i18n/messages/index.ts`. `npm test` fails if a key or `{placeholder}` is missing in any language.
+
+Server components use `const t = await getT("namespace")`; client components use `const t = useT("namespace")`. Dates and numbers go through `getFormatter()` / `useFormatter()` so they follow the selected language.
+
 ## Quick Start
 
 ### Prerequisites

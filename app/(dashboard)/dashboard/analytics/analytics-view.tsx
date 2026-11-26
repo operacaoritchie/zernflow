@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { useT, useFormatter } from "@/lib/i18n/provider";
+import type { Formatter } from "@/lib/i18n/translator";
 
 // --- Types ---
 
@@ -78,8 +80,8 @@ function getDateRange(range: TimeRange): { start: string; end: string } {
   };
 }
 
-function formatShortDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString([], {
+function formatShortDate(dateStr: string, format: Formatter): string {
+  return format.date(dateStr, {
     month: "short",
     day: "numeric",
   });
@@ -138,6 +140,8 @@ function MessageVolumeChart({
   data: DailyMessages[];
   maxVal: number;
 }) {
+  const t = useT("analytics");
+  const format = useFormatter();
   const [hovered, setHovered] = useState<number | null>(null);
   const safeMax = maxVal || 1;
 
@@ -175,8 +179,8 @@ function MessageVolumeChart({
               )}
               {hovered === i && (
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-10 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs text-background shadow-lg pointer-events-none">
-                  <p className="font-medium">{d.sent} sent{d.failed > 0 ? `, ${d.failed} failed` : ""}</p>
-                  <p className="text-background/70">{formatShortDate(d.date)}</p>
+                  <p className="font-medium">{t("tooltipSent", { count: d.sent })}{d.failed > 0 ? t("tooltipFailed", { count: d.failed }) : ""}</p>
+                  <p className="text-background/70">{formatShortDate(d.date, format)}</p>
                 </div>
               )}
             </div>
@@ -184,8 +188,8 @@ function MessageVolumeChart({
         })}
       </div>
       <div className="mt-2 flex justify-between text-[10px] text-muted-foreground">
-        <span>{formatShortDate(data[0].date)}</span>
-        <span>{formatShortDate(data[data.length - 1].date)}</span>
+        <span>{formatShortDate(data[0].date, format)}</span>
+        <span>{formatShortDate(data[data.length - 1].date, format)}</span>
       </div>
     </>
   );
@@ -201,6 +205,8 @@ export function AnalyticsView({
   initialData: AnalyticsData;
 }) {
   const [timeRange, setTimeRange] = useState<TimeRange>("30d");
+  const t = useT("analytics");
+  const format = useFormatter();
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
   const [loading, setLoading] = useState(false);
@@ -318,7 +324,7 @@ export function AnalyticsView({
           const starts = startCounts.get(fid) ?? 0;
           const completions = completionCounts.get(fid) ?? 0;
           const dropOffRate = starts > 0 ? Math.round(((starts - completions) / starts) * 100) : 0;
-          return { id: fid, name: flowNames.get(fid) ?? "Unknown Flow", starts, completions, dropOffRate };
+          return { id: fid, name: flowNames.get(fid) ?? t("unknownFlow"), starts, completions, dropOffRate };
         })
         .sort((a, b) => b.starts - a.starts)
         .slice(0, 10);
@@ -364,36 +370,36 @@ export function AnalyticsView({
   }
 
   const timeRangeOptions: { value: TimeRange; label: string }[] = [
-    { value: "7d", label: "Last 7 days" },
-    { value: "30d", label: "Last 30 days" },
-    { value: "90d", label: "Last 90 days" },
-    { value: "custom", label: "Custom" },
+    { value: "7d", label: t("range.7d") },
+    { value: "30d", label: t("range.30d") },
+    { value: "90d", label: t("range.90d") },
+    { value: "custom", label: t("range.custom") },
   ];
 
   const statCards = [
     {
-      label: "Total Flows",
+      label: t("totalFlows"),
       value: stats.totalFlows,
       icon: GitBranch,
       color: "text-blue-600",
       bg: "bg-blue-100",
     },
     {
-      label: "Total Contacts",
+      label: t("totalContacts"),
       value: stats.totalContacts,
       icon: Users,
       color: "text-purple-600",
       bg: "bg-purple-100",
     },
     {
-      label: "Messages Sent",
+      label: t("messagesSent"),
       value: stats.messagesSent,
       icon: Send,
       color: "text-green-600",
       bg: "bg-green-100",
     },
     {
-      label: "Messages Failed",
+      label: t("messagesFailed"),
       value: stats.messagesFailed,
       icon: AlertTriangle,
       color: "text-red-600",
@@ -413,9 +419,9 @@ export function AnalyticsView({
       <div className="border-b border-border px-8 py-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Analytics</h1>
+            <h1 className="text-2xl font-bold">{t("title")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Monitor your workspace performance
+              {t("subtitle")}
             </p>
           </div>
 
@@ -450,7 +456,7 @@ export function AnalyticsView({
                 className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
-            <span className="text-sm text-muted-foreground">to</span>
+            <span className="text-sm text-muted-foreground">{t("to")}</span>
             <input
               type="date"
               value={customEnd}
@@ -462,7 +468,7 @@ export function AnalyticsView({
               disabled={!customStart || !customEnd}
               className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
             >
-              Apply
+              {t("apply")}
             </button>
           </div>
         )}
@@ -508,31 +514,32 @@ export function AnalyticsView({
               {/* Contact growth */}
               <div className="rounded-xl border border-border bg-card p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold">Contact Growth</h3>
+                  <h3 className="text-sm font-semibold">{t("contactGrowth")}</h3>
                   <span className="text-xs text-muted-foreground">
-                    New contacts per day
+                    {t("newPerDay")}
                   </span>
                 </div>
                 {contactGrowth.length > 0 ? (
                   <>
                     <MiniBarChart
                       data={contactGrowth.map((d) => d.count)}
-                      labels={contactGrowth.map((d) => formatShortDate(d.date))}
+                      labels={contactGrowth.map((d) => formatShortDate(d.date, format))}
                       maxVal={maxContactGrowth}
                       color="bg-purple-500"
                     />
                     <div className="mt-2 flex justify-between text-[10px] text-muted-foreground">
-                      <span>{formatShortDate(contactGrowth[0].date)}</span>
+                      <span>{formatShortDate(contactGrowth[0].date, format)}</span>
                       <span>
                         {formatShortDate(
-                          contactGrowth[contactGrowth.length - 1].date
+                          contactGrowth[contactGrowth.length - 1].date,
+                          format
                         )}
                       </span>
                     </div>
                   </>
                 ) : (
                   <p className="text-sm text-muted-foreground py-8 text-center">
-                    No data for this period
+                    {t("noData")}
                   </p>
                 )}
               </div>
@@ -540,15 +547,15 @@ export function AnalyticsView({
               {/* Message volume */}
               <div className="rounded-xl border border-border bg-card p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold">Message Volume</h3>
+                  <h3 className="text-sm font-semibold">{t("messageVolume")}</h3>
                   <div className="flex items-center gap-3">
                     <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
                       <span className="inline-block h-2 w-2 rounded-full bg-green-500" />
-                      Sent
+                      {t("sent")}
                     </span>
                     <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
                       <span className="inline-block h-2 w-2 rounded-full bg-red-500" />
-                      Failed
+                      {t("failed")}
                     </span>
                   </div>
                 </div>
@@ -556,7 +563,7 @@ export function AnalyticsView({
                   <MessageVolumeChart data={messageVolume} maxVal={maxMessageVolume} />
                 ) : (
                   <p className="text-sm text-muted-foreground py-8 text-center">
-                    No data for this period
+                    {t("noData")}
                   </p>
                 )}
               </div>
@@ -565,13 +572,13 @@ export function AnalyticsView({
             {/* Flow performance table */}
             <div className="rounded-xl border border-border bg-card">
               <div className="border-b border-border px-6 py-4">
-                <h3 className="text-sm font-semibold">Flow Performance</h3>
+                <h3 className="text-sm font-semibold">{t("flowPerformance")}</h3>
               </div>
               {flowPerformance.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <GitBranch className="h-8 w-8 text-muted-foreground/40" />
                   <p className="mt-2 text-sm text-muted-foreground">
-                    No flow activity in this period
+                    {t("noFlowActivity")}
                   </p>
                 </div>
               ) : (
@@ -579,16 +586,16 @@ export function AnalyticsView({
                   <thead>
                     <tr className="border-b border-border bg-muted/50 text-left">
                       <th className="px-6 py-3 text-xs font-medium uppercase text-muted-foreground">
-                        Flow Name
+                        {t("flowName")}
                       </th>
                       <th className="px-4 py-3 text-xs font-medium uppercase text-muted-foreground text-right">
-                        Starts
+                        {t("starts")}
                       </th>
                       <th className="px-4 py-3 text-xs font-medium uppercase text-muted-foreground text-right">
-                        Completions
+                        {t("completions")}
                       </th>
                       <th className="px-6 py-3 text-xs font-medium uppercase text-muted-foreground text-right">
-                        Drop-off Rate
+                        {t("dropOff")}
                       </th>
                     </tr>
                   </thead>

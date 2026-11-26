@@ -3,6 +3,8 @@ import Link from "next/link";
 import { ListOrdered } from "lucide-react";
 import { CreateSequenceButton } from "@/components/sequences/create-sequence-button";
 import type { SequenceStatus, Json } from "@/lib/types/database";
+import { getT, getFormatter } from "@/lib/i18n/server";
+import type { Formatter } from "@/lib/i18n/translator";
 
 const statusConfig: Record<SequenceStatus, { label: string; classes: string }> = {
   draft: {
@@ -19,8 +21,8 @@ const statusConfig: Record<SequenceStatus, { label: string; classes: string }> =
   },
 };
 
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString("en-US", {
+function formatDate(dateString: string, format: Formatter) {
+  return format.date(dateString, {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -31,6 +33,8 @@ function formatDate(dateString: string) {
 
 export default async function SequencesPage() {
   const { workspace, supabase } = await getWorkspace();
+  const t = await getT("sequences");
+  const format = await getFormatter();
 
   const { data: sequences } = await supabase
     .from("sequences")
@@ -62,9 +66,9 @@ export default async function SequencesPage() {
       <div className="border-b border-border px-8 py-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Sequences</h1>
+            <h1 className="text-2xl font-bold">{t("title")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Create drip campaigns to nurture contacts over time
+              {t("subtitle")}
             </p>
           </div>
           <CreateSequenceButton />
@@ -75,9 +79,9 @@ export default async function SequencesPage() {
       {!sequences || sequences.length === 0 ? (
         <div className="mt-12 rounded-xl border border-dashed border-border p-12 text-center">
           <ListOrdered className="mx-auto h-10 w-10 text-muted-foreground" />
-          <h2 className="mt-4 text-lg font-semibold">No sequences yet</h2>
+          <h2 className="mt-4 text-lg font-semibold">{t("emptyTitle")}</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Create your first sequence to start nurturing contacts automatically.
+            {t("emptyBody")}
           </p>
           <div className="mt-4">
             <CreateSequenceButton />
@@ -86,8 +90,8 @@ export default async function SequencesPage() {
       ) : (
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {sequences.map((sequence) => {
-            const status =
-              statusConfig[sequence.status as SequenceStatus] ?? statusConfig.draft;
+            const statusKey = (sequence.status as SequenceStatus) in statusConfig ? (sequence.status as SequenceStatus) : "draft";
+            const status = statusConfig[statusKey];
             const steps = Array.isArray(sequence.steps)
               ? sequence.steps
               : [];
@@ -112,14 +116,14 @@ export default async function SequencesPage() {
                       <span
                         className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${status.classes}`}
                       >
-                        {status.label}
+                        {t(`status.${statusKey}`)}
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {stepCount} {stepCount === 1 ? "step" : "steps"}
+                      {t("stepCount", { count: stepCount })}
                       {enrolled > 0 && (
                         <span className="ml-2">
-                          {enrolled} enrolled
+                          {t("enrolledCount", { count: enrolled })}
                         </span>
                       )}
                     </p>
@@ -131,7 +135,7 @@ export default async function SequencesPage() {
                   </p>
                 )}
                 <p className="mt-4 text-xs text-muted-foreground">
-                  Updated {formatDate(sequence.updated_at)}
+                  {t("updated", { date: formatDate(sequence.updated_at, format) })}
                 </p>
               </Link>
             );

@@ -5,6 +5,7 @@ import { Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { NodeType } from "@/lib/types/database";
 import { EnrollSequencePanel } from "./EnrollSequencePanel";
+import { useT } from "@/lib/i18n/provider";
 
 interface ActionPanelData {
   actionType?: NodeType;
@@ -41,6 +42,7 @@ interface ActionSubPanelProps {
 export function ActionPanel({ data: rawData, onChange }: ActionPanelProps) {
   const data = rawData as ActionPanelData;
   const actionType = data.actionType || "addTag";
+  const t = useT("builder");
 
   switch (actionType) {
     case "addTag":
@@ -66,7 +68,7 @@ export function ActionPanel({ data: rawData, onChange }: ActionPanelProps) {
     default:
       return (
         <p className="text-sm text-muted-foreground">
-          No configuration available for this action type.
+          {t("act.noConfig")}
         </p>
       );
   }
@@ -75,24 +77,25 @@ export function ActionPanel({ data: rawData, onChange }: ActionPanelProps) {
 /* ───────── Tag Config ───────── */
 function TagConfig({ data, onChange }: ActionSubPanelProps) {
   const isAdd = data.actionType === "addTag";
+  const t = useT("builder");
 
   return (
     <div className="space-y-4">
       <div>
         <label className="mb-2 block text-xs font-semibold text-foreground">
-          Tag Name
+          {t("act.tagName")}
         </label>
         <input
           type="text"
           value={data.tagName || ""}
           onChange={(e) => onChange({ ...data, tagName: e.target.value })}
-          placeholder="Enter tag name..."
+          placeholder={t("act.tagPlaceholder")}
           className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
         />
         <p className="mt-1.5 text-xs text-muted-foreground">
           {isAdd
-            ? "This tag will be added to the contact when they reach this step."
-            : "This tag will be removed from the contact when they reach this step."}
+            ? t("act.tagAddHint")
+            : t("act.tagRemoveHint")}
         </p>
       </div>
     </div>
@@ -101,33 +104,34 @@ function TagConfig({ data, onChange }: ActionSubPanelProps) {
 
 /* ───────── Set Custom Field Config ───────── */
 function SetFieldConfig({ data, onChange }: ActionSubPanelProps) {
+  const t = useT("builder");
   return (
     <div className="space-y-4">
       <div>
         <label className="mb-2 block text-xs font-semibold text-foreground">
-          Field Name (slug)
+          {t("act.fieldName")}
         </label>
         <input
           type="text"
           value={data.fieldSlug || ""}
           onChange={(e) => onChange({ ...data, fieldSlug: e.target.value })}
-          placeholder="e.g. favorite_color"
+          placeholder={t("act.fieldPlaceholder")}
           className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
         />
       </div>
       <div>
         <label className="mb-2 block text-xs font-semibold text-foreground">
-          Value
+          {t("act.value")}
         </label>
         <input
           type="text"
           value={data.value || ""}
           onChange={(e) => onChange({ ...data, value: e.target.value })}
-          placeholder="Value or {{variable}}"
+          placeholder={t("act.valuePlaceholder")}
           className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
         />
         <p className="mt-1.5 text-[11px] text-muted-foreground/60">
-          Use {"{{variable}}"} for dynamic values
+          {t("act.useVariable", { var: "{{variable}}" })}
         </p>
       </div>
     </div>
@@ -138,6 +142,8 @@ function SetFieldConfig({ data, onChange }: ActionSubPanelProps) {
 function HttpRequestConfig({ data, onChange }: ActionSubPanelProps) {
   const headers = data.headers || {};
   const headerEntries = Object.entries(headers);
+  const t = useT("builder");
+  const tc = useT("common");
 
   const addHeader = useCallback(() => {
     onChange({ ...data, headers: { ...headers, "": "" } });
@@ -175,7 +181,7 @@ function HttpRequestConfig({ data, onChange }: ActionSubPanelProps) {
       {/* Method + URL */}
       <div>
         <label className="mb-2 block text-xs font-semibold text-foreground">
-          Request
+          {t("act.request")}
         </label>
         <div className="flex gap-2">
           <select
@@ -201,14 +207,14 @@ function HttpRequestConfig({ data, onChange }: ActionSubPanelProps) {
       {/* Headers */}
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <label className="text-xs font-semibold text-foreground">Headers</label>
+          <label className="text-xs font-semibold text-foreground">{t("act.headers")}</label>
           <button
             type="button"
             onClick={addHeader}
             className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground hover:bg-muted"
           >
             <Plus className="h-3 w-3" />
-            Add
+            {tc("add")}
           </button>
         </div>
         {headerEntries.map(([key, value], i) => (
@@ -217,14 +223,14 @@ function HttpRequestConfig({ data, onChange }: ActionSubPanelProps) {
               type="text"
               value={key}
               onChange={(e) => updateHeaderKey(key, e.target.value)}
-              placeholder="Key"
+              placeholder={t("act.key")}
               className="flex-1 rounded border border-border bg-card px-2 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
             />
             <input
               type="text"
               value={value}
               onChange={(e) => updateHeaderValue(key, e.target.value)}
-              placeholder="Value"
+              placeholder={t("act.value")}
               className="flex-1 rounded border border-border bg-card px-2 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
             />
             <button
@@ -242,7 +248,7 @@ function HttpRequestConfig({ data, onChange }: ActionSubPanelProps) {
       {(data.method === "POST" || data.method === "PUT") && (
         <div>
           <label className="mb-2 block text-xs font-semibold text-foreground">
-            Request Body (JSON)
+            {t("act.body")}
           </label>
           <textarea
             value={data.body || ""}
@@ -257,17 +263,17 @@ function HttpRequestConfig({ data, onChange }: ActionSubPanelProps) {
       {/* Response Variable */}
       <div>
         <label className="mb-2 block text-xs font-semibold text-foreground">
-          Save response to variable
+          {t("act.saveResponse")}
         </label>
         <input
           type="text"
           value={data.responseVariable || ""}
           onChange={(e) => onChange({ ...data, responseVariable: e.target.value })}
-          placeholder="e.g. api_response"
+          placeholder={t("act.saveResponsePlaceholder")}
           className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
         />
         <p className="mt-1.5 text-xs text-muted-foreground">
-          Optional. Store the response body in a variable for later use.
+          {t("act.saveResponseHint")}
         </p>
       </div>
     </div>
@@ -276,21 +282,22 @@ function HttpRequestConfig({ data, onChange }: ActionSubPanelProps) {
 
 /* ───────── Go To Flow Config ───────── */
 function GoToFlowConfig({ data, onChange }: ActionSubPanelProps) {
+  const t = useT("builder");
   return (
     <div className="space-y-4">
       <div>
         <label className="mb-2 block text-xs font-semibold text-foreground">
-          Target Flow ID
+          {t("act.targetFlow")}
         </label>
         <input
           type="text"
           value={data.flowId || ""}
           onChange={(e) => onChange({ ...data, flowId: e.target.value })}
-          placeholder="Enter flow ID..."
+          placeholder={t("act.targetFlowPlaceholder")}
           className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
         />
         <p className="mt-1.5 text-xs text-muted-foreground">
-          The contact will be redirected to this flow.
+          {t("act.targetFlowHint")}
         </p>
       </div>
 
@@ -305,9 +312,9 @@ function GoToFlowConfig({ data, onChange }: ActionSubPanelProps) {
           <div className="peer h-5 w-9 rounded-full bg-muted after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:bg-card after:transition-all peer-checked:bg-muted0 peer-checked:after:translate-x-full peer-focus:ring-2 peer-focus:ring-ring" />
         </label>
         <div>
-          <p className="text-sm font-medium text-foreground">Return after</p>
+          <p className="text-sm font-medium text-foreground">{t("act.returnAfter")}</p>
           <p className="text-xs text-muted-foreground">
-            Come back to this flow after the target flow completes
+            {t("act.returnAfterHint")}
           </p>
         </div>
       </div>
@@ -318,17 +325,18 @@ function GoToFlowConfig({ data, onChange }: ActionSubPanelProps) {
 /* ───────── Subscribe / Unsubscribe Config ───────── */
 function SubscribeConfig({ data, onChange }: ActionSubPanelProps) {
   const isSubscribe = data.actionType === "subscribe";
+  const t = useT("builder");
 
   return (
     <div className="space-y-4">
       <div className="rounded-lg border border-border bg-muted p-4">
         <p className="text-sm font-medium text-foreground">
-          {isSubscribe ? "Subscribe Contact" : "Unsubscribe Contact"}
+          {isSubscribe ? t("act.subscribeTitle") : t("act.unsubscribeTitle")}
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
           {isSubscribe
-            ? "This will mark the contact as subscribed. They will receive broadcasts and automated messages."
-            : "This will mark the contact as unsubscribed. They will stop receiving broadcasts and most automated messages."}
+            ? t("act.subscribeHint")
+            : t("act.unsubscribeHint")}
         </p>
       </div>
 
@@ -343,9 +351,9 @@ function SubscribeConfig({ data, onChange }: ActionSubPanelProps) {
           <div className="peer h-5 w-9 rounded-full bg-muted after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:bg-card after:transition-all peer-checked:bg-muted0 peer-checked:after:translate-x-full peer-focus:ring-2 peer-focus:ring-ring" />
         </label>
         <div>
-          <p className="text-sm font-medium text-foreground">I confirm this action</p>
+          <p className="text-sm font-medium text-foreground">{t("act.confirm")}</p>
           <p className="text-xs text-muted-foreground">
-            This action will affect the contact&apos;s subscription status
+            {t("act.confirmHint")}
           </p>
         </div>
       </div>
@@ -355,28 +363,29 @@ function SubscribeConfig({ data, onChange }: ActionSubPanelProps) {
 
 /* ───────── Human Takeover Config ───────── */
 function HumanTakeoverConfig({ data, onChange }: ActionSubPanelProps) {
+  const t = useT("builder");
   return (
     <div className="space-y-4">
       <div className="rounded-lg border border-border bg-muted p-4">
-        <p className="text-sm font-medium text-foreground">Hand off to a human agent</p>
+        <p className="text-sm font-medium text-foreground">{t("act.handOff")}</p>
         <p className="mt-1 text-xs text-muted-foreground">
-          The flow will pause and the conversation will be marked for human takeover. Automation will stop until an agent resumes it.
+          {t("act.takeoverHint")}
         </p>
       </div>
 
       <div>
         <label className="mb-2 block text-xs font-semibold text-foreground">
-          Internal note (optional)
+          {t("act.note")}
         </label>
         <textarea
           value={data.message || ""}
           onChange={(e) => onChange({ ...data, message: e.target.value })}
-          placeholder="Add context for the agent..."
+          placeholder={t("act.notePlaceholder")}
           rows={3}
           className="w-full resize-none rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
         />
         <p className="mt-1.5 text-xs text-muted-foreground">
-          This message will be visible to agents as an internal note.
+          {t("act.noteHint")}
         </p>
       </div>
     </div>
@@ -391,6 +400,7 @@ function ABSplitConfig({ data, onChange }: ActionSubPanelProps) {
   ];
 
   const totalWeight = paths.reduce((sum, p) => sum + p.weight, 0);
+  const t = useT("builder");
 
   const updatePath = useCallback(
     (index: number, updated: { name: string; weight: number }) => {
@@ -429,14 +439,14 @@ function ABSplitConfig({ data, onChange }: ActionSubPanelProps) {
       <div>
         <div className="mb-2 flex items-center justify-between">
           <label className="text-xs font-semibold text-foreground">
-            Traffic Distribution
+            {t("act.traffic")}
           </label>
           <button
             type="button"
             onClick={distributeEvenly}
             className="text-[11px] font-medium text-muted-foreground hover:text-foreground"
           >
-            Distribute evenly
+            {t("act.distribute")}
           </button>
         </div>
         <div className="flex h-3 overflow-hidden rounded-full bg-muted">
@@ -459,7 +469,7 @@ function ABSplitConfig({ data, onChange }: ActionSubPanelProps) {
         </div>
         {totalWeight !== 100 && (
           <p className="mt-1 text-[11px] font-medium text-red-500">
-            Total is {totalWeight}% (should be 100%)
+            {t("act.totalWarning", { total: totalWeight })}
           </p>
         )}
       </div>
@@ -522,7 +532,7 @@ function ABSplitConfig({ data, onChange }: ActionSubPanelProps) {
           className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-2 text-xs font-medium text-muted-foreground transition-colors hover:border-muted-foreground hover:text-muted-foreground"
         >
           <Plus className="h-3.5 w-3.5" />
-          Add Path
+          {t("act.addPath")}
         </button>
       )}
     </div>
@@ -531,18 +541,19 @@ function ABSplitConfig({ data, onChange }: ActionSubPanelProps) {
 
 /* ───────── Smart Delay Config ───────── */
 function SmartDelayConfig({ data, onChange }: ActionSubPanelProps) {
+  const t = useT("builder");
   return (
     <div className="space-y-4">
       <div className="rounded-lg border border-border bg-muted p-4">
-        <p className="text-sm font-medium text-foreground">Smart Delay</p>
+        <p className="text-sm font-medium text-foreground">{t("nodeTypes.smartDelay")}</p>
         <p className="mt-1 text-xs text-muted-foreground">
-          Pause the flow and wait for a user response. If no response is received within the timeout, continue to the next step.
+          {t("act.smartDelayHint")}
         </p>
       </div>
 
       <div>
         <label className="mb-2 block text-xs font-semibold text-foreground">
-          Timeout
+          {t("act.timeout")}
         </label>
         <div className="flex gap-2">
           <input
@@ -559,13 +570,13 @@ function SmartDelayConfig({ data, onChange }: ActionSubPanelProps) {
             onChange={(e) => onChange({ ...data, timeoutUnit: e.target.value })}
             className="flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
           >
-            <option value="minutes">Minutes</option>
-            <option value="hours">Hours</option>
-            <option value="days">Days</option>
+            <option value="minutes">{t("unitOptions.minutes")}</option>
+            <option value="hours">{t("unitOptions.hours")}</option>
+            <option value="days">{t("unitOptions.days")}</option>
           </select>
         </div>
         <p className="mt-1.5 text-xs text-muted-foreground">
-          If the user does not respond within this time, the flow will continue.
+          {t("act.timeoutHint")}
         </p>
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useT } from "@/lib/i18n/provider";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -17,13 +18,14 @@ export function ConfirmDialog({
   open,
   title,
   message,
-  confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
+  confirmLabel,
+  cancelLabel,
   destructive = false,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
   const confirmRef = useRef<HTMLButtonElement>(null);
+  const t = useT("common");
 
   useEffect(() => {
     if (open) {
@@ -53,7 +55,7 @@ export function ConfirmDialog({
             onClick={onCancel}
             className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-accent transition-colors"
           >
-            {cancelLabel}
+            {cancelLabel ?? t("cancel")}
           </button>
           <button
             ref={confirmRef}
@@ -64,7 +66,7 @@ export function ConfirmDialog({
                 : "bg-primary hover:opacity-90"
             }`}
           >
-            {confirmLabel}
+            {confirmLabel ?? t("confirm")}
           </button>
         </div>
       </div>

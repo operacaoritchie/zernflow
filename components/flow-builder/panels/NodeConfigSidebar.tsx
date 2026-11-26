@@ -11,6 +11,7 @@ import { ConditionPanel } from "./ConditionPanel";
 import { DelayPanel } from "./DelayPanel";
 import { ActionPanel } from "./ActionPanel";
 import { AiResponsePanel } from "./AiResponsePanel";
+import { useT } from "@/lib/i18n/provider";
 
 interface NodeConfigSidebarProps {
   node: Node;
@@ -116,6 +117,8 @@ export function NodeConfigSidebar({ node, nodes, edges, onChange, onClose, onDel
   const nodeType = node.type || "action";
   const config = nodeTypeConfig[nodeType] || nodeTypeConfig.action;
   const Icon = config.icon;
+  const t = useT("builder");
+  const typeLabel = t(`nodeTypes.${nodeTypeConfig[nodeType] ? nodeType : "action"}`);
 
   // Close on Escape
   useEffect(() => {
@@ -166,7 +169,7 @@ export function NodeConfigSidebar({ node, nodes, edges, onChange, onClose, onDel
       default:
         return (
           <p className="text-sm text-muted-foreground">
-            No configuration panel available for this node type.
+            {t("noPanel")}
           </p>
         );
     }
@@ -187,7 +190,7 @@ export function NodeConfigSidebar({ node, nodes, edges, onChange, onClose, onDel
             <Icon className="h-3.5 w-3.5" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-foreground">{config.label}</p>
+            <p className="text-sm font-semibold text-foreground">{typeLabel}</p>
             <p className="text-[11px] text-muted-foreground">
               ID: {node.id.slice(0, 12)}...
             </p>
@@ -198,7 +201,7 @@ export function NodeConfigSidebar({ node, nodes, edges, onChange, onClose, onDel
             type="button"
             onClick={() => onDelete(node.id)}
             className="rounded-lg p-1.5 text-muted-foreground/60 hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-500"
-            title="Delete node"
+            title={t("deleteNode")}
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -215,13 +218,13 @@ export function NodeConfigSidebar({ node, nodes, edges, onChange, onClose, onDel
       {/* Node Label */}
       <div className="border-b border-border px-4 py-3">
         <label className="mb-1.5 block text-xs font-semibold text-foreground">
-          Node Name
+          {t("nodeName")}
         </label>
         <input
           type="text"
           value={(node.data as Record<string, unknown>).label as string || ""}
           onChange={(e) => handleLabelChange(e.target.value)}
-          placeholder={config.label}
+          placeholder={typeLabel}
           className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
         />
       </div>

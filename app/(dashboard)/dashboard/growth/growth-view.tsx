@@ -18,6 +18,9 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import type { Database, Json } from "@/lib/types/database";
 import { PLATFORM_LABELS } from "@/lib/platforms";
+import { useT, useFormatter } from "@/lib/i18n/provider";
+import { rich } from "@/lib/i18n/rich";
+import type { Formatter, Translator } from "@/lib/i18n/translator";
 
 type Channel = Database["public"]["Tables"]["channels"]["Row"];
 type CommentLog = Database["public"]["Tables"]["comment_logs"]["Row"];
@@ -63,6 +66,10 @@ export function GrowthView({
   recentLogs: CommentLog[];
 }) {
   const [triggers, setTriggers] = useState(initialTriggers);
+  const t = useT("growth");
+  const tb = useT("builder");
+  const tc = useT("common");
+  const format = useFormatter();
   const [showCreate, setShowCreate] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -112,7 +119,7 @@ export function GrowthView({
   }
 
   async function handleDelete(triggerId: string) {
-    if (!confirm("Delete this comment rule? This cannot be undone.")) return;
+    if (!confirm(t("deleteConfirm"))) return;
     setDeletingId(triggerId);
     const supabase = createClient();
 
@@ -290,10 +297,10 @@ export function GrowthView({
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">
-              Growth Tools
+              {t("title")}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Comment-to-DM automation for lead capture and engagement
+              {t("subtitle")}
             </p>
           </div>
           <button
@@ -302,7 +309,7 @@ export function GrowthView({
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
           >
             <Plus className="h-4 w-4" />
-            New Comment Rule
+            {t("newRule")}
           </button>
         </div>
       </div>
@@ -311,28 +318,28 @@ export function GrowthView({
         {/* Stats cards */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            label="Comments Processed"
+            label={t("statProcessed")}
             value={stats.totalComments}
             icon={<Eye className="h-4 w-4" />}
-            sublabel="Last 30 days"
+            sublabel={t("last30")}
           />
           <StatCard
-            label="Keywords Matched"
+            label={t("statMatched")}
             value={stats.matchedComments}
             icon={<MessageCircle className="h-4 w-4" />}
-            sublabel="Last 30 days"
+            sublabel={t("last30")}
           />
           <StatCard
-            label="DMs Sent"
+            label={t("statDms")}
             value={stats.dmsSent}
             icon={<Send className="h-4 w-4" />}
-            sublabel="Last 30 days"
+            sublabel={t("last30")}
           />
           <StatCard
-            label="Conversion Rate"
+            label={t("statConversion")}
             value={`${conversionRate}%`}
             icon={<TrendingUp className="h-4 w-4" />}
-            sublabel="Comments to DMs"
+            sublabel={t("commentsToDms")}
           />
         </div>
 
@@ -341,7 +348,7 @@ export function GrowthView({
           <div ref={createFormRef} className="mt-6 rounded-xl border border-border bg-card p-6">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-foreground">
-                {editingId ? "Edit Comment-to-DM Rule" : "Create Comment-to-DM Rule"}
+                {editingId ? t("editRule") : t("createRuleTitle")}
               </h2>
               <button
                 onClick={handleCancelForm}
@@ -355,7 +362,7 @@ export function GrowthView({
               {/* Channel */}
               <div>
                 <label className="text-xs font-medium text-muted-foreground">
-                  Channel
+                  {t("channel")}
                 </label>
                 <select
                   value={form.channelId}
@@ -376,7 +383,7 @@ export function GrowthView({
               {/* Flow */}
               <div>
                 <label className="text-xs font-medium text-muted-foreground">
-                  Response Flow
+                  {t("responseFlow")}
                 </label>
                 <select
                   value={form.flowId}
@@ -396,7 +403,7 @@ export function GrowthView({
               {/* Keywords */}
               <div>
                 <label className="text-xs font-medium text-muted-foreground">
-                  Keywords (comma-separated)
+                  {t("keywords")}
                 </label>
                 <input
                   type="text"
@@ -404,7 +411,7 @@ export function GrowthView({
                   onChange={(e) =>
                     setForm((f) => ({ ...f, keywords: e.target.value }))
                   }
-                  placeholder="info, price, details"
+                  placeholder={t("keywordsPlaceholder")}
                   className="mt-1.5 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
@@ -412,7 +419,7 @@ export function GrowthView({
               {/* Match Type */}
               <div>
                 <label className="text-xs font-medium text-muted-foreground">
-                  Match Type
+                  {t("matchType")}
                 </label>
                 <select
                   value={form.matchType}
@@ -427,16 +434,16 @@ export function GrowthView({
                   }
                   className="mt-1.5 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <option value="contains">Contains</option>
-                  <option value="exact">Exact match</option>
-                  <option value="startsWith">Starts with</option>
+                  <option value="contains">{tb("match.contains")}</option>
+                  <option value="exact">{tb("match.exact")}</option>
+                  <option value="startsWith">{tb("match.startsWith")}</option>
                 </select>
               </div>
 
               {/* Public reply text (optional) */}
               <div className="sm:col-span-2">
                 <label className="text-xs font-medium text-muted-foreground">
-                  Public Reply (optional)
+                  {t("publicReply")}
                 </label>
                 <input
                   type="text"
@@ -444,19 +451,18 @@ export function GrowthView({
                   onChange={(e) =>
                     setForm((f) => ({ ...f, replyText: e.target.value }))
                   }
-                  placeholder="Check your DMs! We just sent you more info."
+                  placeholder={t("publicReplyPlaceholder")}
                   className="mt-1.5 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary"
                 />
                 <p className="mt-1 text-[11px] text-muted-foreground/60">
-                  If set, this will be posted as a public reply to the matching
-                  comment before sending the DM.
+                  {t("publicReplyHint")}
                 </p>
               </div>
 
               {/* Post IDs (optional) */}
               <div className="sm:col-span-2">
                 <label className="text-xs font-medium text-muted-foreground">
-                  Specific Post IDs (optional, comma-separated)
+                  {t("postIds")}
                 </label>
                 <input
                   type="text"
@@ -464,12 +470,11 @@ export function GrowthView({
                   onChange={(e) =>
                     setForm((f) => ({ ...f, postIds: e.target.value }))
                   }
-                  placeholder="Leave empty to match comments on all posts"
+                  placeholder={t("postIdsPlaceholder")}
                   className="mt-1.5 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary"
                 />
                 <p className="mt-1 text-[11px] text-muted-foreground/60">
-                  Limit this rule to specific Zernio post IDs. If empty, all posts
-                  on this channel are monitored.
+                  {t("postIdsHint")}
                 </p>
               </div>
             </div>
@@ -479,7 +484,7 @@ export function GrowthView({
                 onClick={handleCancelForm}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
               >
-                Cancel
+                {tc("cancel")}
               </button>
               {editingId ? (
                 <button
@@ -489,7 +494,7 @@ export function GrowthView({
                   }
                   className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
                 >
-                  {saving ? "Saving..." : "Save Changes"}
+                  {saving ? tc("saving") : t("saveChanges")}
                 </button>
               ) : (
                 <button
@@ -499,7 +504,7 @@ export function GrowthView({
                   }
                   className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
                 >
-                  {creating ? "Creating..." : "Create Rule"}
+                  {creating ? tc("creating") : t("createRule")}
                 </button>
               )}
             </div>
@@ -511,16 +516,16 @@ export function GrowthView({
           <div className="mt-8 rounded-xl border border-dashed border-input p-8 text-center">
             <MessageCircle className="mx-auto h-10 w-10 text-muted-foreground/50" />
             <h2 className="mt-3 text-lg font-semibold text-foreground">
-              Connect a channel first
+              {t("needChannel")}
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              You need at least one active channel to set up comment automation.
+              {t("needChannelHint")}
             </p>
             <a
               href="/dashboard/channels"
               className="mt-4 inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
             >
-              Go to Channels
+              {t("goChannels")}
             </a>
           </div>
         )}
@@ -529,17 +534,16 @@ export function GrowthView({
           <div className="mt-8 rounded-xl border border-dashed border-input p-8 text-center">
             <MessageCircle className="mx-auto h-10 w-10 text-muted-foreground/50" />
             <h2 className="mt-3 text-lg font-semibold text-foreground">
-              Create a flow first
+              {t("needFlow")}
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Publish at least one flow to use as the DM response when comments
-              match your keywords.
+              {t("needFlowHint")}
             </p>
             <Link
               href="/dashboard/flows"
               className="mt-4 inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
             >
-              Go to Flows
+              {t("goFlows")}
             </Link>
           </div>
         )}
@@ -548,11 +552,10 @@ export function GrowthView({
         {triggers.length > 0 && (
           <div className="mt-8">
             <h2 className="text-lg font-semibold text-foreground">
-              Active Comment Rules
+              {t("activeRules")}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              When a comment matches a keyword, the linked flow sends a DM to
-              the commenter.
+              {t("activeRulesHint")}
             </p>
 
             <div className="mt-4 space-y-3">
@@ -590,7 +593,7 @@ export function GrowthView({
                                   : "bg-muted-foreground"
                               )}
                             />
-                            {trigger.is_active ? "Active" : "Paused"}
+                            {trigger.is_active ? tc("active") : tc("paused")}
                           </span>
 
                           {channel && (
@@ -603,7 +606,7 @@ export function GrowthView({
 
                           {!trigger.channel_id && (
                             <span className="text-xs text-muted-foreground">
-                              All channels
+                              {t("allChannels")}
                             </span>
                           )}
                         </div>
@@ -624,24 +627,26 @@ export function GrowthView({
 
                         {/* Flow name */}
                         <p className="mt-2 text-xs text-muted-foreground">
-                          Flow:{" "}
-                          <span className="font-medium text-foreground">
-                            {trigger.flows?.name || "Unknown"}
-                          </span>
+                          {rich(t("flowLabel"), {
+                            name: (
+                              <span className="font-medium text-foreground">
+                                {trigger.flows?.name || tc("unknown")}
+                              </span>
+                            ),
+                          })}
                         </p>
 
                         {/* Reply text preview */}
                         {config.replyText && (
                           <p className="mt-1 text-xs text-muted-foreground/60">
-                            Public reply: &ldquo;{config.replyText}&rdquo;
+                            {t("publicReplyPreview", { text: config.replyText })}
                           </p>
                         )}
 
                         {/* Post IDs */}
                         {config.postIds?.length ? (
                           <p className="mt-1 text-xs text-muted-foreground/60">
-                            Limited to {config.postIds.length} post
-                            {config.postIds.length !== 1 ? "s" : ""}
+                            {t("limitedTo", { count: config.postIds.length })}
                           </p>
                         ) : null}
                       </div>
@@ -651,7 +656,7 @@ export function GrowthView({
                         <button
                           onClick={() => handleStartEdit(trigger)}
                           className="rounded-lg p-2 text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground"
-                          title="Edit rule"
+                          title={t("editRuleTitle")}
                         >
                           <Pencil className="h-4 w-4" />
                         </button>
@@ -665,7 +670,7 @@ export function GrowthView({
                               : "text-muted-foreground/60 hover:bg-muted"
                           )}
                           title={
-                            trigger.is_active ? "Pause rule" : "Activate rule"
+                            trigger.is_active ? t("pauseRule") : t("activateRule")
                           }
                         >
                           {trigger.is_active ? (
@@ -678,7 +683,7 @@ export function GrowthView({
                           onClick={() => handleDelete(trigger.id)}
                           disabled={deletingId === trigger.id}
                           className="rounded-lg p-2 text-muted-foreground/60 transition-colors hover:bg-red-50 hover:text-red-600"
-                          title="Delete rule"
+                          title={t("deleteRule")}
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -695,10 +700,10 @@ export function GrowthView({
         {recentLogs.length > 0 && (
           <div className="mt-8">
             <h2 className="text-lg font-semibold text-foreground">
-              Recent Activity
+              {t("recent")}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Latest processed comments and their outcomes.
+              {t("recentHint")}
             </p>
 
             <div className="mt-4 overflow-hidden rounded-xl border border-border">
@@ -706,19 +711,19 @@ export function GrowthView({
                 <thead>
                   <tr className="border-b border-border bg-muted">
                     <th className="px-4 py-3 text-xs font-medium text-muted-foreground">
-                      Author
+                      {t("author")}
                     </th>
                     <th className="px-4 py-3 text-xs font-medium text-muted-foreground">
-                      Comment
+                      {t("comment")}
                     </th>
                     <th className="px-4 py-3 text-xs font-medium text-muted-foreground">
-                      Matched
+                      {t("matched")}
                     </th>
                     <th className="px-4 py-3 text-xs font-medium text-muted-foreground">
-                      DM
+                      {t("dm")}
                     </th>
                     <th className="px-4 py-3 text-xs font-medium text-muted-foreground">
-                      Time
+                      {t("time")}
                     </th>
                   </tr>
                 </thead>
@@ -730,7 +735,7 @@ export function GrowthView({
                     >
                       <td className="px-4 py-3">
                         <p className="text-sm font-medium text-foreground">
-                          {log.author_name || log.author_username || "Unknown"}
+                          {log.author_name || log.author_username || tc("unknown")}
                         </p>
                         {log.author_username && (
                           <p className="text-xs text-muted-foreground/60">
@@ -744,25 +749,25 @@ export function GrowthView({
                       <td className="px-4 py-3">
                         {log.matched_trigger_id ? (
                           <span className="inline-flex rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700">
-                            Yes
+                            {tb("yes")}
                           </span>
                         ) : (
                           <span className="inline-flex rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                            No
+                            {tb("no")}
                           </span>
                         )}
                       </td>
                       <td className="px-4 py-3">
                         {log.dm_sent ? (
                           <span className="inline-flex rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-medium text-blue-700">
-                            Sent
+                            {t("sent")}
                           </span>
                         ) : log.error ? (
                           <span
                             className="inline-flex rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-medium text-red-700"
                             title={log.error}
                           >
-                            Error
+                            {tc("error")}
                           </span>
                         ) : (
                           <span className="text-xs text-muted-foreground/60">
@@ -771,7 +776,7 @@ export function GrowthView({
                         )}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-xs text-muted-foreground/60">
-                        {formatRelativeTime(log.created_at)}
+                        {formatRelativeTime(log.created_at, t, format)}
                       </td>
                     </tr>
                   ))}
@@ -812,22 +817,22 @@ function StatCard({
   );
 }
 
-function formatRelativeTime(dateStr: string): string {
+function formatRelativeTime(dateStr: string, t: Translator, format: Formatter): string {
   const now = Date.now();
   const date = new Date(dateStr).getTime();
   const diffMs = now - date;
   const diffMin = Math.floor(diffMs / 60000);
 
-  if (diffMin < 1) return "Just now";
-  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffMin < 1) return t("justNow");
+  if (diffMin < 60) return format.relative(-diffMin, "minute");
 
   const diffHour = Math.floor(diffMin / 60);
-  if (diffHour < 24) return `${diffHour}h ago`;
+  if (diffHour < 24) return format.relative(-diffHour, "hour");
 
   const diffDay = Math.floor(diffHour / 24);
-  if (diffDay < 7) return `${diffDay}d ago`;
+  if (diffDay < 7) return format.relative(-diffDay, "day");
 
-  return new Date(dateStr).toLocaleDateString([], {
+  return format.date(dateStr, {
     month: "short",
     day: "numeric",
   });

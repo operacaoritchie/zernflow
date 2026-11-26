@@ -6,12 +6,14 @@ import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { PlatformIcon } from "@/components/platform-icon";
 import type { Database, Platform, ConversationStatus } from "@/lib/types/database";
+import { useT, useFormatter } from "@/lib/i18n/provider";
+import type { Formatter, Translator } from "@/lib/i18n/translator";
 
 type Conversation = Database["public"]["Tables"]["conversations"]["Row"] & {
   contacts: Database["public"]["Tables"]["contacts"]["Row"] | null;
 };
 
-function formatTime(dateStr: string | null): string {
+function formatTime(dateStr: string | null, t: Translator, format: Formatter): string {
   if (!dateStr) return "";
   const date = new Date(dateStr);
   const now = new Date();
@@ -19,13 +21,13 @@ function formatTime(dateStr: string | null): string {
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
   if (diffDays === 0) {
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return format.time(date, { hour: "2-digit", minute: "2-digit" });
   }
-  if (diffDays === 1) return "Yesterday";
+  if (diffDays === 1) return t("yesterday");
   if (diffDays < 7) {
-    return date.toLocaleDateString([], { weekday: "short" });
+    return format.date(date, { weekday: "short" });
   }
-  return date.toLocaleDateString([], { month: "short", day: "numeric" });
+  return format.date(date, { month: "short", day: "numeric" });
 }
 
 export function ConversationList({
@@ -41,6 +43,9 @@ export function ConversationList({
 }) {
   const [conversations, setConversations] = useState(initialConversations);
   const [search, setSearch] = useState("");
+  const t = useT("inbox");
+  const tc = useT("common");
+  const format = useFormatter();
   const [statusFilter, setStatusFilter] = useState<ConversationStatus | "all">("open");
   // Relative timestamps depend on the client's clock/locale, which differ from the
   // server's during SSR and trigger a hydration mismatch (React #418, which crashes
@@ -115,9 +120,9 @@ export function ConversationList({
     <div className="flex h-full flex-col border-r border-border bg-background">
       {/* Header */}
       <div className="flex h-14 items-center justify-between border-b border-border px-4">
-        <h2 className="text-sm font-semibold">Inbox</h2>
+        <h2 className="text-sm font-semibold">{t("title")}</h2>
         <span className="text-xs text-muted-foreground">
-          {filtered.length} conversation{filtered.length !== 1 ? "s" : ""}
+          {t("conversationCount", { count: filtered.length })}
         </span>
       </div>
 
@@ -127,7 +132,7 @@ export function ConversationList({
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search conversations..."
+            placeholder={t("searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-lg border border-input bg-background py-2 pl-9 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -142,13 +147,13 @@ export function ConversationList({
             key={status}
             onClick={() => setStatusFilter(status)}
             className={cn(
-              "rounded-md px-2.5 py-1 text-xs font-medium capitalize transition-colors",
+              "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
               statusFilter === status
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             )}
           >
-            {status}
+            {t(`status.${status}`)}
           </button>
         ))}
       </div>
@@ -158,7 +163,7 @@ export function ConversationList({
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <MessageSquare className="h-8 w-8 text-muted-foreground/50" />
-            <p className="mt-2 text-sm text-muted-foreground">No conversations found</p>
+            <p className="mt-2 text-sm text-muted-foreground">{t("noneFound")}</p>
           </div>
         ) : (
           filtered.map((conversation) => (
@@ -196,18 +201,18 @@ export function ConversationList({
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between">
                   <p className="truncate text-sm font-medium">
-                    {conversation.contacts?.display_name ?? "Unknown"}
+                    {conversation.contacts?.display_name ?? tc("unknown")}
                   </p>
                   <span
                     suppressHydrationWarning
                     className="flex-shrink-0 text-[11px] text-muted-foreground"
                   >
-                    {mounted ? formatTime(conversation.last_message_at) : ""}
+                    {mounted ? formatTime(conversation.last_message_at, t, format) : ""}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                    {conversation.last_message_preview ?? "No messages yet"}
+                    {conversation.last_message_preview ?? t("noMessages")}
                   </p>
                   {conversation.unread_count > 0 && (
                     <span className="ml-2 flex h-5 min-w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">

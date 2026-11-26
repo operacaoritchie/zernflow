@@ -3,8 +3,11 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Loader2 } from "lucide-react";
+import { useT } from "@/lib/i18n/provider";
 
 export function CreateFlowButton() {
+  const t = useT("flows");
+  const tc = useT("common");
   const router = useRouter();
   const [creating, setCreating] = useState(false);
   const pendingRef = useRef(false);
@@ -18,12 +21,12 @@ export function CreateFlowButton() {
       const res = await fetch("/api/v1/flows", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "Untitled Flow" }),
+        body: JSON.stringify({ name: t("untitled") }),
       });
 
       if (!res.ok) {
         console.error("Failed to create flow");
-        alert("Failed to create flow. Please try again.");
+        alert(t("createFailed"));
         return;
       }
 
@@ -31,7 +34,7 @@ export function CreateFlowButton() {
       router.push(`/dashboard/flows/${flow.id}`);
     } catch (err) {
       console.error("Failed to create flow:", err);
-      alert("Failed to create flow. Please try again.");
+      alert(t("createFailed"));
     } finally {
       pendingRef.current = false;
       setCreating(false);
@@ -49,7 +52,7 @@ export function CreateFlowButton() {
       ) : (
         <Plus className="h-4 w-4" />
       )}
-      {creating ? "Creating..." : "New Flow"}
+      {creating ? tc("creating") : t("newFlow")}
     </button>
   );
 }

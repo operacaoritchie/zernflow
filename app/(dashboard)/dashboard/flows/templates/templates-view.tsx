@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Sparkles,
@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { useT } from "@/lib/i18n/provider";
+import type { Translator } from "@/lib/i18n/translator";
 
 // --- Template types ---
 
@@ -46,13 +48,16 @@ interface FlowTemplate {
 
 // --- Built-in templates ---
 
-const templates: FlowTemplate[] = [
+function buildTemplates(t: Translator): FlowTemplate[] {
+  const faqKeywords = t("faq.keywords").split(",");
+  return [
+
   {
     id: "welcome-flow",
-    name: "Welcome Flow",
+    name: t("welcome.name"),
     description:
-      "Greet new users with a welcome message, wait a minute, then send a follow-up to keep them engaged.",
-    category: "Onboarding",
+      t("welcome.description"),
+    category: t("welcome.category"),
     icon: MessageSquare,
     iconColor: "text-blue-600",
     iconBg: "bg-blue-100",
@@ -62,7 +67,7 @@ const templates: FlowTemplate[] = [
         type: "trigger",
         position: { x: 250, y: 0 },
         data: {
-          label: "Welcome Trigger",
+          label: t("welcome.trigger"),
           triggerType: "welcome",
           config: {},
         },
@@ -72,8 +77,8 @@ const templates: FlowTemplate[] = [
         type: "sendMessage",
         position: { x: 250, y: 150 },
         data: {
-          label: "Greeting",
-          text: "Hey there! Welcome! We're glad to have you here. How can we help you today?",
+          label: t("welcome.greeting"),
+          text: t("welcome.greetingText"),
         },
       },
       {
@@ -81,7 +86,7 @@ const templates: FlowTemplate[] = [
         type: "delay",
         position: { x: 250, y: 300 },
         data: {
-          label: "Wait 1 minute",
+          label: t("welcome.wait"),
           duration: 60,
           unit: "seconds",
         },
@@ -91,8 +96,8 @@ const templates: FlowTemplate[] = [
         type: "sendMessage",
         position: { x: 250, y: 450 },
         data: {
-          label: "Follow-up",
-          text: "By the way, feel free to ask me anything. I'm here to help!",
+          label: t("welcome.followUp"),
+          text: t("welcome.followUpText"),
         },
       },
     ],
@@ -104,10 +109,10 @@ const templates: FlowTemplate[] = [
   },
   {
     id: "faq-bot",
-    name: "FAQ Bot",
+    name: t("faq.name"),
     description:
-      'Respond to "help" or "faq" keywords by checking the message and routing to different answer branches.',
-    category: "Support",
+      t("faq.description"),
+    category: t("faq.category"),
     icon: HelpCircle,
     iconColor: "text-amber-600",
     iconBg: "bg-amber-100",
@@ -117,9 +122,9 @@ const templates: FlowTemplate[] = [
         type: "trigger",
         position: { x: 250, y: 0 },
         data: {
-          label: "FAQ Trigger",
+          label: t("faq.trigger"),
           triggerType: "keyword",
-          config: { keywords: ["help", "faq"] },
+          config: { keywords: faqKeywords },
         },
       },
       {
@@ -127,13 +132,13 @@ const templates: FlowTemplate[] = [
         type: "condition",
         position: { x: 250, y: 150 },
         data: {
-          label: "Check keyword",
+          label: t("faq.check"),
           conditions: [
             {
               id: "c1",
               field: "trigger_keyword",
               operator: "equals",
-              value: "help",
+              value: faqKeywords[0],
             },
           ],
         },
@@ -143,8 +148,8 @@ const templates: FlowTemplate[] = [
         type: "sendMessage",
         position: { x: 50, y: 350 },
         data: {
-          label: "Help response",
-          text: "Here are some things I can help you with:\n- Pricing info\n- Account setup\n- Technical support\n\nJust type your question and I'll do my best!",
+          label: t("faq.help"),
+          text: t("faq.helpText"),
         },
       },
       {
@@ -152,8 +157,8 @@ const templates: FlowTemplate[] = [
         type: "sendMessage",
         position: { x: 450, y: 350 },
         data: {
-          label: "FAQ response",
-          text: "Here are our most frequently asked questions:\n\n1. How do I get started?\n2. What plans are available?\n3. How do I contact support?\n\nReply with a number for more details!",
+          label: t("faq.faq"),
+          text: t("faq.faqText"),
         },
       },
     ],
@@ -175,10 +180,10 @@ const templates: FlowTemplate[] = [
   },
   {
     id: "lead-capture",
-    name: "Lead Capture",
+    name: t("lead.name"),
     description:
-      "Collect lead information step by step: ask for name, wait for response, save it, then ask for email and tag the contact.",
-    category: "Marketing",
+      t("lead.description"),
+    category: t("lead.category"),
     icon: UserPlus,
     iconColor: "text-green-600",
     iconBg: "bg-green-100",
@@ -188,9 +193,9 @@ const templates: FlowTemplate[] = [
         type: "trigger",
         position: { x: 250, y: 0 },
         data: {
-          label: "Lead Trigger",
+          label: t("lead.trigger"),
           triggerType: "keyword",
-          config: { keywords: ["interested", "info", "pricing"] },
+          config: { keywords: t("lead.keywords").split(",") },
         },
       },
       {
@@ -198,8 +203,8 @@ const templates: FlowTemplate[] = [
         type: "sendMessage",
         position: { x: 250, y: 120 },
         data: {
-          label: "Ask name",
-          text: "Great, I'd love to help! What's your name?",
+          label: t("lead.askName"),
+          text: t("lead.askNameText"),
         },
       },
       {
@@ -207,7 +212,7 @@ const templates: FlowTemplate[] = [
         type: "smartDelay",
         position: { x: 250, y: 240 },
         data: {
-          label: "Wait for name",
+          label: t("lead.waitName"),
           waitForInput: true,
           timeout: 300,
         },
@@ -217,7 +222,7 @@ const templates: FlowTemplate[] = [
         type: "setCustomField",
         position: { x: 250, y: 360 },
         data: {
-          label: "Save name",
+          label: t("lead.saveName"),
           fieldSlug: "name",
           value: "{{last_message}}",
         },
@@ -227,8 +232,8 @@ const templates: FlowTemplate[] = [
         type: "sendMessage",
         position: { x: 250, y: 480 },
         data: {
-          label: "Ask email",
-          text: "Thanks, {{name}}! What's your email address so we can send you more details?",
+          label: t("lead.askEmail"),
+          text: t("lead.askEmailText"),
         },
       },
       {
@@ -236,7 +241,7 @@ const templates: FlowTemplate[] = [
         type: "smartDelay",
         position: { x: 250, y: 600 },
         data: {
-          label: "Wait for email",
+          label: t("lead.waitEmail"),
           waitForInput: true,
           timeout: 300,
         },
@@ -246,7 +251,7 @@ const templates: FlowTemplate[] = [
         type: "setCustomField",
         position: { x: 250, y: 720 },
         data: {
-          label: "Save email",
+          label: t("lead.saveEmail"),
           fieldSlug: "email",
           value: "{{last_message}}",
         },
@@ -256,7 +261,7 @@ const templates: FlowTemplate[] = [
         type: "addTag",
         position: { x: 250, y: 840 },
         data: {
-          label: 'Add "lead" tag',
+          label: t("lead.addTag"),
           tagName: "lead",
         },
       },
@@ -271,12 +276,18 @@ const templates: FlowTemplate[] = [
       { id: "e7", source: "set-email", target: "tag-lead" },
     ],
   },
-];
+  ];
+}
 
 // --- Component ---
 
 export function TemplatesView({ workspaceId }: { workspaceId: string }) {
   const router = useRouter();
+  const t = useT("templates");
+  const tf = useT("flows");
+  const tn = useT("nav");
+  const tc = useT("common");
+  const templates = useMemo(() => buildTemplates(t), [t]);
   const [creating, setCreating] = useState<string | null>(null);
   const pendingRef = useRef(false);
 
@@ -322,21 +333,21 @@ export function TemplatesView({ workspaceId }: { workspaceId: string }) {
                 className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Flows
+                {tn("flows")}
               </Link>
             </div>
-            <h1 className="text-2xl font-bold">Flow Templates</h1>
+            <h1 className="text-2xl font-bold">{t("title")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Start with a pre-built flow and customize it to your needs
+              {t("subtitle")}
             </p>
           </div>
           <button
             disabled
             className="inline-flex items-center gap-2 rounded-lg border border-dashed border-border px-4 py-2 text-sm font-medium text-muted-foreground cursor-not-allowed opacity-60"
-            title="Coming soon"
+            title={t("comingSoon")}
           >
             <BookmarkPlus className="h-4 w-4" />
-            Save Current Flow as Template
+            {t("saveAsTemplate")}
           </button>
         </div>
       </div>
@@ -381,7 +392,7 @@ export function TemplatesView({ workspaceId }: { workspaceId: string }) {
                 <div className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
                   <GitBranch className="h-3 w-3" />
                   <span>
-                    {nodeCount} {nodeCount === 1 ? "node" : "nodes"}
+                    {tf("nodeCount", { count: nodeCount })}
                   </span>
                 </div>
 
@@ -394,12 +405,12 @@ export function TemplatesView({ workspaceId }: { workspaceId: string }) {
                   {isCreating ? (
                     <span className="inline-flex items-center gap-2">
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      Creating...
+                      {tc("creating")}
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-2">
                       <Sparkles className="h-3.5 w-3.5" />
-                      Use Template
+                      {t("useTemplate")}
                     </span>
                   )}
                 </button>

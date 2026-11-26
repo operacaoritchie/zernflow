@@ -7,26 +7,27 @@ import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { PlatformIcon } from "@/components/platform-icon";
 import type { Database, ConversationStatus } from "@/lib/types/database";
+import { useT, useFormatter } from "@/lib/i18n/provider";
+import type { Formatter, Translator } from "@/lib/i18n/translator";
 
 type Message = Database["public"]["Tables"]["messages"]["Row"];
 type Conversation = Database["public"]["Tables"]["conversations"]["Row"] & {
   contacts: Database["public"]["Tables"]["contacts"]["Row"] | null;
 };
 
-function formatMessageTime(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+function formatMessageTime(dateStr: string, format: Formatter): string {
+  return format.time(dateStr, { hour: "2-digit", minute: "2-digit" });
 }
 
-function formatDateSeparator(dateStr: string): string {
+function formatDateSeparator(dateStr: string, t: Translator, format: Formatter): string {
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) return "Today";
-  if (diffDays === 1) return "Yesterday";
-  return date.toLocaleDateString([], {
+  if (diffDays === 0) return t("today");
+  if (diffDays === 1) return t("yesterday");
+  return format.date(date, {
     weekday: "long",
     month: "short",
     day: "numeric",
@@ -44,6 +45,8 @@ function shouldShowDateSeparator(
 }
 
 function MessageBubble({ message }: { message: Message }) {
+  const t = useT("inbox");
+  const format = useFormatter();
   const isInbound = message.direction === "inbound";
   const isBot = message.sent_by_flow_id !== null;
 
@@ -73,7 +76,7 @@ function MessageBubble({ message }: { message: Message }) {
           {message.attachments && (
             <div className="mt-1">
               <Paperclip className="inline h-3 w-3" />
-              <span className="ml-1 text-xs opacity-70">Attachment</span>
+              <span className="ml-1 text-xs opacity-70">{t("attachment")}</span>
             </div>
           )}
         </div>
@@ -86,13 +89,13 @@ function MessageBubble({ message }: { message: Message }) {
           {isBot && (
             <Bot className="h-3 w-3" />
           )}
-          <span>{formatMessageTime(message.created_at)}</span>
+          <span>{formatMessageTime(message.created_at, format)}</span>
           {!isInbound && message.status !== "sent" && (
-            <span className="capitalize">
+            <span>
               {message.status === "delivered"
-                ? "Delivered"
+                ? t("delivered")
                 : message.status === "failed"
-                ? "Failed"
+                ? t("failed")
                 : ""}
             </span>
           )}
@@ -122,6 +125,9 @@ export function MessageThread({
 }) {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const t = useT("inbox");
+  const tc = useT("common");
+  const format = useFormatter();
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [statusUpdating, setStatusUpdating] = useState<string | null>(null);
@@ -140,7 +146,7 @@ export function MessageThread({
       if (error) throw error;
       router.refresh();
     } catch {
-      alert(`Failed to update conversation status`);
+      alert(t("statusUpdateFailed"));
     } finally {
       setStatusUpdating(null);
     }
@@ -238,7 +244,7 @@ export function MessageThread({
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || `Send failed (${res.status})`);
+        throw new Error(errorData.error || t("sendFailed", { status: res.status }));
       }
 
       const confirmedMessage: Message = await res.json();
@@ -265,10 +271,10 @@ export function MessageThread({
       <div className="flex h-full flex-col items-center justify-center bg-background text-center">
         <MessageSquare className="h-12 w-12 text-muted-foreground/30" />
         <h3 className="mt-4 text-sm font-medium text-muted-foreground">
-          Select a conversation
+          {t("selectConversation")}
         </h3>
         <p className="mt-1 text-xs text-muted-foreground/70">
-          Choose a conversation from the list to view messages
+          {t("selectHint")}
         </p>
       </div>
     );
@@ -301,7 +307,7 @@ export function MessageThread({
           </div>
           <div>
             <p className="text-sm font-medium">
-              {conversation.contacts?.display_name ?? "Unknown"}
+              {conversation.contacts?.display_name ?? tc("unknown")}
             </p>
           </div>
         </div>
@@ -309,7 +315,7 @@ export function MessageThread({
         <div className="flex items-center gap-2">
           <span
             className={cn(
-              "rounded-full px-2 py-0.5 text-[10px] font-medium capitalize",
+              "rounded-full px-2 py-0.5 text-[10px] font-medium",
               conversation.status === "open"
                 ? "bg-green-100 text-green-700"
                 : conversation.status === "snoozed"
@@ -317,11 +323,11 @@ export function MessageThread({
                 : "bg-muted text-muted-foreground"
             )}
           >
-            {conversation.status}
+            {t(`statusOne.${conversation.status}`)}
           </span>
           {conversation.is_automation_paused && (
             <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-medium text-orange-700">
-              Bot paused
+              {t("botPaused")}
             </span>
           )}
           <div className="flex items-center gap-1">
@@ -329,8 +335,8 @@ export function MessageThread({
               <button
                 onClick={() => updateConversationStatus("closed")}
                 disabled={!!statusUpdating}
-                title="Close conversation"
-                aria-label="Close conversation"
+                title={t("close")}
+                aria-label={t("close")}
                 className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors disabled:opacity-50"
               >
                 {statusUpdating === "closed" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
@@ -340,8 +346,8 @@ export function MessageThread({
               <button
                 onClick={() => updateConversationStatus("snoozed")}
                 disabled={!!statusUpdating}
-                title="Snooze conversation"
-                aria-label="Snooze conversation"
+                title={t("snooze")}
+                aria-label={t("snooze")}
                 className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors disabled:opacity-50"
               >
                 {statusUpdating === "snoozed" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Clock className="h-3.5 w-3.5" />}
@@ -351,8 +357,8 @@ export function MessageThread({
               <button
                 onClick={() => updateConversationStatus("open")}
                 disabled={!!statusUpdating}
-                title="Reopen conversation"
-                aria-label="Reopen conversation"
+                title={t("reopen")}
+                aria-label={t("reopen")}
                 className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors disabled:opacity-50"
               >
                 {statusUpdating === "open" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
@@ -371,7 +377,7 @@ export function MessageThread({
                 <div className="my-4 flex items-center gap-3">
                   <div className="h-px flex-1 bg-border" />
                   <span className="text-[11px] text-muted-foreground">
-                    {formatDateSeparator(message.created_at)}
+                    {formatDateSeparator(message.created_at, t, format)}
                   </span>
                   <div className="h-px flex-1 bg-border" />
                 </div>
@@ -400,7 +406,7 @@ export function MessageThread({
                   handleSend();
                 }
               }}
-              placeholder="Type a message..."
+              placeholder={t("messagePlaceholder")}
               rows={1}
               className="w-full resize-none rounded-lg border border-input bg-background px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               style={{ maxHeight: 150 }}
@@ -409,7 +415,7 @@ export function MessageThread({
           <button
             onClick={handleSend}
             disabled={!input.trim() || sending}
-            aria-label="Send message"
+            aria-label={t("send")}
             className={cn(
               "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
               input.trim() && !sending

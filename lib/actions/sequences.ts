@@ -1,14 +1,16 @@
 "use server";
 
+import { getT } from "@/lib/i18n/server";
 import { getWorkspace } from "@/lib/workspace";
 import { revalidatePath } from "next/cache";
 import type { SequenceStep } from "@/lib/types/database";
 
 export async function createSequence(name: string) {
+  const t = await getT("errors");
   const { workspace, supabase } = await getWorkspace();
 
   const trimmed = name.trim();
-  if (!trimmed) return { error: "Name is required" };
+  if (!trimmed) return { error: t("nameRequired") };
 
   const { data, error } = await supabase
     .from("sequences")
@@ -31,6 +33,7 @@ export async function updateSequence(
     status?: "draft" | "active" | "paused";
   }
 ) {
+  const t = await getT("errors");
   const { workspace, supabase } = await getWorkspace();
 
   // Verify ownership
@@ -41,7 +44,7 @@ export async function updateSequence(
     .eq("workspace_id", workspace.id)
     .single();
 
-  if (!existing) return { error: "Sequence not found" };
+  if (!existing) return { error: t("sequenceNotFound") };
 
   const { data, error } = await supabase
     .from("sequences")
@@ -81,6 +84,7 @@ export async function enrollContact(
   contactId: string,
   channelId: string
 ) {
+  const t = await getT("errors");
   const { workspace, supabase } = await getWorkspace();
 
   // Verify sequence ownership
@@ -91,11 +95,11 @@ export async function enrollContact(
     .eq("workspace_id", workspace.id)
     .single();
 
-  if (!sequence) return { error: "Sequence not found" };
-  if (sequence.status !== "active") return { error: "Sequence is not active" };
+  if (!sequence) return { error: t("sequenceNotFound") };
+  if (sequence.status !== "active") return { error: t("sequenceInactive") };
 
   const steps = (sequence.steps as unknown as SequenceStep[]) || [];
-  if (steps.length === 0) return { error: "Sequence has no steps" };
+  if (steps.length === 0) return { error: t("sequenceNoSteps") };
 
   // Calculate next_step_at based on first step
   let nextStepAt: string;
@@ -122,7 +126,7 @@ export async function enrollContact(
 
   if (error) {
     if (error.code === "23505") {
-      return { error: "Contact is already enrolled in this sequence" };
+      return { error: t("alreadyEnrolled") };
     }
     return { error: error.message };
   }
@@ -132,6 +136,7 @@ export async function enrollContact(
 }
 
 export async function cancelEnrollment(enrollmentId: string) {
+  const t = await getT("errors");
   const { workspace, supabase } = await getWorkspace();
 
   // Verify the enrollment belongs to a sequence in this workspace
@@ -141,11 +146,11 @@ export async function cancelEnrollment(enrollmentId: string) {
     .eq("id", enrollmentId)
     .single();
 
-  if (!enrollment) return { error: "Enrollment not found" };
+  if (!enrollment) return { error: t("enrollmentNotFound") };
 
   const seq = enrollment.sequences as unknown as { workspace_id: string };
   if (seq.workspace_id !== workspace.id) {
-    return { error: "Enrollment not found" };
+    return { error: t("enrollmentNotFound") };
   }
 
   const { error } = await supabase

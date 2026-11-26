@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { useT } from "@/lib/i18n/provider";
 
 export default function ChannelCallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useT("channels");
   const [status, setStatus] = useState<"syncing" | "success" | "error">("syncing");
-  const [message, setMessage] = useState("Syncing your new channel...");
+  const [message, setMessage] = useState(() => t("callbackSyncing"));
 
   useEffect(() => {
     async function syncAndRedirect() {
@@ -16,7 +18,7 @@ export default function ChannelCallbackPage() {
 
       if (!connected) {
         setStatus("error");
-        setMessage("Connection was cancelled or failed.");
+        setMessage(t("callbackCancelled"));
         setTimeout(() => router.push("/dashboard/channels"), 2000);
         return;
       }
@@ -27,7 +29,7 @@ export default function ChannelCallbackPage() {
 
         if (!res.ok || data.error) {
           setStatus("error");
-          setMessage(data.error || "Failed to sync channels.");
+          setMessage(data.error || t("callbackSyncFailed"));
           setTimeout(() => router.push("/dashboard/channels"), 2000);
           return;
         }
@@ -36,19 +38,19 @@ export default function ChannelCallbackPage() {
         setStatus("success");
         setMessage(
           created > 0
-            ? `${connected} account connected successfully!`
-            : "Account connected! Channel is already synced."
+            ? t("callbackSuccess", { platform: connected })
+            : t("callbackConnected")
         );
         setTimeout(() => router.push("/dashboard/channels"), 1500);
       } catch {
         setStatus("error");
-        setMessage("Failed to sync. You can try syncing manually.");
+        setMessage(t("callbackManual"));
         setTimeout(() => router.push("/dashboard/channels"), 2000);
       }
     }
 
     syncAndRedirect();
-  }, [router, searchParams]);
+  }, [router, searchParams, t]);
 
   return (
     <div className="flex h-full items-center justify-center">
@@ -63,7 +65,7 @@ export default function ChannelCallbackPage() {
           <XCircle className="h-8 w-8 text-red-500" />
         )}
         <p className="text-sm font-medium text-foreground">{message}</p>
-        <p className="text-xs text-muted-foreground">Redirecting to channels...</p>
+        <p className="text-xs text-muted-foreground">{t("redirecting")}</p>
       </div>
     </div>
   );

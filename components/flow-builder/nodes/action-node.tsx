@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { NodeType } from "@/lib/types/database";
+import { useT } from "@/lib/i18n/provider";
+import type { Translator } from "@/lib/i18n/translator";
 
 export interface ActionNodeProps {
   label?: string;
@@ -97,15 +99,15 @@ const actionConfig: Record<
   },
 };
 
-function getSummary(nodeData: ActionNodeProps): string | null {
+function getSummary(nodeData: ActionNodeProps, t: Translator): string | null {
   const type = nodeData.actionType;
   if (!type) return null;
 
   switch (type) {
     case "addTag":
-      return nodeData.tagName ? `Add "${nodeData.tagName}"` : null;
+      return nodeData.tagName ? t("summary.addTag", { tag: nodeData.tagName }) : null;
     case "removeTag":
-      return nodeData.tagName ? `Remove "${nodeData.tagName}"` : null;
+      return nodeData.tagName ? t("summary.removeTag", { tag: nodeData.tagName }) : null;
     case "setCustomField":
       return nodeData.fieldSlug
         ? `${nodeData.fieldSlug} = ${nodeData.value || "..."}`
@@ -115,13 +117,13 @@ function getSummary(nodeData: ActionNodeProps): string | null {
         ? `${nodeData.method || "GET"} ${nodeData.url}`
         : null;
     case "goToFlow":
-      return nodeData.flowId ? `Flow: ${nodeData.flowId.slice(0, 8)}...` : null;
+      return nodeData.flowId ? t("summary.flow", { id: nodeData.flowId.slice(0, 8) }) : null;
     case "humanTakeover":
-      return nodeData.message || "Hand off to agent";
+      return nodeData.message || t("summary.handOff");
     case "subscribe":
-      return "Subscribe contact";
+      return t("summary.subscribe");
     case "unsubscribe":
-      return "Unsubscribe contact";
+      return t("summary.unsubscribe");
     case "abSplit":
       if (nodeData.paths && nodeData.paths.length > 0) {
         return nodeData.paths.map((p) => `${p.name}: ${p.weight}%`).join(", ");
@@ -129,7 +131,7 @@ function getSummary(nodeData: ActionNodeProps): string | null {
       return null;
     case "smartDelay":
       return nodeData.timeout
-        ? `Wait up to ${nodeData.timeout} ${nodeData.timeoutUnit || "minutes"}`
+        ? t("summary.waitUpTo", { value: nodeData.timeout, unit: t(`units.${nodeData.timeoutUnit || "minutes"}`) })
         : null;
     default:
       return null;
@@ -138,15 +140,17 @@ function getSummary(nodeData: ActionNodeProps): string | null {
 
 export function ActionNode({ data, selected }: NodeProps) {
   const nodeData = data as ActionNodeProps;
+  const t = useT("builder");
   const actionType = nodeData.actionType || "addTag";
   const config = actionConfig[actionType] || {
     icon: Cog,
-    label: "Action",
+    label: "action",
     color: "bg-gray-500",
   };
   const Icon = config.icon;
-  const label = nodeData.label || config.label;
-  const summary = getSummary(nodeData);
+  const typeLabel = t(`nodeTypes.${actionConfig[actionType] ? actionType : "action"}`);
+  const label = nodeData.label || typeLabel;
+  const summary = getSummary(nodeData, t);
 
   const isAbSplit = actionType === "abSplit";
   const paths = isAbSplit ? nodeData.paths || [] : [];
@@ -170,14 +174,14 @@ export function ActionNode({ data, selected }: NodeProps) {
         )}
       >
         <Icon className="h-3.5 w-3.5" />
-        <span className="text-xs font-semibold">{config.label}</span>
+        <span className="text-xs font-semibold">{typeLabel}</span>
       </div>
       <div className="p-3">
         <p className="text-sm font-medium">{label}</p>
         {summary ? (
           <p className="mt-1 truncate text-xs text-muted-foreground">{summary}</p>
         ) : (
-          <p className="mt-1 text-xs text-muted-foreground italic">Not configured</p>
+          <p className="mt-1 text-xs text-muted-foreground italic">{t("notConfigured")}</p>
         )}
       </div>
       {isAbSplit && paths.length > 0 ? (
