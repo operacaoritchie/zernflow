@@ -27,6 +27,8 @@ import {
   type SimulationStep,
   type SimulationResult,
 } from "@/lib/flow-engine/simulator";
+import { useT } from "@/lib/i18n/provider";
+import { rich } from "@/lib/i18n/rich";
 
 interface TestPanelProps {
   nodes: Node[];
@@ -91,14 +93,15 @@ export function TestPanel({
   onClose,
   onHighlightNode,
 }: TestPanelProps) {
-  const [message, setMessage] = useState("help");
+  const t = useT("builder");
+  const [message, setMessage] = useState(() => t("test.defaultMessage"));
   const [tags, setTags] = useState("");
   const [result, setResult] = useState<SimulationResult | null>(null);
 
   function runTest() {
     const mockTags = tags
       .split(",")
-      .map((t) => t.trim())
+      .map((tag) => tag.trim())
       .filter(Boolean);
 
     const sim = simulateFlow(nodes, edges, {
@@ -120,17 +123,17 @@ export function TestPanel({
         return (
           <div>
             <span className="text-xs text-muted-foreground">
-              Type: {r.triggerType}
-              {r.keywords && ` | Keywords: ${r.keywords.join(", ")}`}
+              {t("test.typeLine", { type: r.triggerType })}
+              {r.keywords && t("test.keywordsLine", { list: r.keywords.join(", ") })}
             </span>
             <div className="mt-1">
               {r.matched ? (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600">
-                  <CheckCircle2 className="h-3 w-3" /> Matched
+                  <CheckCircle2 className="h-3 w-3" /> {t("test.matched")}
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-red-600">
-                  <XCircle className="h-3 w-3" /> Not matched
+                  <XCircle className="h-3 w-3" /> {t("test.noMatch")}
                 </span>
               )}
             </div>
@@ -184,7 +187,10 @@ export function TestPanel({
                 ) : (
                   <XCircle className="h-3 w-3" />
                 )}
-                {r.result ? "TRUE" : "FALSE"} &rarr; {r.path} path
+                {t("test.pathResult", {
+                  result: r.result ? t("test.true") : t("test.false"),
+                  path: r.path === "yes" ? t("yes") : r.path === "no" ? t("no") : r.path,
+                })}
               </span>
             </div>
           </div>
@@ -193,8 +199,8 @@ export function TestPanel({
       case "delay":
         return (
           <p className="text-xs text-muted-foreground">
-            Would wait {r.duration} {r.unit}{" "}
-            <span className="text-amber-600">(skipped in test)</span>
+            {t("test.wouldWait", { duration: r.duration, unit: t(`units.${r.unit}`) })}{" "}
+            <span className="text-amber-600">{t("test.skipped")}</span>
           </p>
         );
 
@@ -207,7 +213,7 @@ export function TestPanel({
         return (
           <p className="text-xs text-muted-foreground">
             {r.mode === "skipped"
-              ? "AI would generate a response here"
+              ? t("test.aiWould")
               : r.text}
           </p>
         );
@@ -215,66 +221,66 @@ export function TestPanel({
       case "split":
         return (
           <p className="text-xs text-muted-foreground">
-            Randomly selected: <strong>{r.selectedPath}</strong> (weight:{" "}
-            {r.weight})
+            {rich(t("test.randomly", { weight: r.weight }), {
+              path: <strong>{r.selectedPath}</strong>,
+            })}
           </p>
         );
 
       case "smart_delay":
         return (
           <p className="text-xs text-muted-foreground">
-            Would wait for next user message{" "}
-            <span className="text-amber-600">(paused)</span>
+            {t("test.waitNext")}{" "}
+            <span className="text-amber-600">{t("test.paused")}</span>
           </p>
         );
 
       case "human_takeover":
         return (
           <p className="text-xs text-muted-foreground">
-            Automation paused, flagged for human review
+            {t("test.takeover")}
           </p>
         );
 
       case "go_to_flow":
         return (
           <p className="text-xs text-muted-foreground">
-            Would jump to flow: <span className="font-mono">{r.flowId}</span>
+            {rich(t("test.jump"), { id: <span className="font-mono">{r.flowId}</span> })}
           </p>
         );
 
       case "enroll_sequence":
         return (
           <p className="text-xs text-muted-foreground">
-            Would enroll in sequence:{" "}
-            <span className="font-mono">{r.sequenceId}</span>
+            {rich(t("test.enroll"), { id: <span className="font-mono">{r.sequenceId}</span> })}
           </p>
         );
 
       case "subscribe":
         return (
           <p className="text-xs text-muted-foreground">
-            Contact would be subscribed
+            {t("test.subscribed")}
           </p>
         );
 
       case "unsubscribe":
         return (
           <p className="text-xs text-muted-foreground">
-            Contact would be unsubscribed
+            {t("test.unsubscribed")}
           </p>
         );
 
       case "comment_reply":
         return (
           <div className="rounded-lg bg-primary/10 px-3 py-2 text-xs">
-            {r.text || "(empty)"}
+            {r.text || t("test.empty")}
           </div>
         );
 
       case "private_reply":
         return (
           <div className="rounded-lg bg-primary/10 px-3 py-2 text-xs">
-            {r.text || "(empty)"}
+            {r.text || t("test.empty")}
           </div>
         );
 
@@ -293,7 +299,7 @@ export function TestPanel({
       case "flow_end":
         return (
           <p className="text-xs text-emerald-600 font-medium">
-            Flow completed successfully
+            {t("test.completed")}
           </p>
         );
 
@@ -308,7 +314,7 @@ export function TestPanel({
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
           <Play className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-semibold">Test Flow</h3>
+          <h3 className="text-sm font-semibold">{t("test.title")}</h3>
         </div>
         <button
           onClick={onClose}
@@ -322,13 +328,13 @@ export function TestPanel({
       <div className="space-y-3 border-b border-border p-4">
         <div>
           <label className="mb-1 block text-xs font-medium text-muted-foreground">
-            Simulated Message
+            {t("test.simulated")}
           </label>
           <input
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type a test message..."
+            placeholder={t("test.simulatedPlaceholder")}
             className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             onKeyDown={(e) => {
               if (e.key === "Enter") runTest();
@@ -337,7 +343,7 @@ export function TestPanel({
         </div>
         <div>
           <label className="mb-1 block text-xs font-medium text-muted-foreground">
-            Mock Tags (comma-separated)
+            {t("test.mockTags")}
           </label>
           <input
             type="text"
@@ -352,7 +358,7 @@ export function TestPanel({
           className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
         >
           <Play className="h-3.5 w-3.5" />
-          Run Test
+          {t("test.run")}
         </button>
       </div>
 
@@ -362,11 +368,10 @@ export function TestPanel({
           <div className="py-8 text-center">
             <Play className="mx-auto h-8 w-8 text-muted-foreground/50" />
             <p className="mt-2 text-sm text-muted-foreground">
-              Run a test to see the flow path
+              {t("test.emptyTitle")}
             </p>
             <p className="mt-1 text-xs text-muted-foreground/70">
-              The simulator traces the execution path without sending real
-              messages.
+              {t("test.emptyHint")}
             </p>
           </div>
         ) : (

@@ -3,6 +3,7 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/provider";
 
 export interface TriggerNodeProps {
   label?: string;
@@ -22,8 +23,10 @@ const triggerLabels: Record<string, string> = {
 
 export function TriggerNode({ data, selected }: NodeProps) {
   const nodeData = data as TriggerNodeProps;
+  const t = useT("builder");
   const triggerType = nodeData.triggerType || "keyword";
-  const label = nodeData.label || triggerLabels[triggerType] || "Trigger";
+  const typeLabel = triggerType in triggerLabels ? t(`triggerTypes.${triggerType}`) : triggerType;
+  const label = nodeData.label || typeLabel || t("nodeTypes.trigger");
 
   return (
     <div
@@ -34,30 +37,31 @@ export function TriggerNode({ data, selected }: NodeProps) {
     >
       <div className="flex items-center gap-2 rounded-t-lg bg-emerald-500 px-3 py-2 text-white">
         <Zap className="h-3.5 w-3.5" />
-        <span className="text-xs font-semibold">Trigger</span>
+        <span className="text-xs font-semibold">{t("nodeTypes.trigger")}</span>
       </div>
       <div className="p-3">
         <div className="flex items-center gap-1.5">
           <p className="text-sm font-medium">{label}</p>
           {triggerType === "comment_keyword" && nodeData.alsoMatchInDms === true && (
             <span className="rounded-sm bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-              Also in DMs
+              {t("alsoInDms")}
             </span>
           )}
         </div>
         {nodeData.keywords && nodeData.keywords.length > 0 && (
           <p className="mt-1 text-xs text-muted-foreground">
-            Keywords:{" "}
-            {nodeData.keywords
-              .slice(0, 3)
-              .map((k) => k.value)
-              .join(", ")}
-            {nodeData.keywords.length > 3 && ` +${nodeData.keywords.length - 3} more`}
+            {t("keywordsList", {
+              list: nodeData.keywords
+                .slice(0, 3)
+                .map((k) => k.value)
+                .join(", "),
+            })}
+            {nodeData.keywords.length > 3 && ` ${t("moreCount", { count: nodeData.keywords.length - 3 })}`}
           </p>
         )}
         {!nodeData.keywords?.length && triggerType !== "keyword" && (
           <p className="mt-1 text-xs text-muted-foreground">
-            {triggerLabels[triggerType] || triggerType}
+            {typeLabel}
           </p>
         )}
       </div>

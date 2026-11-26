@@ -17,6 +17,7 @@ import {
   ListOrdered,
 } from "lucide-react";
 import type { DragEvent } from "react";
+import { useT } from "@/lib/i18n/provider";
 
 interface PaletteItem {
   type: string;
@@ -33,13 +34,13 @@ interface PaletteCategory {
 
 const categories: PaletteCategory[] = [
   {
-    name: "Triggers",
+    name: "triggers",
     items: [
       { type: "trigger", nodeType: "trigger", label: "Keyword Trigger", icon: Zap },
     ],
   },
   {
-    name: "Messages",
+    name: "messages",
     items: [
       {
         type: "sendMessage",
@@ -56,7 +57,7 @@ const categories: PaletteCategory[] = [
     ],
   },
   {
-    name: "Logic",
+    name: "logic",
     items: [
       { type: "condition", nodeType: "condition", label: "Condition", icon: GitBranch },
       { type: "delay", nodeType: "delay", label: "Delay", icon: Clock },
@@ -77,7 +78,7 @@ const categories: PaletteCategory[] = [
     ],
   },
   {
-    name: "Actions",
+    name: "actions",
     items: [
       {
         type: "action",
@@ -157,17 +158,18 @@ function onDragStart(event: DragEvent, item: PaletteItem) {
 }
 
 export function NodePalette() {
+  const t = useT("builder");
   return (
     <div className="flex w-56 flex-col border-r border-border bg-card">
       <div className="border-b border-border px-4 py-3">
-        <h2 className="text-sm font-semibold">Nodes</h2>
-        <p className="text-xs text-muted-foreground">Drag to canvas</p>
+        <h2 className="text-sm font-semibold">{t("nodes")}</h2>
+        <p className="text-xs text-muted-foreground">{t("dragToCanvas")}</p>
       </div>
       <div className="flex-1 overflow-y-auto p-3">
         {categories.map((category) => (
           <div key={category.name} className="mb-4">
             <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              {category.name}
+              {t(`categories.${category.name}`)}
             </h3>
             <div className="space-y-1">
               {category.items.map((item) => {
@@ -180,7 +182,9 @@ export function NodePalette() {
                     className="flex cursor-grab items-center gap-2.5 rounded-lg border border-border bg-background px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground active:cursor-grabbing"
                   >
                     <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                    <span className="text-xs font-medium">{item.label}</span>
+                    <span className="text-xs font-medium">
+                      {t(`nodeTypes.${item.nodeType === "trigger" ? "keywordTrigger" : item.nodeType}`)}
+                    </span>
                   </div>
                 );
               })}
