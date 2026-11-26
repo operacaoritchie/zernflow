@@ -143,7 +143,8 @@
       "quick_reply": "Resposta rápida",
       "welcome": "Mensagem de boas-vindas",
       "default": "Resposta padrão",
-      "comment_keyword": "Palavra-chave em comentário"
+      "comment_keyword": "Palavra-chave em comentário",
+      "live_comment": "Comentário em live"
     },
     "units": {
       "seconds": "segundos",
@@ -291,7 +292,8 @@
       "quick_reply": "Disparado quando alguém toca em uma resposta rápida",
       "welcome": "Disparado quando alguém inicia uma conversa",
       "default": "Disparado quando nenhum outro gatilho corresponde",
-      "comment_keyword": "Disparado por palavras-chave nos comentários de posts"
+      "comment_keyword": "Disparado por palavras-chave nos comentários de posts",
+      "live_comment": "Disparado por palavras-chave nos comentários durante uma live no Instagram"
     },
     "match": {
       "exact": "Correspondência exata",
@@ -310,7 +312,8 @@
       "payload": "Payload",
       "payloadPlaceholder": "Digite o valor do payload...",
       "payloadHintButton": "O valor do payload a comparar quando um botão for clicado.",
-      "payloadHintQuick": "O valor do payload a comparar quando uma resposta rápida for tocada."
+      "payloadHintQuick": "O valor do payload a comparar quando uma resposta rápida for tocada.",
+      "liveHint": "Funciona com comentários feitos enquanto a conta está ao vivo no Instagram. Comentários de live nunca disparam flows de Palavra-chave em comentário, e comentários de posts nunca disparam este. A conta do Instagram precisa estar conectada pelo Login do Facebook, e {var} é o ID de mídia da live."
     },
     "preview": "Prévia",
     "act": {

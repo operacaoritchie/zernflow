@@ -143,7 +143,8 @@
       "quick_reply": "Quick Reply",
       "welcome": "Welcome Message",
       "default": "Default Reply",
-      "comment_keyword": "Comment Keyword"
+      "comment_keyword": "Comment Keyword",
+      "live_comment": "Live Comment"
     },
     "units": {
       "seconds": "seconds",
@@ -291,7 +292,8 @@
       "quick_reply": "Triggered when a user taps a quick reply",
       "welcome": "Triggered when a user starts a conversation",
       "default": "Triggered when no other trigger matches",
-      "comment_keyword": "Triggered by keywords in post comments"
+      "comment_keyword": "Triggered by keywords in post comments",
+      "live_comment": "Triggered by keywords in comments during an Instagram Live"
     },
     "match": {
       "exact": "Exact match",
@@ -310,7 +312,8 @@
       "payload": "Payload",
       "payloadPlaceholder": "Enter payload value...",
       "payloadHintButton": "The payload value to match when a button is clicked.",
-      "payloadHintQuick": "The payload value to match when a quick reply is tapped."
+      "payloadHintQuick": "The payload value to match when a quick reply is tapped.",
+      "liveHint": "Runs on comments made while the account is live on Instagram. Live comments never run Comment Keyword flows, and post comments never run this one. The Instagram account must be connected with Facebook Login, and {var} is the live broadcast's media id."
     },
     "preview": "Preview",
     "act": {

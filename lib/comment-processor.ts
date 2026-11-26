@@ -11,7 +11,17 @@ export interface IncomingComment {
   postId: string;
   text: string;
   author: { id?: string; name?: string; username?: string };
+  /** Instagram only: true when the comment was made during a live broadcast
+   *  (Zernio's `comment.isLive`, derived from Meta's `live_comments` field). */
+  isLive?: boolean;
 }
+
+/** Live comments run `live_comment` triggers; every other comment runs
+ *  `comment_keyword` triggers. The two never cross, so a "comment on any post"
+ *  flow does not also fire during lives (and vice versa). */
+export type CommentTriggerType = "comment_keyword" | "live_comment";
+export const commentTriggerTypeFor = (comment: Pick<IncomingComment, "isLive">): CommentTriggerType =>
+  comment.isLive === true ? "live_comment" : "comment_keyword";
 
 export type CommentForMatching = Pick<IncomingComment, "postId"> & { text: string };
 
@@ -55,14 +65,18 @@ export function matchCommentTrigger(
 
 export async function getActiveCommentTriggers(
   supabase: SupabaseClient<Database>,
-  { channelId, workspaceId }: { channelId: string; workspaceId: string },
+  {
+    channelId,
+    workspaceId,
+    type = "comment_keyword",
+  }: { channelId: string; workspaceId: string; type?: CommentTriggerType },
 ): Promise<Trigger[]> {
   // Null channel_id means workspace-wide, NOT global — pin to the channel's
   // workspace so one tenant's triggers never run on another tenant's channels.
   const { data: triggers } = await supabase
     .from("triggers")
     .select("*, flows!inner(status, workspace_id)")
-    .eq("type", "comment_keyword")
+    .eq("type", type)
     .or(`channel_id.eq.${channelId},channel_id.is.null`)
     .eq("is_active", true)
     .eq("flows.status", "published")
@@ -107,6 +121,7 @@ export async function processComment({
   const triggers = await getActiveCommentTriggers(supabase, {
     channelId: channel.id,
     workspaceId: channel.workspace_id,
+    type: commentTriggerTypeFor(comment),
   });
   const matchedTrigger = matchCommentTrigger(triggers, comment);
 
@@ -206,7 +221,7 @@ export async function processComment({
           platform: channel.platform,
           status: "open",
           last_message_at: new Date().toISOString(),
-          last_message_preview: `[Comment] ${comment.text.slice(0, 80)}`,
+          last_message_preview: `${comment.isLive ? "[Live]" : "[Comment]"} ${comment.text.slice(0, 80)}`,
         },
         { onConflict: "channel_id,contact_id" },
       )
@@ -237,6 +252,7 @@ export async function processComment({
             comment_text: comment.text,
             commenter_name: senderName,
             post_id: comment.postId,
+            is_live: comment.isLive === true ? "true" : "false",
           },
         });
         dmSent = true;
@@ -254,6 +270,7 @@ export async function processComment({
         triggerId: matchedTrigger.id,
         postId: comment.postId,
         commentId: comment.id,
+        isLive: comment.isLive === true,
         dmSent,
         replySent,
       } as unknown as Json,

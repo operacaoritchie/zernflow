@@ -31,6 +31,7 @@ const triggerTypes: Array<{ value: TriggerType }> = [
   { value: "welcome" },
   { value: "default" },
   { value: "comment_keyword" },
+  { value: "live_comment" },
 ];
 
 const matchTypes: Array<{ value: "exact" | "contains" | "startsWith" }> = [
@@ -78,7 +79,8 @@ export function TriggerPanel({ data: rawData, onChange }: TriggerPanelProps) {
     [data, keywords, onChange]
   );
 
-  const showKeywords = triggerType === "keyword" || triggerType === "comment_keyword";
+  const showKeywords =
+    triggerType === "keyword" || triggerType === "comment_keyword" || triggerType === "live_comment";
   const showPayload = triggerType === "postback" || triggerType === "quick_reply";
 
   return (
@@ -198,6 +200,12 @@ export function TriggerPanel({ data: rawData, onChange }: TriggerPanelProps) {
           {keywords.length === 0 && (
             <p className="mt-2 text-xs text-muted-foreground">
               {tr("trigger.keywordsHint")}
+            </p>
+          )}
+
+          {triggerType === "live_comment" && (
+            <p className="mt-3 rounded-lg border border-border bg-card p-3 text-xs text-muted-foreground">
+              {tr("trigger.liveHint", { var: "{{post_id}}" })}
             </p>
           )}
 

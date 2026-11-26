@@ -27,7 +27,8 @@ export type TriggerType =
   | "quick_reply"
   | "welcome"
   | "default"
-  | "comment_keyword";
+  | "comment_keyword"
+  | "live_comment";
 export type FlowSessionStatus =
   | "active"
   | "completed"

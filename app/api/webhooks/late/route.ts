@@ -69,6 +69,8 @@ interface CommentWebhookPayload {
     createdAt: string;
     isReply: boolean;
     parentCommentId: string | null;
+    /** Instagram only: present (true) on comments made during a live broadcast. */
+    isLive?: boolean;
   };
   post: { id: string; platformPostId: string };
   account: { id: string; platform: string; username: string };
@@ -372,6 +374,7 @@ async function handleCommentWebhook(
           postId: payload.comment.postId || payload.comment.platformPostId,
           text: payload.comment.text,
           author: payload.comment.author,
+          isLive: payload.comment.isLive === true,
         },
       });
     } catch (err) {

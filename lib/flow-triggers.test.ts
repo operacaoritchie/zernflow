@@ -104,4 +104,26 @@ describe("buildDesiredTriggers", () => {
 
     expect(rows[0]).toMatchObject({ type: "postback", priority: 5, config: { payload: "GET_STARTED" } });
   });
+
+  it("maps a live_comment node to one row, never scoped to posts and never with a DM row", () => {
+    const rows = buildDesiredTriggers(
+      [
+        triggerNode({
+          triggerType: "live_comment",
+          keywords: [{ value: "curso", matchType: "contains" }],
+          postIds: ["media-1"],
+          replyText: "Te chamei no Direct!",
+          alsoMatchInDms: true,
+        }),
+      ],
+      FLOW_ID,
+    );
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0].type).toBe("live_comment");
+    expect(rows[0].config).toEqual({
+      keywords: [{ value: "curso", matchType: "contains" }],
+      replyText: "Te chamei no Direct!",
+    });
+  });
 });

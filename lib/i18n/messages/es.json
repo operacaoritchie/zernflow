@@ -143,7 +143,8 @@
       "quick_reply": "Respuesta rápida",
       "welcome": "Mensaje de bienvenida",
       "default": "Respuesta predeterminada",
-      "comment_keyword": "Palabra clave en comentario"
+      "comment_keyword": "Palabra clave en comentario",
+      "live_comment": "Comentario en directo"
     },
     "units": {
       "seconds": "segundos",
@@ -291,7 +292,8 @@
       "quick_reply": "Se activa cuando alguien toca una respuesta rápida",
       "welcome": "Se activa cuando alguien inicia una conversación",
       "default": "Se activa cuando ningún otro disparador coincide",
-      "comment_keyword": "Se activa con palabras clave en comentarios de publicaciones"
+      "comment_keyword": "Se activa con palabras clave en comentarios de publicaciones",
+      "live_comment": "Se activa con palabras clave en comentarios durante un directo de Instagram"
     },
     "match": {
       "exact": "Coincidencia exacta",
@@ -310,7 +312,8 @@
       "payload": "Payload",
       "payloadPlaceholder": "Escribe el valor del payload...",
       "payloadHintButton": "El valor del payload que debe coincidir cuando se hace clic en un botón.",
-      "payloadHintQuick": "El valor del payload que debe coincidir cuando se toca una respuesta rápida."
+      "payloadHintQuick": "El valor del payload que debe coincidir cuando se toca una respuesta rápida.",
+      "liveHint": "Funciona con comentarios hechos mientras la cuenta está en directo en Instagram. Los comentarios de directos nunca activan flujos de Palabra clave en comentario, y los de publicaciones nunca activan este. La cuenta de Instagram debe estar conectada con el inicio de sesión de Facebook, y {var} es el ID de medio del directo."
     },
     "preview": "Vista previa",
     "act": {

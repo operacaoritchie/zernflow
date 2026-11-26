@@ -9,6 +9,7 @@ export const BUILDER_TRIGGER_TYPES = [
   "welcome",
   "default",
   "comment_keyword",
+  "live_comment",
 ] as const;
 
 type BuilderTriggerType = (typeof BUILDER_TRIGGER_TYPES)[number];
@@ -49,11 +50,13 @@ export function buildDesiredTriggers(
       // template-seeded nodes store data.config.keywords ([string]). The matcher
       // accepts both shapes, so pass through whichever the node carries.
       const config: Record<string, any> = {};
-      if (type === "keyword" || type === "comment_keyword") {
+      if (type === "keyword" || type === "comment_keyword" || type === "live_comment") {
         config.keywords = data.keywords ?? nodeConfig.keywords ?? [];
         if (nodeConfig.matchType) config.matchType = nodeConfig.matchType;
+        // A live broadcast gets a new media id every time, so live_comment rows
+        // are never scoped to posts: they answer whatever the account broadcasts.
         const postIds = data.postIds ?? nodeConfig.postIds;
-        if (Array.isArray(postIds) && postIds.length > 0) config.postIds = postIds;
+        if (type !== "live_comment" && Array.isArray(postIds) && postIds.length > 0) config.postIds = postIds;
         const replyText = data.replyText ?? nodeConfig.replyText;
         if (typeof replyText === "string" && replyText.trim()) config.replyText = replyText;
       } else if (type === "postback" || type === "quick_reply") {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { matchCommentTrigger, type CommentForMatching } from "./comment-processor";
+import { matchCommentTrigger, commentTriggerTypeFor, type CommentForMatching } from "./comment-processor";
 import type { Database } from "@/lib/types/database";
 
 type Trigger = Database["public"]["Tables"]["triggers"]["Row"];
@@ -61,5 +61,16 @@ describe("matchCommentTrigger", () => {
   it("returns null for empty comment text", () => {
     const t = trigger("t1", { keywords: [{ value: "hi" }] });
     expect(matchCommentTrigger([t], comment("   "))).toBeNull();
+  });
+});
+
+describe("commentTriggerTypeFor", () => {
+  it("routes live comments to live_comment triggers", () => {
+    expect(commentTriggerTypeFor({ isLive: true })).toBe("live_comment");
+  });
+
+  it("routes every other comment to comment_keyword triggers", () => {
+    expect(commentTriggerTypeFor({ isLive: false })).toBe("comment_keyword");
+    expect(commentTriggerTypeFor({})).toBe("comment_keyword");
   });
 });
