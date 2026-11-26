@@ -37,6 +37,7 @@ import { VersionHistoryPanel } from "./panels/VersionHistoryPanel";
 import { TestPanel } from "./panels/TestPanel";
 import { useT, useFormatter } from "@/lib/i18n/provider";
 import { FlowAnalyticsProvider, useFlowAnalytics } from "./analytics-context";
+import { toEditorNodes } from "@/lib/flow-engine/normalize-nodes";
 
 type Flow = Database["public"]["Tables"]["flows"]["Row"];
 
@@ -134,7 +135,7 @@ function FlowCanvasInner({ flow }: FlowCanvasProps) {
   const supabase = createClient();
 
   const initialNodes: Node[] = Array.isArray(flow.nodes)
-    ? (flow.nodes as unknown as Node[])
+    ? toEditorNodes(flow.nodes as unknown as Node[])
     : [];
   const initialEdges: Edge[] = Array.isArray(flow.edges)
     ? (flow.edges as unknown as Edge[])

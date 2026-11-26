@@ -5,6 +5,7 @@
  */
 
 import type { Node, Edge } from "@xyflow/react";
+import { toEngineNodes } from "./normalize-nodes";
 
 // --- Types ---
 
@@ -112,10 +113,12 @@ function evaluateCondition(
 // --- Simulator ---
 
 export function simulateFlow(
-  nodes: Node[],
+  rawNodes: Node[],
   edges: Edge[],
   config: SimulationConfig
 ): SimulationResult {
+  // Simulate what the engine runs: builder "action" nodes → their real type.
+  const nodes = toEngineNodes(rawNodes);
   const steps: SimulationStep[] = [];
   const errors: string[] = [];
   const variables: Record<string, string> = {
