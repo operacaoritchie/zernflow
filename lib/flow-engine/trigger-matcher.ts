@@ -209,7 +209,7 @@ async function matchByAiIntent(
     // Same credentials as the AI Response node: the workspace's AI Gateway key,
     // or the deployment's AI_GATEWAY_API_KEY.
     const gw = createGateway({
-      apiKey: workspace.ai_api_key || process.env.AI_GATEWAY_API_KEY || undefined,
+      apiKey: workspace?.ai_api_key || process.env.AI_GATEWAY_API_KEY || undefined,
     });
     const result = await generateText({
       model: gw("openai/gpt-4o-mini"),
