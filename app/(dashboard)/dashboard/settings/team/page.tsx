@@ -1,9 +1,11 @@
 import { getWorkspace } from "@/lib/workspace";
 import { TeamView } from "@/components/settings/team-view";
 import { createServiceClient } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
 
 export default async function TeamPage() {
   const { workspace, user, role, supabase } = await getWorkspace();
+  const tc = await getT("common");
 
   // Fetch workspace members with user details
   // We need service client to read auth.users for email/name
@@ -26,12 +28,12 @@ export default async function TeamPage() {
         userId: member.user_id,
         role: member.role,
         joinedAt: member.created_at,
-        email: memberUser?.email ?? "Unknown",
+        email: memberUser?.email ?? tc("unknown"),
         name:
           memberUser?.user_metadata?.full_name ??
           memberUser?.user_metadata?.name ??
           memberUser?.email?.split("@")[0] ??
-          "Unknown",
+          tc("unknown"),
       };
     })
   );

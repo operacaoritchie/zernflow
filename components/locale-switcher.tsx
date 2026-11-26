@@ -46,3 +46,32 @@ export function LocaleSwitcher({ className }: { className?: string }) {
     </label>
   );
 }
+
+/** Full-width select for forms such as the Settings page. */
+export function LocaleSelect({ id }: { id?: string }) {
+  const locale = useLocale();
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+
+  return (
+    <select
+      id={id}
+      value={locale}
+      disabled={pending}
+      onChange={(e) => {
+        const next = e.target.value;
+        startTransition(async () => {
+          await setLocale(next);
+          router.refresh();
+        });
+      }}
+      className="mt-1.5 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
+    >
+      {LOCALES.map((l) => (
+        <option key={l} value={l}>
+          {LOCALE_NAMES[l]}
+        </option>
+      ))}
+    </select>
+  );
+}
