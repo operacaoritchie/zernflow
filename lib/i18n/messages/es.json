@@ -240,7 +240,8 @@
       "contains": "contiene",
       "exists": "existe",
       "gt": "mayor que",
-      "lt": "menor que"
+      "lt": "menor que",
+      "is_phone": "es un teléfono"
     },
     "condition": {
       "match": "Cumplir",
@@ -353,10 +354,11 @@
       "distribute": "Distribuir por igual",
       "totalWarning": "El total es {total}% (debería ser 100%)",
       "addPath": "Añadir ruta",
-      "smartDelayHint": "Pausa el flujo y espera la respuesta del usuario. Si no responde dentro del plazo, continúa al siguiente paso.",
+      "smartDelayHint": "Pausa el flujo y espera la respuesta del contacto. Cuando responde, el flujo sigue por la salida de abajo.",
       "timeout": "Plazo",
-      "timeoutHint": "Si el usuario no responde en este tiempo, el flujo continuará.",
-      "handOff": "Transferir a un agente humano"
+      "timeoutHint": "Si no hay respuesta en ese tiempo, el flujo sigue por la salida \"sin respuesta\" a la derecha; sin nada conectado, el flujo termina. En Instagram y Facebook, los mensajes automáticos solo pueden salir hasta 24 horas después del último mensaje del contacto.",
+      "handOff": "Transferir a un agente humano",
+      "fieldTypeHint": "Los campos de teléfono, CPF, correo, número y enlace solo guardan un valor del tipo correcto (campos listos: telefone, cpf, email). Un valor inválido no se guarda y el flujo sigue por la salida \"inválido\" a la derecha."
     },
     "msg": {
       "variableHint": "Haz clic para insertar una variable. Las rutas con punto, como {example}, leen campos de respuestas JSON.",
@@ -433,6 +435,10 @@
       "sent": "Enviados",
       "failed": "Fallidos",
       "toggle": "Estadísticas"
+    },
+    "handles": {
+      "invalid": "inválido",
+      "timeout": "sin respuesta"
     }
   },
   "channels": {
@@ -749,7 +755,14 @@
     "messagePlaceholderSaved": "Escribe un mensaje... (/ para respuestas guardadas)",
     "noSavedReplies": "No se encontraron respuestas guardadas",
     "savedReplies": "Respuestas guardadas",
-    "send": "Enviar mensaje"
+    "send": "Enviar mensaje",
+    "window": {
+      "open": "Ventana de 24 h abierta · quedan {time} para automatizaciones y respuestas.",
+      "human": "Pasaron 24 h: las automatizaciones ya no envían a este contacto. Tu respuesta sale como agente humano (quedan {time}).",
+      "closed": "Más de 7 días desde el último mensaje del contacto. Podrás responder cuando vuelva a escribir.",
+      "hours": "{count} h",
+      "days": "{count} días"
+    }
   },
   "nav": {
     "home": "Inicio",

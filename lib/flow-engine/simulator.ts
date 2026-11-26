@@ -5,6 +5,7 @@
  */
 
 import type { Node, Edge } from "@xyflow/react";
+import { isPhone } from "./phone";
 import { toEngineNodes } from "./normalize-nodes";
 
 // --- Types ---
@@ -105,6 +106,8 @@ function evaluateCondition(
       return Number(actual) > Number(expected);
     case "lt":
       return Number(actual) < Number(expected);
+    case "is_phone":
+      return isPhone(actual);
     default:
       return false;
   }

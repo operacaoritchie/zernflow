@@ -9,6 +9,7 @@ import { PlatformIcon } from "@/components/platform-icon";
 import type { Database, ConversationStatus } from "@/lib/types/database";
 import { useT, useFormatter } from "@/lib/i18n/provider";
 import type { Formatter, Translator } from "@/lib/i18n/translator";
+import { messagingWindowState } from "@/lib/messaging-window";
 
 type Message = Database["public"]["Tables"]["messages"]["Row"];
 type Conversation = Database["public"]["Tables"]["conversations"]["Row"] & {
@@ -124,6 +125,42 @@ function MessageBubble({ message }: { message: Message }) {
         </div>
       )}
     </div>
+  );
+}
+
+/** Meta's reply windows on Instagram and Facebook, shown above the composer. */
+function MessagingWindowNotice({
+  platform,
+  lastInboundAt,
+}: {
+  platform: string;
+  lastInboundAt: string | null;
+}) {
+  const t = useT("inbox");
+  const state = messagingWindowState(platform, lastInboundAt);
+  if (state.kind === "none") return null;
+  const hours = (ms: number) => Math.max(1, Math.ceil(ms / 3_600_000));
+  const time = (ms: number) =>
+    ms >= 48 * 3_600_000
+      ? t("window.days", { count: Math.floor(ms / 86_400_000) })
+      : t("window.hours", { count: hours(ms) });
+  const text =
+    state.kind === "open"
+      ? t("window.open", { time: time(state.msLeft) })
+      : state.kind === "human"
+        ? t("window.human", { time: time(state.msLeft) })
+        : t("window.closed");
+  return (
+    <p
+      className={cn(
+        "mx-auto mb-2 max-w-2xl rounded-md px-3 py-1.5 text-xs",
+        state.kind === "open" && "bg-emerald-50 text-emerald-700",
+        state.kind === "human" && "bg-amber-50 text-amber-700",
+        state.kind === "closed" && "bg-red-50 text-red-700"
+      )}
+    >
+      {text}
+    </p>
   );
 }
 
@@ -476,6 +513,10 @@ export function MessageThread({
 
       {/* Composer */}
       <div className="border-t border-border p-4">
+        <MessagingWindowNotice
+          platform={conversation.platform}
+          lastInboundAt={conversation.last_inbound_at}
+        />
         <div className="mx-auto flex max-w-2xl items-end gap-2">
           <div className="relative flex-1">
             <textarea
@@ -580,7 +621,11 @@ export function MessageThread({
 
           <button
             onClick={handleSend}
-            disabled={!input.trim() || sending}
+            disabled={
+              !input.trim() ||
+              sending ||
+              messagingWindowState(conversation.platform, conversation.last_inbound_at).kind === "closed"
+            }
             aria-label={t("send")}
             className={cn(
               "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",

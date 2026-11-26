@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { HUMAN_AGENT_WINDOW_MS, MESSAGING_WINDOW_MS } from "@/lib/messaging-window";
 import { createClient } from "@/lib/supabase/server";
 import { createZernioClient } from "@/lib/zernio-client";
 import { messagePreview } from "@/lib/message-preview";
@@ -143,12 +144,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "API key not configured" }, { status: 400 });
   }
 
+  // Meta's windows on Instagram and Facebook: inside 24 hours of the contact's
+  // last message anything goes; after that a reply typed by a person may still
+  // go out for up to 7 days with the HUMAN_AGENT tag; after that, nothing.
+  const sinceInbound = conversation.last_inbound_at
+    ? Date.now() - new Date(conversation.last_inbound_at).getTime()
+    : null;
+  const windowed = conversation.platform === "instagram" || conversation.platform === "facebook";
+  if (windowed && sinceInbound !== null && sinceInbound > HUMAN_AGENT_WINDOW_MS) {
+    return NextResponse.json(
+      {
+        error:
+          "This conversation is past Meta's 7-day reply window. The contact needs to send a new message first.",
+        code: "messaging_window_closed",
+      },
+      { status: 409 }
+    );
+  }
+  const humanAgentTag =
+    windowed && sinceInbound !== null && sinceInbound > MESSAGING_WINDOW_MS
+      ? { messagingType: "MESSAGE_TAG" as const, messageTag: "HUMAN_AGENT" as const }
+      : {};
+
   // Send via Zernio SDK — Zernio stores the message, no local insert needed
   try {
     const zernio = createZernioClient(workspace.late_api_key_encrypted);
     const res = await zernio.messages.sendInboxMessage({
       path: { conversationId: conversation.late_conversation_id },
-      body: { accountId: channel.late_account_id, message: text },
+      body: { accountId: channel.late_account_id, message: text, ...humanAgentTag },
     });
 
     const messageId = (res.data as any)?.data?.messageId ?? null;

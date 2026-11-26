@@ -626,6 +626,57 @@ async function processJob(
       break;
     }
 
+    case "smart_delay_timeout": {
+      // A "wait for reply" step ran out of time. Only act if the session is
+      // still parked on that same step: a reply in the meantime already moved
+      // it on, and then this job has nothing to do.
+      const payload = job.payload as {
+        sessionId: string;
+        nodeId: string;
+        channelId: string;
+        contactId: string;
+        conversationId: string;
+        workspaceId: string;
+        lateConversationId?: string | null;
+        lateAccountId?: string | null;
+      };
+
+      const { data: session, error: sessionError } = await supabase
+        .from("flow_sessions")
+        .select("*")
+        .eq("id", payload.sessionId)
+        .eq("status", "active")
+        .single();
+
+      if (!session) {
+        if (sessionError && sessionError.code !== "PGRST116") {
+          throw new Error(
+            `flow session ${payload.sessionId} could not be loaded: ${sessionError.message}`
+          );
+        }
+        return;
+      }
+      if (!session.waiting_for_input || session.current_node_id !== payload.nodeId) return;
+
+      await resumeSession(
+        supabase,
+        session,
+        {
+          triggerId: "",
+          flowId: session.flow_id,
+          channelId: payload.channelId,
+          contactId: payload.contactId,
+          conversationId: payload.conversationId,
+          workspaceId: payload.workspaceId,
+          lateConversationId: payload.lateConversationId || undefined,
+          lateAccountId: payload.lateAccountId || undefined,
+          incomingMessage: {},
+        },
+        { handle: "timeout" }
+      );
+      break;
+    }
+
     default:
       console.warn(`Unknown job type: ${job.type}`);
   }
