@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
 import {
   GitBranch,
+  LayoutDashboard,
   MessageSquare,
   Users,
   Radio,
@@ -41,6 +42,7 @@ function subscribeToThemeClass(callback: () => void) {
 }
 
 const navigation = [
+  { key: "home", href: "/dashboard", icon: LayoutDashboard },
   { key: "flows", href: "/dashboard/flows", icon: GitBranch },
   { key: "inbox", href: "/dashboard/inbox", icon: MessageSquare },
   { key: "contacts", href: "/dashboard/contacts", icon: Users },
@@ -90,7 +92,8 @@ export function Sidebar({
 
       <nav className="flex-1 space-y-1 p-3">
         {navigation.map((item) => {
-          const isActive = pathname.startsWith(item.href);
+          const isActive =
+            item.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.href);
           return (
             <Link
               key={item.key}

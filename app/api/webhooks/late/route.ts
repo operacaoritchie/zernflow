@@ -8,6 +8,8 @@ import { upsertContactForSender } from "@/lib/inbox-sync";
 import { processComment } from "@/lib/comment-processor";
 import type { Database } from "@/lib/types/database";
 import { messagePreview } from "@/lib/message-preview";
+import { dispatchWebhookEvent } from "@/lib/webhook-dispatcher";
+import crypto from "crypto";
 
 // ── Zernio API webhook payload ───────────────────────────────────────────────
 
@@ -229,6 +231,15 @@ async function processMessageEvent(
 
   const contactId = contact.contactId;
 
+  if (!contact.existed) {
+    // Fire-and-forget: notify outbound webhooks about the new contact
+    dispatchWebhookEvent(channel.workspace_id, "contact.created", {
+      contactId,
+      displayName: senderName,
+      platform: channel.platform,
+    }).catch(() => {});
+  }
+
   // ── Upsert conversation ──────────────────────────────────────────────────
 
   const preview = messagePreview(msg.text);
@@ -266,7 +277,47 @@ async function processMessageEvent(
       .then(() => {});
   }
 
+  // ── Auto-assign new conversations (round-robin) ──────────────────────────
+  // A contact's first message opens a new conversation. When the workspace has
+  // round-robin auto-assignment on, hand it to the next member in rotation.
+  if (!contact.existed) {
+    const { data: workspace } = await supabase
+      .from("workspaces")
+      .select("auto_assign_mode, last_assigned_member_index")
+      .eq("id", channel.workspace_id)
+      .single();
+
+    if (workspace?.auto_assign_mode === "round-robin") {
+      const { data: members } = await supabase
+        .from("workspace_members")
+        .select("user_id")
+        .eq("workspace_id", channel.workspace_id)
+        .order("created_at", { ascending: true });
+
+      if (members && members.length > 0) {
+        const nextIndex =
+          ((workspace.last_assigned_member_index ?? -1) + 1) % members.length;
+        await supabase
+          .from("conversations")
+          .update({ assigned_to: members[nextIndex].user_id })
+          .eq("id", conversation.id);
+        await supabase
+          .from("workspaces")
+          .update({ last_assigned_member_index: nextIndex })
+          .eq("id", channel.workspace_id);
+      }
+    }
+  }
+
   // Messages are stored by Zernio (source of truth) — no local insert needed.
+
+  // Fire-and-forget: notify outbound webhooks about the received message
+  dispatchWebhookEvent(channel.workspace_id, "message.received", {
+    contactId,
+    conversationId: conversation.id,
+    text: msg.text || null,
+    platform: channel.platform,
+  }).catch(() => {});
 
   // ── Flow engine ───────────────────────────────────────────────────────────
 
@@ -387,6 +438,27 @@ async function handleCommentWebhook(
 
 // ── Global keywords ─────────────────────────────────────────────────────────
 
+// Built-in STOP keywords that always work, regardless of workspace configuration.
+// These are a compliance requirement: users must always be able to opt out of
+// messaging by sending any of these common unsubscribe phrases.
+const STOP_KEYWORDS = [
+  "stop", "unsubscribe", "cancel", "quit", "optout", "opt-out",
+  // Portuguese
+  "parar", "pare", "sair", "cancelar", "descadastrar",
+  // Spanish
+  "baja", "detener", "darme de baja",
+];
+
+// Built-in START keywords that always work. These allow users who previously
+// opted out to re-subscribe by sending a common opt-in phrase.
+const START_KEYWORDS = [
+  "start", "subscribe", "optin", "opt-in",
+  // Portuguese
+  "voltar", "iniciar", "assinar",
+  // Spanish
+  "alta", "empezar", "suscribir",
+];
+
 async function handleGlobalKeywords(
   supabase: Awaited<ReturnType<typeof createServiceClient>>,
   workspaceId: string,
@@ -395,6 +467,28 @@ async function handleGlobalKeywords(
 ): Promise<boolean> {
   if (!text) return false;
 
+  const normalizedText = text.toLowerCase().trim();
+
+  // Check built-in keywords first (always active, can't be disabled).
+  // This ensures compliance-critical opt-out keywords work even if the
+  // workspace hasn't configured any global keywords.
+  if (STOP_KEYWORDS.includes(normalizedText)) {
+    await supabase
+      .from("contacts")
+      .update({ is_subscribed: false })
+      .eq("id", contactId);
+    return true;
+  }
+
+  if (START_KEYWORDS.includes(normalizedText)) {
+    await supabase
+      .from("contacts")
+      .update({ is_subscribed: true })
+      .eq("id", contactId);
+    return true;
+  }
+
+  // Then check workspace-configured keywords (custom keywords set by the user)
   const { data: workspace } = await supabase
     .from("workspaces")
     .select("global_keywords")
@@ -408,8 +502,6 @@ async function handleGlobalKeywords(
     action?: string;
     flowId?: string;
   }>;
-
-  const normalizedText = text.toLowerCase().trim();
 
   for (const kw of keywords) {
     if (normalizedText === kw.keyword.toLowerCase()) {

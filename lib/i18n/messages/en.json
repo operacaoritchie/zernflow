@@ -424,6 +424,15 @@
       "run": "Run Test",
       "emptyTitle": "Run a test to see the flow path",
       "emptyHint": "The simulator traces the execution path without sending real messages."
+    },
+    "analytics": {
+      "loading": "Loading analytics...",
+      "starts": "Starts",
+      "completions": "Completions",
+      "dropOff": "Drop-off",
+      "sent": "Sent",
+      "failed": "Failed",
+      "toggle": "Analytics"
     }
   },
   "channels": {
@@ -536,7 +545,13 @@
     "conversations": "Conversations",
     "noConversations": "No conversations",
     "noMessages": "No messages",
-    "field": "Field"
+    "field": "Field",
+    "notes": "Internal Notes",
+    "deleteNote": "Delete note",
+    "noNotes": "No notes yet",
+    "notePlaceholder": "Add an internal note...",
+    "addingNote": "Adding...",
+    "addNote": "Add note"
   },
   "errors": {
     "workspaceMismatch": "Workspace mismatch",
@@ -655,6 +670,39 @@
     "sent": "Sent",
     "justNow": "Just now"
   },
+  "home": {
+    "title": "Dashboard",
+    "subtitle": "Overview of your workspace activity",
+    "justNow": "just now",
+    "events": {
+      "flow_started": "Flow started",
+      "flow_completed": "Flow completed",
+      "message_sent": "Message sent",
+      "message_failed": "Message failed",
+      "contact_created": "New contact created",
+      "broadcast_sent": "Broadcast sent",
+      "broadcast_failed": "Broadcast failed"
+    },
+    "loadFailed": "Failed to load dashboard data. Please try again.",
+    "totalContacts": "Total Contacts",
+    "thisWeek": "+{count} this week",
+    "activeConversations": "Active Conversations",
+    "currentlyOpen": "Currently open",
+    "messagesSent": "Messages Sent",
+    "last7": "Last 7 days",
+    "activeFlows": "Active Flows",
+    "published": "Published",
+    "createFlow": "Create Flow",
+    "createFlowHint": "Build an automation flow",
+    "sendBroadcast": "Send Broadcast",
+    "sendBroadcastHint": "Message your contacts",
+    "viewInbox": "View Inbox",
+    "viewInboxHint": "Check conversations",
+    "retry": "Retry",
+    "recentActivity": "Recent Activity",
+    "noActivity": "No activity yet",
+    "quickActions": "Quick Actions"
+  },
   "inbox": {
     "title": "Inbox",
     "syncFailed": "Sync failed",
@@ -698,9 +746,13 @@
     "snooze": "Snooze conversation",
     "reopen": "Reopen conversation",
     "messagePlaceholder": "Type a message...",
+    "messagePlaceholderSaved": "Type a message... (/ for saved replies)",
+    "noSavedReplies": "No saved replies found",
+    "savedReplies": "Saved replies",
     "send": "Send message"
   },
   "nav": {
+    "home": "Home",
     "flows": "Flows",
     "inbox": "Inbox",
     "contacts": "Contacts",
@@ -715,6 +767,10 @@
     "signOut": "Sign out",
     "workspaceName": "Workspace name",
     "createWorkspace": "Create workspace"
+  },
+  "refLink": {
+    "title": "Start a conversation",
+    "body": "This link is ready to connect you."
   },
   "segment": {
     "fields": {

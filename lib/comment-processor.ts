@@ -30,8 +30,14 @@ interface CommentKeywordConfig {
     value: string;
     matchType?: "exact" | "contains" | "startsWith";
   }>;
+  /** Only match comments on these specific posts (all posts if empty/undefined) */
   postIds?: string[];
+  /** Default public reply text posted under the matching comment */
   replyText?: string;
+  /** Keywords that disqualify a comment even if a regular keyword matched */
+  excludeKeywords?: string[];
+  /** Alternative reply texts; when set, a random one is chosen instead of replyText */
+  replyVariations?: string[];
 }
 
 /**
@@ -51,13 +57,25 @@ export function matchCommentTrigger(
     if (!config.keywords?.length) continue;
     if (config.postIds?.length && !config.postIds.includes(comment.postId)) continue;
 
+    let keywordHit = false;
+
     for (const kw of config.keywords) {
       const keyword = kw.value.toLowerCase();
       const matchType = kw.matchType || "contains";
-      if (matchType === "exact" && text === keyword) return trigger;
-      if (matchType === "contains" && text.includes(keyword)) return trigger;
-      if (matchType === "startsWith" && text.startsWith(keyword)) return trigger;
+      if (matchType === "exact" && text === keyword) { keywordHit = true; break; }
+      if (matchType === "contains" && text.includes(keyword)) { keywordHit = true; break; }
+      if (matchType === "startsWith" && text.startsWith(keyword)) { keywordHit = true; break; }
     }
+
+    if (!keywordHit) continue;
+
+    // Exclude keywords: a comment containing any excluded term skips this
+    // trigger and the next one is tried.
+    if (config.excludeKeywords?.some((ek) => ek && text.includes(ek.toLowerCase()))) {
+      continue;
+    }
+
+    return trigger;
   }
 
   return null;
@@ -183,21 +201,27 @@ export async function processComment({
     }
 
     let replySent = false;
-    if (config.replyText) {
+    if (config.replyText || config.replyVariations?.length) {
       const { data: workspace } = await supabase
         .from("workspaces")
         .select("late_api_key_encrypted")
         .eq("id", channel.workspace_id)
         .single();
 
-      if (workspace?.late_api_key_encrypted) {
+      // When reply variations are configured, pick one at random for a more
+      // natural feel; otherwise use the static replyText.
+      const finalReplyText = config.replyVariations?.length
+        ? config.replyVariations[Math.floor(Math.random() * config.replyVariations.length)]
+        : config.replyText;
+
+      if (finalReplyText && workspace?.late_api_key_encrypted) {
         try {
           const zernio = createZernioClient(workspace.late_api_key_encrypted);
           await zernio.comments.replyToInboxPost({
             path: { postId: comment.postId },
             body: {
               accountId: channel.late_account_id,
-              message: config.replyText,
+              message: finalReplyText,
               commentId: comment.id,
             },
           });

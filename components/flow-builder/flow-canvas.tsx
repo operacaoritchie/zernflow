@@ -19,7 +19,7 @@ import "@xyflow/react/dist/style.css";
 
 import { useCallback, useRef, useState, type DragEvent } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Rocket, Loader2, History, Play, Download, Trash2 } from "lucide-react";
+import { ArrowLeft, Save, Rocket, Loader2, History, Play, Download, Trash2, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { createClient } from "@/lib/supabase/client";
@@ -36,6 +36,7 @@ import { NodeConfigSidebar } from "./panels/NodeConfigSidebar";
 import { VersionHistoryPanel } from "./panels/VersionHistoryPanel";
 import { TestPanel } from "./panels/TestPanel";
 import { useT, useFormatter } from "@/lib/i18n/provider";
+import { FlowAnalyticsProvider, useFlowAnalytics } from "./analytics-context";
 
 type Flow = Database["public"]["Tables"]["flows"]["Row"];
 
@@ -76,6 +77,56 @@ function getDefaultData(type: string, actionType?: string): Record<string, unkno
   }
 }
 
+/**
+ * Summary bar displayed at the top of the canvas when analytics are active.
+ * Shows flow-level stats: starts, completions, drop-off rate, messages sent/failed.
+ */
+function AnalyticsSummaryBar() {
+  const { analytics, showAnalytics, loading } = useFlowAnalytics();
+  const t = useT("builder");
+
+  if (!showAnalytics) return null;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center border-b border-border bg-blue-50 dark:bg-blue-950/30 px-4 py-2">
+        <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600" />
+        <span className="ml-2 text-xs text-blue-600">{t("analytics.loading")}</span>
+      </div>
+    );
+  }
+
+  if (!analytics) return null;
+
+  const { summary } = analytics;
+
+  return (
+    <div className="flex items-center gap-6 border-b border-border bg-blue-50 dark:bg-blue-950/30 px-4 py-2">
+      <div className="flex items-center gap-1.5">
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{t("analytics.starts")}</span>
+        <span className="text-sm font-semibold text-foreground">{summary.starts.toLocaleString()}</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{t("analytics.completions")}</span>
+        <span className="text-sm font-semibold text-foreground">{summary.completions.toLocaleString()}</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{t("analytics.dropOff")}</span>
+        <span className="text-sm font-semibold text-red-600">{summary.dropOffRate}%</span>
+      </div>
+      <div className="h-4 w-px bg-border" />
+      <div className="flex items-center gap-1.5">
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{t("analytics.sent")}</span>
+        <span className="text-sm font-semibold text-emerald-600">{summary.messagesSent.toLocaleString()}</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{t("analytics.failed")}</span>
+        <span className="text-sm font-semibold text-red-600">{summary.messagesFailed.toLocaleString()}</span>
+      </div>
+    </div>
+  );
+}
+
 function FlowCanvasInner({ flow }: FlowCanvasProps) {
   const router = useRouter();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -105,6 +156,18 @@ function FlowCanvasInner({ flow }: FlowCanvasProps) {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // Analytics toggle and data fetching from the context provider
+  const { showAnalytics, setShowAnalytics, fetchAnalytics, loading: analyticsLoading } = useFlowAnalytics();
+
+  /** Toggle analytics overlay on/off. Fetches data on first enable. */
+  const handleToggleAnalytics = useCallback(() => {
+    const next = !showAnalytics;
+    setShowAnalytics(next);
+    if (next) {
+      fetchAnalytics(flow.id);
+    }
+  }, [showAnalytics, setShowAnalytics, fetchAnalytics, flow.id]);
 
   const selectedNode = selectedNodeId
     ? nodes.find((n) => n.id === selectedNodeId) || null
@@ -332,6 +395,23 @@ function FlowCanvasInner({ flow }: FlowCanvasProps) {
             </span>
           )}
           <button
+            onClick={handleToggleAnalytics}
+            disabled={analyticsLoading}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors",
+              showAnalytics
+                ? "border-blue-500 bg-blue-500/10 text-blue-600"
+                : "border-border bg-background hover:bg-accent"
+            )}
+          >
+            {analyticsLoading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <BarChart3 className="h-3.5 w-3.5" />
+            )}
+            {t("analytics.toggle")}
+          </button>
+          <button
             onClick={() => {
               setTestPanelOpen(!testPanelOpen);
               if (!testPanelOpen) {
@@ -442,6 +522,9 @@ function FlowCanvasInner({ flow }: FlowCanvasProps) {
         </div>
       </div>
 
+      {/* Analytics summary bar (visible when analytics toggle is on) */}
+      <AnalyticsSummaryBar />
+
       {/* Canvas area */}
       <div className="flex flex-1 overflow-hidden">
         <NodePalette />
@@ -511,7 +594,9 @@ function FlowCanvasInner({ flow }: FlowCanvasProps) {
 export function FlowCanvas({ flow }: FlowCanvasProps) {
   return (
     <ReactFlowProvider>
-      <FlowCanvasInner flow={flow} />
+      <FlowAnalyticsProvider>
+        <FlowCanvasInner flow={flow} />
+      </FlowAnalyticsProvider>
     </ReactFlowProvider>
   );
 }
