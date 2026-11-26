@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { updateSequence, deleteSequence } from "@/lib/actions/sequences";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import type { SequenceStep } from "@/lib/types/database";
+import { useT } from "@/lib/i18n/provider";
 
 interface SequenceEditorProps {
   sequence: {
@@ -47,6 +48,8 @@ const statusConfig = {
 export function SequenceEditor({ sequence }: SequenceEditorProps) {
   const router = useRouter();
   const [name, setName] = useState(sequence.name);
+  const t = useT("sequences");
+  const tc = useT("common");
   const [description, setDescription] = useState(sequence.description || "");
   const [steps, setSteps] = useState<SequenceStep[]>(sequence.steps);
   const [status, setStatus] = useState(sequence.status);
@@ -73,7 +76,7 @@ export function SequenceEditor({ sequence }: SequenceEditorProps) {
     if (result.error) {
       setError(result.error);
     } else {
-      setSuccess("Saved");
+      setSuccess(tc("saved"));
       setTimeout(() => setSuccess(null), 2000);
     }
     setSaving(false);
@@ -125,7 +128,7 @@ export function SequenceEditor({ sequence }: SequenceEditorProps) {
       setStatus("paused");
     } else {
       if (!hasMessageStep) {
-        setError("Add at least one message step before activating");
+        setError(t("addStepFirst"));
         return;
       }
       setStatus("active");
@@ -152,7 +155,7 @@ export function SequenceEditor({ sequence }: SequenceEditorProps) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="text-2xl font-bold bg-transparent border-none outline-none focus:ring-0 p-0"
-                placeholder="Sequence name"
+                placeholder={t("namePlaceholder")}
               />
               <span
                 className={cn(
@@ -160,7 +163,7 @@ export function SequenceEditor({ sequence }: SequenceEditorProps) {
                   statusInfo.classes
                 )}
               >
-                {statusInfo.label}
+                {t(`status.${status}`)}
               </span>
             </div>
           </div>
@@ -174,7 +177,7 @@ export function SequenceEditor({ sequence }: SequenceEditorProps) {
                   : "border border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-900/20"
               )}
             >
-              {status === "active" ? "Pause" : "Activate"}
+              {status === "active" ? t("pause") : t("activate")}
             </button>
             <button
               onClick={handleSave}
@@ -182,21 +185,21 @@ export function SequenceEditor({ sequence }: SequenceEditorProps) {
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
             >
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-              {saving ? "Saving..." : "Save"}
+              {saving ? tc("saving") : tc("save")}
             </button>
             <button
               onClick={() => setConfirmDelete(true)}
               disabled={deleting}
               className="rounded-lg p-2 text-muted-foreground hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-              title="Delete sequence"
+              title={t("deleteTitle")}
             >
               <Trash2 className="h-4 w-4" />
             </button>
             <ConfirmDialog
               open={confirmDelete}
-              title="Delete sequence"
-              message="Are you sure you want to delete this sequence? This action cannot be undone."
-              confirmLabel="Delete"
+              title={t("deleteTitle")}
+              message={t("deleteMessage")}
+              confirmLabel={tc("delete")}
               destructive
               onConfirm={() => {
                 setConfirmDelete(false);
@@ -214,12 +217,12 @@ export function SequenceEditor({ sequence }: SequenceEditorProps) {
           {/* Description */}
           <div>
             <label className="mb-1.5 block text-sm font-medium">
-              Description
+              {t("description")}
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="What is this sequence for?"
+              placeholder={t("descriptionPlaceholder")}
               rows={2}
               className="w-full rounded-lg border border-input bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
@@ -241,7 +244,7 @@ export function SequenceEditor({ sequence }: SequenceEditorProps) {
 
           {/* Steps */}
           <div>
-            <label className="mb-3 block text-sm font-medium">Steps</label>
+            <label className="mb-3 block text-sm font-medium">{t("steps")}</label>
 
             {/* Add button at the top */}
             <AddStepButton onAdd={(type) => addStep(0, type)} />
@@ -284,6 +287,7 @@ function StepCard({
   onRemove: () => void;
 }) {
   const isMessage = step.type === "message";
+  const t = useT("sequences");
 
   return (
     <div className="rounded-lg border border-border bg-card p-4">
@@ -303,7 +307,7 @@ function StepCard({
           </div>
           <div>
             <p className="text-sm font-medium">
-              Step {index + 1}: {isMessage ? "Send Message" : "Wait"}
+              {isMessage ? t("stepMessage", { n: index + 1 }) : t("stepWait", { n: index + 1 })}
             </p>
           </div>
         </div>
@@ -320,7 +324,7 @@ function StepCard({
           <textarea
             value={step.content || ""}
             onChange={(e) => onChange({ content: e.target.value })}
-            placeholder="Type your message..."
+            placeholder={t("messagePlaceholder")}
             rows={3}
             className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
@@ -358,6 +362,8 @@ function DelayPicker({
   }
 
   const [localValue, setLocalValue] = useState(value);
+  const t = useT("sequences");
+  const tb = useT("builder");
   const [localUnit, setLocalUnit] = useState(unit);
 
   function handleChange(newValue: number, newUnit: string) {
@@ -372,7 +378,7 @@ function DelayPicker({
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-muted-foreground">Wait for</span>
+      <span className="text-sm text-muted-foreground">{t("waitFor")}</span>
       <input
         type="number"
         min={1}
@@ -392,9 +398,9 @@ function DelayPicker({
         }}
         className="rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
       >
-        <option value="minutes">Minutes</option>
-        <option value="hours">Hours</option>
-        <option value="days">Days</option>
+        <option value="minutes">{tb("unitOptions.minutes")}</option>
+        <option value="hours">{tb("unitOptions.hours")}</option>
+        <option value="days">{tb("unitOptions.days")}</option>
       </select>
     </div>
   );
@@ -406,6 +412,8 @@ function AddStepButton({
   onAdd: (type: "message" | "delay") => void;
 }) {
   const [open, setOpen] = useState(false);
+  const t = useT("sequences");
+  const tc = useT("common");
 
   return (
     <div className="flex justify-center py-2">
@@ -419,7 +427,7 @@ function AddStepButton({
             className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
           >
             <MessageSquare className="h-3 w-3" />
-            Message
+            {t("message")}
           </button>
           <button
             onClick={() => {
@@ -429,13 +437,13 @@ function AddStepButton({
             className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
           >
             <Clock className="h-3 w-3" />
-            Wait
+            {t("wait")}
           </button>
           <button
             onClick={() => setOpen(false)}
             className="rounded-lg px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent"
           >
-            Cancel
+            {tc("cancel")}
           </button>
         </div>
       ) : (

@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { I18nProvider } from "@/lib/i18n/provider";
+import { getLocale } from "@/lib/i18n/server";
+import { getMessages } from "@/lib/i18n/messages";
+import { DEFAULT_LOCALE } from "@/lib/i18n/config";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -36,13 +40,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getLocale();
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -50,7 +55,15 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <I18nProvider
+          locale={locale}
+          messages={getMessages(locale)}
+          fallback={getMessages(DEFAULT_LOCALE)}
+        >
+          {children}
+        </I18nProvider>
+      </body>
     </html>
   );
 }

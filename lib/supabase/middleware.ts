@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { LOCALE_COOKIE, isLocale } from "@/lib/i18n/config";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -29,6 +30,21 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Keep the language cookie in sync with the language saved on the user, so
+  // the choice follows them to every device they sign in from.
+  const savedLocale = user?.user_metadata?.locale;
+  if (isLocale(savedLocale) && request.cookies.get(LOCALE_COOKIE)?.value !== savedLocale) {
+    request.cookies.set(LOCALE_COOKIE, savedLocale);
+    const refreshed = NextResponse.next({ request });
+    supabaseResponse.cookies.getAll().forEach((cookie) => refreshed.cookies.set(cookie));
+    supabaseResponse = refreshed;
+    supabaseResponse.cookies.set(LOCALE_COOKIE, savedLocale, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: "lax",
+    });
+  }
+
   const pathname = request.nextUrl.pathname;
 
   const isAuthPage = pathname === "/login" || pathname === "/register";
@@ -48,7 +64,7 @@ export async function updateSession(request: NextRequest) {
     const redirectResponse = NextResponse.redirect(url);
     // Forward any refreshed session cookies
     supabaseResponse.cookies.getAll().forEach((cookie) => {
-      redirectResponse.cookies.set(cookie.name, cookie.value);
+      redirectResponse.cookies.set(cookie);
     });
     return redirectResponse;
   }
@@ -60,7 +76,7 @@ export async function updateSession(request: NextRequest) {
     const redirectResponse = NextResponse.redirect(url);
     // Forward any refreshed session cookies
     supabaseResponse.cookies.getAll().forEach((cookie) => {
-      redirectResponse.cookies.set(cookie.name, cookie.value);
+      redirectResponse.cookies.set(cookie);
     });
     return redirectResponse;
   }

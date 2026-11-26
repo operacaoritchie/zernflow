@@ -5,8 +5,10 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useT } from "@/lib/i18n/provider";
 
 export default function RegisterPage() {
+  const t = useT("auth");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -53,16 +55,16 @@ export default function RegisterPage() {
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
           <Image src="/logo.png" alt="ZernFlow" width={48} height={48} className="mx-auto mb-3" />
-          <h1 className="text-2xl font-bold">Create your account</h1>
+          <h1 className="text-2xl font-bold">{t("createTitle")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Get started with ZernFlow
+            {t("createSubtitle")}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium mb-1.5">
-              Name
+              {t("name")}
             </label>
             <input
               id="name"
@@ -71,7 +73,7 @@ export default function RegisterPage() {
               onChange={(e) => setName(e.target.value)}
               required
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Your name"
+              placeholder={t("namePlaceholder")}
             />
           </div>
 
@@ -80,7 +82,7 @@ export default function RegisterPage() {
               htmlFor="email"
               className="block text-sm font-medium mb-1.5"
             >
-              Email
+              {t("email")}
             </label>
             <input
               id="email"
@@ -89,7 +91,7 @@ export default function RegisterPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-              placeholder="you@example.com"
+              placeholder={t("emailPlaceholder")}
             />
           </div>
 
@@ -98,7 +100,7 @@ export default function RegisterPage() {
               htmlFor="password"
               className="block text-sm font-medium mb-1.5"
             >
-              Password
+              {t("password")}
             </label>
             <input
               id="password"
@@ -108,7 +110,7 @@ export default function RegisterPage() {
               required
               minLength={6}
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Min. 6 characters"
+              placeholder={t("passwordMin")}
             />
           </div>
 
@@ -121,7 +123,7 @@ export default function RegisterPage() {
             disabled={loading}
             className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
           >
-            {loading ? "Creating account..." : "Create account"}
+            {loading ? t("creatingAccount") : t("createAccount")}
           </button>
         </form>
 
@@ -131,7 +133,7 @@ export default function RegisterPage() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-background px-2 text-muted-foreground">
-              Or continue with
+              {t("orContinueWith")}
             </span>
           </div>
         </div>
@@ -147,9 +149,9 @@ export default function RegisterPage() {
         </button>
 
         <p className="text-center text-sm text-muted-foreground">
-          Already have an account?{" "}
+          {t("haveAccount")}{" "}
           <Link href="/login" className="font-medium text-foreground hover:underline">
-            Sign in
+            {t("signIn")}
           </Link>
         </p>
       </div>

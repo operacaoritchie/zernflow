@@ -1,5 +1,6 @@
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { AcceptInviteView } from "./accept-invite-view";
+import { getT } from "@/lib/i18n/server";
 
 export default async function InvitePage({
   params,
@@ -7,6 +8,7 @@ export default async function InvitePage({
   params: Promise<{ inviteId: string }>;
 }) {
   const { inviteId } = await params;
+  const t = await getT("auth.invite");
   const supabase = await createClient();
   const serviceClient = await createServiceClient();
 
@@ -21,15 +23,15 @@ export default async function InvitePage({
     return (
       <div className="flex min-h-screen items-center justify-center px-4">
         <div className="w-full max-w-sm text-center space-y-4">
-          <h1 className="text-2xl font-bold">Invite not found</h1>
+          <h1 className="text-2xl font-bold">{t("notFoundTitle")}</h1>
           <p className="text-sm text-muted-foreground">
-            This invite link may be invalid or has been revoked.
+            {t("notFoundBody")}
           </p>
           <a
             href="/login"
             className="inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
           >
-            Go to Login
+            {t("goToLogin")}
           </a>
         </div>
       </div>
@@ -43,16 +45,15 @@ export default async function InvitePage({
     return (
       <div className="flex min-h-screen items-center justify-center px-4">
         <div className="w-full max-w-sm text-center space-y-4">
-          <h1 className="text-2xl font-bold">Invite expired</h1>
+          <h1 className="text-2xl font-bold">{t("expiredTitle")}</h1>
           <p className="text-sm text-muted-foreground">
-            This invite has expired. Please ask the workspace owner to send a
-            new one.
+            {t("expiredBody")}
           </p>
           <a
             href="/login"
             className="inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
           >
-            Go to Login
+            {t("goToLogin")}
           </a>
         </div>
       </div>
@@ -63,15 +64,15 @@ export default async function InvitePage({
     return (
       <div className="flex min-h-screen items-center justify-center px-4">
         <div className="w-full max-w-sm text-center space-y-4">
-          <h1 className="text-2xl font-bold">Invite already used</h1>
+          <h1 className="text-2xl font-bold">{t("usedTitle")}</h1>
           <p className="text-sm text-muted-foreground">
-            This invite has already been accepted.
+            {t("usedBody")}
           </p>
           <a
             href="/dashboard"
             className="inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
           >
-            Go to Dashboard
+            {t("goToDashboard")}
           </a>
         </div>
       </div>
@@ -94,7 +95,7 @@ export default async function InvitePage({
     inviter?.user_metadata?.full_name ??
     inviter?.user_metadata?.name ??
     inviter?.email ??
-    "Someone";
+    t("someone");
 
   // Check if current user is logged in
   const {
@@ -104,7 +105,7 @@ export default async function InvitePage({
   return (
     <AcceptInviteView
       inviteId={invite.id}
-      workspaceName={workspace?.name ?? "a workspace"}
+      workspaceName={workspace?.name ?? t("aWorkspace")}
       inviterName={inviterName}
       role={invite.role}
       email={invite.email}

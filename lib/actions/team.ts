@@ -1,5 +1,6 @@
 "use server";
 
+import { getT } from "@/lib/i18n/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { getWorkspace } from "@/lib/workspace";
 
@@ -8,10 +9,11 @@ export async function inviteTeamMember(
   email: string,
   role: string
 ) {
+  const t = await getT("errors");
   const { workspace, user, supabase } = await getWorkspace();
 
   if (workspace.id !== workspaceId) {
-    return { error: "Workspace mismatch" };
+    return { error: t("workspaceMismatch") };
   }
 
   // Validate caller is owner
@@ -23,17 +25,17 @@ export async function inviteTeamMember(
     .single();
 
   if (membership?.role !== "owner") {
-    return { error: "Only workspace owners can invite members" };
+    return { error: t("ownersInvite") };
   }
 
   const trimmedEmail = email.trim().toLowerCase();
   if (!trimmedEmail || !trimmedEmail.includes("@")) {
-    return { error: "A valid email address is required" };
+    return { error: t("validEmail") };
   }
 
   const validRoles = ["member", "admin"];
   if (!validRoles.includes(role)) {
-    return { error: "Invalid role. Must be member or admin." };
+    return { error: t("invalidRole") };
   }
 
   // Check if this email is already a member
@@ -54,7 +56,7 @@ export async function inviteTeamMember(
       .single();
 
     if (existingInvite) {
-      return { error: "An invite for this email is already pending" };
+      return { error: t("invitePending") };
     }
   }
 
@@ -81,10 +83,11 @@ export async function removeTeamMember(
   workspaceId: string,
   userId: string
 ) {
+  const t = await getT("errors");
   const { workspace, user, supabase } = await getWorkspace();
 
   if (workspace.id !== workspaceId) {
-    return { error: "Workspace mismatch" };
+    return { error: t("workspaceMismatch") };
   }
 
   // Validate caller is owner
@@ -96,12 +99,12 @@ export async function removeTeamMember(
     .single();
 
   if (membership?.role !== "owner") {
-    return { error: "Only workspace owners can remove members" };
+    return { error: t("ownersRemove") };
   }
 
   // Can't remove yourself
   if (userId === user.id) {
-    return { error: "You cannot remove yourself from the workspace" };
+    return { error: t("removeSelf") };
   }
 
   const { error: deleteError } = await supabase
@@ -118,12 +121,13 @@ export async function removeTeamMember(
 }
 
 export async function acceptInvite(inviteId: string) {
+  const t = await getT("errors");
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: t("notAuthenticated") };
 
   // Use service client to bypass RLS (the user is not a workspace member yet)
   const serviceClient = await createServiceClient();
@@ -136,20 +140,20 @@ export async function acceptInvite(inviteId: string) {
     .single();
 
   if (fetchError || !invite) {
-    return { error: "Invite not found" };
+    return { error: t("inviteNotFound") };
   }
 
   if (invite.status !== "pending") {
-    return { error: "This invite is no longer valid" };
+    return { error: t("inviteInvalid") };
   }
 
   if (new Date(invite.expires_at) < new Date()) {
-    return { error: "This invite has expired" };
+    return { error: t("inviteExpired") };
   }
 
   // Verify the invite email matches the current user's email
   if (invite.email !== user.email) {
-    return { error: "This invite was sent to a different email address" };
+    return { error: t("inviteOtherEmail") };
   }
 
   // Check if user is already a member
@@ -193,6 +197,7 @@ export async function acceptInvite(inviteId: string) {
 }
 
 export async function revokeInvite(inviteId: string) {
+  const t = await getT("errors");
   const { user, supabase } = await getWorkspace();
 
   // Fetch the invite to get workspace_id
@@ -203,7 +208,7 @@ export async function revokeInvite(inviteId: string) {
     .single();
 
   if (fetchError || !invite) {
-    return { error: "Invite not found" };
+    return { error: t("inviteNotFound") };
   }
 
   // Validate caller is owner
@@ -215,7 +220,7 @@ export async function revokeInvite(inviteId: string) {
     .single();
 
   if (membership?.role !== "owner") {
-    return { error: "Only workspace owners can revoke invites" };
+    return { error: t("ownersRevoke") };
   }
 
   const { error: deleteError } = await supabase

@@ -6,6 +6,8 @@ import Image from "next/image";
 import { Users, Crown, Shield, User, Loader2 } from "lucide-react";
 import { acceptInvite } from "@/lib/actions/team";
 import Link from "next/link";
+import { useT } from "@/lib/i18n/provider";
+import { rich } from "@/lib/i18n/rich";
 
 const roleIcons: Record<string, React.ReactNode> = {
   owner: <Crown className="h-3.5 w-3.5" />,
@@ -31,6 +33,9 @@ export function AcceptInviteView({
   currentUserEmail: string | null;
 }) {
   const router = useRouter();
+  const t = useT("auth.invite");
+  const ta = useT("auth");
+  const tc = useT("common");
   const [accepting, setAccepting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,9 +71,9 @@ export function AcceptInviteView({
             height={48}
             className="mx-auto mb-3"
           />
-          <h1 className="text-2xl font-bold">You&apos;re invited!</h1>
+          <h1 className="text-2xl font-bold">{t("title")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {inviterName} invited you to join
+            {t("invitedYou", { name: inviterName })}
           </p>
         </div>
 
@@ -78,13 +83,13 @@ export function AcceptInviteView({
           </div>
           <h2 className="mt-3 text-lg font-semibold">{workspaceName}</h2>
           <div className="mt-2 flex items-center justify-center gap-1.5">
-            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium capitalize">
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium ">
               {roleIcons[role] ?? roleIcons.member}
-              {role}
+              {tc(`roles.${role}`)}
             </span>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
-            Invited as {email}
+            {t("invitedAs", { email })}
           </p>
         </div>
 
@@ -98,10 +103,10 @@ export function AcceptInviteView({
               {accepting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Accepting...
+                  {t("accepting")}
                 </>
               ) : (
-                "Accept Invite"
+                t("accept")
               )}
             </button>
 
@@ -114,19 +119,19 @@ export function AcceptInviteView({
         {isLoggedIn && emailMismatch && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-center">
             <p className="text-sm text-amber-800">
-              You are logged in as{" "}
-              <span className="font-medium">{currentUserEmail}</span>, but this
-              invite was sent to{" "}
-              <span className="font-medium">{email}</span>.
+              {rich(t("mismatch"), {
+                current: <span className="font-medium">{currentUserEmail}</span>,
+                email: <span className="font-medium">{email}</span>,
+              })}
             </p>
             <p className="mt-1 text-xs text-amber-600">
-              Please log in with the invited email address to accept.
+              {t("mismatchHint")}
             </p>
             <Link
               href={`/login`}
               className="mt-3 inline-flex rounded-lg border border-amber-300 bg-white px-4 py-2 text-sm font-medium text-amber-800 hover:bg-amber-50"
             >
-              Switch Account
+              {t("switchAccount")}
             </Link>
           </div>
         )}
@@ -137,15 +142,15 @@ export function AcceptInviteView({
               href={`/login?next=/invite/${inviteId}`}
               className="flex w-full items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90"
             >
-              Sign in to Accept
+              {t("signInToAccept")}
             </Link>
             <p className="text-center text-sm text-muted-foreground">
-              Don&apos;t have an account?{" "}
+              {ta("noAccount")}{" "}
               <Link
                 href={`/register?next=/invite/${inviteId}`}
                 className="font-medium text-foreground hover:underline"
               >
-                Sign up
+                {ta("signUp")}
               </Link>
             </p>
           </div>

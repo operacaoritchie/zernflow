@@ -4,10 +4,13 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Loader2 } from "lucide-react";
 import { createSequence } from "@/lib/actions/sequences";
+import { useT } from "@/lib/i18n/provider";
 
 export function CreateSequenceButton() {
   const router = useRouter();
   const [creating, setCreating] = useState(false);
+  const t = useT("sequences");
+  const tc = useT("common");
   const pendingRef = useRef(false);
 
   async function handleCreate() {
@@ -16,11 +19,11 @@ export function CreateSequenceButton() {
     setCreating(true);
 
     try {
-      const result = await createSequence("Untitled Sequence");
+      const result = await createSequence(t("untitled"));
 
       if (result.error) {
         console.error("Failed to create sequence:", result.error);
-        alert(`Failed to create sequence: ${result.error}`);
+        alert(t("createFailed", { error: result.error }));
         return;
       }
 
@@ -29,7 +32,7 @@ export function CreateSequenceButton() {
       }
     } catch (err) {
       console.error("Failed to create sequence:", err);
-      alert(`Failed to create sequence: ${err instanceof Error ? err.message : "Unknown error"}`);
+      alert(t("createFailed", { error: err instanceof Error ? err.message : t("unknownError") }));
     } finally {
       pendingRef.current = false;
       setCreating(false);
@@ -47,7 +50,7 @@ export function CreateSequenceButton() {
       ) : (
         <Plus className="h-4 w-4" />
       )}
-      {creating ? "Creating..." : "New Sequence"}
+      {creating ? tc("creating") : t("new")}
     </button>
   );
 }

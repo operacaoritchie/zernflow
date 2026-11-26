@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { SequenceEditor } from "@/components/sequences/sequence-editor";
 import { EnrollmentList } from "@/components/sequences/enrollment-list";
 import type { SequenceStep } from "@/lib/types/database";
+import { getT } from "@/lib/i18n/server";
 
 export default async function SequenceDetailPage({
   params,
@@ -10,6 +11,7 @@ export default async function SequenceDetailPage({
   params: Promise<{ sequenceId: string }>;
 }) {
   const { sequenceId } = await params;
+  const tc = await getT("common");
   const { workspace, supabase } = await getWorkspace();
 
   const { data: sequence } = await supabase
@@ -50,7 +52,7 @@ export default async function SequenceDetailPage({
                   ?.display_name ||
                 (e.contacts as { display_name: string | null; email: string | null } | null)
                   ?.email ||
-                "Unknown",
+                tc("unknown"),
               currentStepIndex: e.current_step_index,
               status: e.status as "active" | "completed" | "cancelled",
               enrolledAt: e.enrolled_at,

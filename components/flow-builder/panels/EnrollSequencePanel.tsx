@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2 } from "lucide-react";
+import { useT } from "@/lib/i18n/provider";
 
 interface EnrollSequencePanelProps {
   data: Record<string, unknown>;
@@ -17,6 +18,8 @@ interface SequenceOption {
 
 export function EnrollSequencePanel({ data, onChange }: EnrollSequencePanelProps) {
   const [sequences, setSequences] = useState<SequenceOption[]>([]);
+  const t = useT("builder");
+  const tc = useT("common");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,26 +40,25 @@ export function EnrollSequencePanel({ data, onChange }: EnrollSequencePanelProps
     <div className="space-y-4">
       <div className="rounded-lg border border-border bg-muted p-4">
         <p className="text-sm font-medium text-foreground">
-          Enroll in Sequence
+          {t("nodeTypes.enrollSequence")}
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          The contact will be enrolled in the selected drip sequence when they
-          reach this step.
+          {t("enroll.description")}
         </p>
       </div>
 
       <div>
         <label className="mb-2 block text-xs font-semibold text-muted-foreground">
-          Sequence
+          {t("enroll.sequence")}
         </label>
         {loading ? (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            Loading sequences...
+            {t("enroll.loading")}
           </div>
         ) : sequences.length === 0 ? (
           <p className="text-xs text-muted-foreground">
-            No sequences found. Create one in the Sequences section first.
+            {t("enroll.empty")}
           </p>
         ) : (
           <select
@@ -64,16 +66,16 @@ export function EnrollSequencePanel({ data, onChange }: EnrollSequencePanelProps
             onChange={(e) => onChange({ ...data, sequenceId: e.target.value })}
             className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           >
-            <option value="">Select a sequence...</option>
+            <option value="">{t("enroll.select")}</option>
             {sequences.map((seq) => (
               <option key={seq.id} value={seq.id}>
-                {seq.name} ({seq.status})
+                {seq.name} ({tc(seq.status)})
               </option>
             ))}
           </select>
         )}
         <p className="mt-1.5 text-xs text-muted-foreground">
-          Only active sequences will actually enroll contacts at runtime.
+          {t("enroll.hint")}
         </p>
       </div>
     </div>

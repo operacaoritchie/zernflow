@@ -1,16 +1,18 @@
 "use server";
 
+import { getT } from "@/lib/i18n/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { WORKSPACE_COOKIE } from "@/lib/workspace";
 
 export async function switchWorkspace(workspaceId: string) {
+  const t = await getT("errors");
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: t("notAuthenticated") };
 
   // Validate user has access to this workspace
   const { data: membership } = await supabase
@@ -20,7 +22,7 @@ export async function switchWorkspace(workspaceId: string) {
     .eq("workspace_id", workspaceId)
     .single();
 
-  if (!membership) return { error: "No access to this workspace" };
+  if (!membership) return { error: t("noWorkspaceAccess") };
 
   const cookieStore = await cookies();
   cookieStore.set(WORKSPACE_COOKIE, workspaceId, {
@@ -35,15 +37,16 @@ export async function switchWorkspace(workspaceId: string) {
 }
 
 export async function createWorkspace(name: string) {
+  const t = await getT("errors");
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: t("notAuthenticated") };
 
   const trimmed = name.trim();
-  if (!trimmed) return { error: "Name is required" };
+  if (!trimmed) return { error: t("nameRequired") };
 
   const slug = trimmed
     .toLowerCase()
