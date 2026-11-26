@@ -585,7 +585,59 @@
     "noNotes": "Nenhuma nota ainda",
     "notePlaceholder": "Adicione uma nota interna...",
     "addingNote": "Adicionando...",
-    "addNote": "Adicionar nota"
+    "addNote": "Adicionar nota",
+    "exportButton": "Exportar",
+    "export": {
+      "title": "Exportar contatos",
+      "subtitle": "Baixe uma planilha ou um público para o Meta Ads.",
+      "close": "Fechar",
+      "who": "Quem",
+      "presets": {
+        "all": "Todos",
+        "instagram": "Instagram",
+        "leads": "Leads"
+      },
+      "presetHints": {
+        "all": "Todos os contatos do workspace.",
+        "instagram": "Só quem já conversou ou comentou no Instagram.",
+        "leads": "Quem tem a etiqueta lead-vaga ou deixou telefone ou e-mail válido."
+      },
+      "useFilters": "Aplicar o filtro atual ({filters})",
+      "format": "Formato",
+      "formats": {
+        "full": {
+          "label": "Planilha completa (CSV)",
+          "hint": "Nome, @, ID do Instagram, telefone, e-mail, etiquetas e campos. Abre direto no Excel."
+        },
+        "ig_audience": {
+          "label": "Público do Instagram (Meta Ads)",
+          "hint": "Só os IDs do Instagram, um por linha. Sem dados pessoais."
+        },
+        "meta_customers": {
+          "label": "Lista de clientes Meta (leads)",
+          "hint": "Telefone com 55, e-mail e nome no formato do Gerenciador de Anúncios. Só quem tem telefone ou e-mail."
+        }
+      },
+      "includeCpf": "Incluir CPF",
+      "howTo": "Como usar no Gerenciador de Anúncios",
+      "steps": {
+        "ig_audience": {
+          "1": "Públicos → Criar público → Público personalizado → Lista de clientes.",
+          "2": "Em Adicionar lista, escolha \"Colar valores\" e cole os IDs do arquivo.",
+          "3": "No mapeamento, marque o identificador \"Instagram Scoped User ID\" e informe a Página do Facebook ligada ao Instagram.",
+          "4": "Importe e aguarde alguns minutos. O tamanho aparece a partir de cerca de 1.000 pessoas."
+        },
+        "meta_customers": {
+          "1": "Públicos → Criar público → Público personalizado → Lista de clientes.",
+          "2": "Envie o arquivo CSV baixado.",
+          "3": "Confira o mapeamento: email, phone, fn, ln e country são reconhecidos sozinhos.",
+          "4": "Importe. A Meta criptografa os dados antes de comparar."
+        }
+      },
+      "privacy": "Os dados exportados são pessoais (LGPD). Guarde o arquivo com cuidado. Cada exportação fica registrada.",
+      "cancel": "Cancelar",
+      "download": "Baixar"
+    }
   },
   "errors": {
     "workspaceMismatch": "Workspace não corresponde",

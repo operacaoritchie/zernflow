@@ -11,8 +11,10 @@ import {
   XCircle,
   Filter,
   ChevronDown,
+  Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ExportDialog } from "@/components/contacts/export-dialog";
 import {
   SegmentBuilder,
   createEmptyFilter,
@@ -47,10 +49,12 @@ export function ContactsView({
   contacts,
   tags,
   workspaceId,
+  canExport = false,
 }: {
   contacts: ContactWithTags[];
   tags: Tag[];
   workspaceId: string;
+  canExport?: boolean;
 }) {
   const [search, setSearch] = useState("");
   const t = useT("contacts");
@@ -58,6 +62,7 @@ export function ContactsView({
   const tc = useT("common");
   const format = useFormatter();
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
   const [showSegmentBuilder, setShowSegmentBuilder] = useState(false);
   const [segmentFilter, setSegmentFilter] = useState<SegmentFilter>(
     createEmptyFilter()
@@ -83,6 +88,12 @@ export function ContactsView({
 
   return (
     <div className="flex h-full flex-col">
+      <ExportDialog
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        tagName={tags.find((tg) => tg.id === selectedTagId)?.name ?? null}
+        search={search}
+      />
       {/* Header */}
       <div className="border-b border-border px-4 py-4 sm:px-8 sm:py-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -92,6 +103,15 @@ export function ContactsView({
               {t("countInWorkspace", { count: contacts.length })}
             </p>
           </div>
+          {canExport && (
+            <button
+              onClick={() => setExportOpen(true)}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+            >
+              <Download className="h-4 w-4" />
+              {t("exportButton")}
+            </button>
+          )}
         </div>
 
         {/* Search and filters */}
