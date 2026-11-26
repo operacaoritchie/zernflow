@@ -52,7 +52,8 @@ export type NodeType =
   | "abSplit"
   | "smartDelay"
   | "aiResponse"
-  | "enrollSequence";
+  | "enrollSequence"
+  | "sendWhatsAppTemplate";
 
 export type SequenceStatus = "draft" | "active" | "paused";
 export type SequenceEnrollmentStatus = "active" | "completed" | "cancelled";

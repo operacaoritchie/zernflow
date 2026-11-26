@@ -20,11 +20,13 @@ import type {
   PrivateReplyNodeData,
   AiResponseNodeData,
   EnrollSequenceNodeData,
+  SendWhatsAppTemplateNodeData,
 } from "./types";
 import { executeAiResponse } from "./nodes/ai-response";
 import { adaptMessage } from "./platform-adapter";
 import { createZernioClient } from "@/lib/zernio-client";
 import { requestPublicUrl } from "./request-public-url";
+import { normalizeWhatsAppPhone, sendTemplate } from "@/lib/whatsapp-templates";
 import { dispatchWebhookEvent } from "@/lib/webhook-dispatcher";
 import { toEngineNodes } from "./normalize-nodes";
 
@@ -344,10 +346,15 @@ async function traverseNodes(
 
   // Execute the node
   const result = await executeNode(supabase, node, context, sessionId);
+  const effectiveType = resolveNodeType(node);
 
   // Persist variables written by output-producing nodes so they survive
   // pauses (resumeSession reloads them from the session row).
-  if (node.type === "aiResponse" || node.type === "httpRequest") {
+  if (
+    effectiveType === "aiResponse" ||
+    effectiveType === "httpRequest" ||
+    effectiveType === "sendWhatsAppTemplate"
+  ) {
     await supabase
       .from("flow_sessions")
       .update({ variables: (context.variables ?? {}) as Json })
@@ -385,13 +392,27 @@ async function traverseNodes(
   await traverseNodes(supabase, sessionId, nextNode, nodes, edges, context, depth + 1);
 }
 
+/**
+ * Action nodes made in the flow builder are stored as `type: "action"` with the
+ * real action in `data.actionType`; flows written straight to the database use
+ * the action as the type. Both run the same way.
+ */
+function resolveNodeType(node: FlowNode): string {
+  if ((node.type as string) === "action") {
+    const actionType = (node.data as { actionType?: unknown } | undefined)?.actionType;
+    return typeof actionType === "string" && actionType ? actionType : "action";
+  }
+  return node.type;
+}
+
 async function executeNode(
   supabase: SupabaseClient<Database>,
   node: FlowNode,
   context: FlowExecutionContext,
   sessionId: string
 ): Promise<string | void> {
-  switch (node.type) {
+  const type = resolveNodeType(node);
+  switch (type) {
     case "sendMessage":
       return executeSendMessage(supabase, node.data as SendMessageNodeData, context);
     case "condition":
@@ -399,8 +420,15 @@ async function executeNode(
     case "delay":
       return executeDelay(supabase, node.data as DelayNodeData, sessionId, node.id, context);
     case "addTag":
-    case "removeTag":
-      return executeTag(supabase, node.data as TagNodeData, context);
+    case "removeTag": {
+      // Builder nodes carry only actionType; derive add/remove from it.
+      const tagData = node.data as Partial<TagNodeData>;
+      return executeTag(
+        supabase,
+        { ...tagData, action: tagData.action ?? (type === "addTag" ? "add" : "remove") } as TagNodeData,
+        context
+      );
+    }
     case "setCustomField":
       return executeSetField(supabase, node.data as SetFieldNodeData, context);
     case "httpRequest":
@@ -411,7 +439,7 @@ async function executeNode(
       return executeHumanTakeover(supabase, context, sessionId);
     case "subscribe":
     case "unsubscribe":
-      return executeSubscription(supabase, node.type, context);
+      return executeSubscription(supabase, type as "subscribe" | "unsubscribe", context);
     case "commentReply":
       return executeCommentReply(supabase, node.data as CommentReplyNodeData, context);
     case "privateReply":
@@ -424,6 +452,8 @@ async function executeNode(
       return executeSmartDelay(supabase, node.data as SmartDelayNodeData, sessionId, node.id, context);
     case "enrollSequence":
       return executeEnrollSequence(supabase, node.data as EnrollSequenceNodeData, context);
+    case "sendWhatsAppTemplate":
+      return executeSendWhatsAppTemplate(supabase, node.data as SendWhatsAppTemplateNodeData, context);
     default:
       return;
   }
@@ -870,6 +900,9 @@ async function executeSetField(
     },
     { onConflict: "contact_id,field_id" }
   );
+
+  // Later nodes in the same run can use the saved value as {{<field slug>}}.
+  context.variables = { ...(context.variables ?? {}), [data.fieldSlug]: checked.value };
 }
 
 async function executeSmartDelay(
@@ -1243,6 +1276,118 @@ function resolveVariablePath(
     value = (value as Record<string, unknown>)[key];
   }
   return value;
+}
+
+/**
+ * Send an approved WhatsApp template from one of the workspace's WhatsApp
+ * numbers to a phone stored on the contact (e.g. {{telefone_vaga}}). This is
+ * what lets a flow that started on Instagram reach the lead on WhatsApp: Meta
+ * only accepts a business-initiated WhatsApp message as an approved template.
+ *
+ * Never stops the flow. The outcome lands in {{whatsapp_template_status}}
+ * ("sent" | "failed" | "invalid_phone") so a Condition node can branch on it.
+ */
+async function executeSendWhatsAppTemplate(
+  supabase: SupabaseClient<Database>,
+  data: SendWhatsAppTemplateNodeData,
+  context: FlowExecutionContext
+) {
+  const setStatus = (status: string, extra: Record<string, string> = {}) => {
+    context.variables = { ...(context.variables ?? {}), whatsapp_template_status: status, ...extra };
+  };
+
+  if (!data.channelId || !data.templateName || !data.templateLanguage) {
+    console.error("sendWhatsAppTemplate: node is not configured");
+    setStatus("failed");
+    return;
+  }
+
+  const [{ data: workspace }, { data: channel }] = await Promise.all([
+    supabase
+      .from("workspaces")
+      .select("late_api_key_encrypted")
+      .eq("id", context.workspaceId)
+      .single(),
+    supabase
+      .from("channels")
+      .select("id, late_account_id, platform, is_active")
+      .eq("id", data.channelId)
+      .eq("workspace_id", context.workspaceId)
+      .single(),
+  ]);
+
+  if (!workspace?.late_api_key_encrypted || !channel || channel.platform !== "whatsapp" || !channel.is_active) {
+    console.error("sendWhatsAppTemplate: WhatsApp channel or Zernio key unavailable");
+    setStatus("failed");
+    return;
+  }
+
+  // The contact's saved fields ({{telefone_vaga}}) and name ({{contact_name}})
+  // fill in where the flow has no variable of that name, so the node works
+  // even when the phone was saved in an earlier run of the flow.
+  const { data: contact } = await supabase
+    .from("contacts")
+    .select("display_name, email, contact_custom_fields(value, custom_field_definitions(slug))")
+    .eq("id", context.contactId)
+    .single();
+  const contactVars: Record<string, unknown> = {};
+  if (contact) {
+    if (contact.display_name) contactVars.contact_name = contact.display_name;
+    if (contact.email) contactVars.contact_email = contact.email;
+    for (const cf of (contact.contact_custom_fields ?? []) as Array<{
+      value: string | null;
+      custom_field_definitions: { slug: string } | null;
+    }>) {
+      if (cf.custom_field_definitions?.slug && cf.value) contactVars[cf.custom_field_definitions.slug] = cf.value;
+    }
+  }
+  const vars = { ...contactVars, ...((context.variables ?? {}) as Record<string, unknown>) };
+  const phone = normalizeWhatsAppPhone(interpolateVariables(data.phone || "", vars));
+  if (!phone) {
+    setStatus("invalid_phone");
+    await supabase.from("analytics_events").insert({
+      workspace_id: context.workspaceId,
+      flow_id: context.flowId,
+      contact_id: context.contactId,
+      event_type: "message_failed",
+      metadata: { node: "sendWhatsAppTemplate", reason: "invalid_phone", template: data.templateName },
+    });
+    return;
+  }
+
+  const params = (data.params ?? []).map((p) => interpolateVariables(p ?? "", vars).trim());
+
+  try {
+    const { conversationId } = await sendTemplate(workspace.late_api_key_encrypted, {
+      accountId: channel.late_account_id,
+      phone,
+      templateName: data.templateName,
+      templateLanguage: data.templateLanguage,
+      templateParams: params,
+    });
+    setStatus("sent", conversationId ? { whatsapp_conversation_id: conversationId } : {});
+    await supabase.from("analytics_events").insert({
+      workspace_id: context.workspaceId,
+      flow_id: context.flowId,
+      contact_id: context.contactId,
+      event_type: "message_sent",
+      metadata: { node: "sendWhatsAppTemplate", template: data.templateName, channelId: channel.id },
+    });
+  } catch (err) {
+    console.error("sendWhatsAppTemplate failed:", err);
+    setStatus("failed");
+    await supabase.from("analytics_events").insert({
+      workspace_id: context.workspaceId,
+      flow_id: context.flowId,
+      contact_id: context.contactId,
+      event_type: "message_failed",
+      metadata: {
+        node: "sendWhatsAppTemplate",
+        template: data.templateName,
+        error: err instanceof Error ? err.message.slice(0, 300) : "unknown",
+      },
+    });
+  }
 }
 
 function interpolateVariables(

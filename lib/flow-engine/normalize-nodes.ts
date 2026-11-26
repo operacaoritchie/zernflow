@@ -23,6 +23,7 @@ export const ACTION_NODE_TYPES = [
   "abSplit",
   "smartDelay",
   "enrollSequence",
+  "sendWhatsAppTemplate",
 ] as const;
 
 export type ActionNodeType = (typeof ACTION_NODE_TYPES)[number];

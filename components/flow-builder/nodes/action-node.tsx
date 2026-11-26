@@ -11,6 +11,7 @@ import {
   Shuffle,
   Hourglass,
   Cog,
+  MessageCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { NodeType } from "@/lib/types/database";
@@ -32,6 +33,8 @@ export interface ActionNodeProps {
   paths?: Array<{ name: string; weight: number }>;
   timeout?: number;
   timeoutUnit?: string;
+  templateName?: string;
+  phone?: string;
 }
 
 const actionConfig: Record<
@@ -98,6 +101,11 @@ const actionConfig: Record<
     label: "Smart Delay",
     color: "bg-gray-500",
   },
+  sendWhatsAppTemplate: {
+    icon: MessageCircle,
+    label: "WhatsApp Template",
+    color: "bg-green-600",
+  },
 };
 
 function getSummary(nodeData: ActionNodeProps, t: Translator): string | null {
@@ -130,6 +138,10 @@ function getSummary(nodeData: ActionNodeProps, t: Translator): string | null {
         return nodeData.paths.map((p) => `${p.name}: ${p.weight}%`).join(", ");
       }
       return null;
+    case "sendWhatsAppTemplate":
+      return nodeData.templateName
+        ? t("summary.waTemplate", { template: nodeData.templateName, phone: nodeData.phone || "?" })
+        : null;
     case "smartDelay":
       return nodeData.timeout
         ? t("summary.waitUpTo", { value: nodeData.timeout, unit: t(`units.${nodeData.timeoutUnit || "minutes"}`) })

@@ -15,6 +15,7 @@ import {
   Hourglass,
   Sparkles,
   ListOrdered,
+  MessageCircle,
 } from "lucide-react";
 import type { DragEvent } from "react";
 import { useT } from "@/lib/i18n/provider";
@@ -47,6 +48,13 @@ const categories: PaletteCategory[] = [
         nodeType: "sendMessage",
         label: "Send Message",
         icon: MessageSquare,
+      },
+      {
+        type: "action",
+        nodeType: "sendWhatsAppTemplate",
+        label: "WhatsApp Template",
+        icon: MessageCircle,
+        actionType: "sendWhatsAppTemplate",
       },
       {
         type: "aiResponse",

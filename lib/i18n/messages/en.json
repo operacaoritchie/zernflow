@@ -135,7 +135,8 @@
       "enrollSequence": "Enroll in Sequence",
       "commentReply": "Comment Reply",
       "privateReply": "Private Reply",
-      "action": "Action"
+      "action": "Action",
+      "sendWhatsAppTemplate": "WhatsApp Template"
     },
     "triggerTypes": {
       "keyword": "Keyword",
@@ -185,7 +186,8 @@
       "handOff": "Hand off to agent",
       "subscribe": "Subscribe contact",
       "unsubscribe": "Unsubscribe contact",
-      "waitUpTo": "Wait up to {value} {unit}"
+      "waitUpTo": "Wait up to {value} {unit}",
+      "waTemplate": "{template} → {phone}"
     },
     "saveFailed": "Failed to save",
     "deleteFailed": "Failed to delete",
@@ -435,6 +437,25 @@
       "sent": "Sent",
       "failed": "Failed",
       "toggle": "Analytics"
+    },
+    "wa": {
+      "description": "Sends an approved WhatsApp template from your number to the phone saved on the contact. Works even if the lead came from Instagram and never wrote on WhatsApp.",
+      "noChannel": "Connect a WhatsApp number to use this step.",
+      "goChannels": "Go to Channels",
+      "number": "WhatsApp number",
+      "selectNumber": "Select a number...",
+      "template": "Approved template",
+      "reload": "Reload templates",
+      "loading": "Loading templates...",
+      "loadFailed": "Could not load templates.",
+      "selectTemplate": "Select a template...",
+      "noApproved": "No approved templates on this number yet.",
+      "manage": "Create or check templates",
+      "phone": "Send to phone",
+      "phoneHint": "Use the field where the flow saved the phone, e.g. {{telefone_vaga}}. Numbers without country code are treated as Brazilian (55).",
+      "variables": "Template variables",
+      "variablesHint": "Fixed text or variables such as {{contact_name}} or any contact field.",
+      "statusHint": "The flow always continues. The result is saved in {{whatsapp_template_status}} (sent, failed or invalid_phone) for a Condition node."
     },
     "handles": {
       "invalid": "invalid",
@@ -774,6 +795,7 @@
     "analytics": "Analytics",
     "growth": "Growth",
     "channels": "Channels",
+    "waTemplates": "WhatsApp templates",
     "settings": "Settings",
     "lightMode": "Light mode",
     "darkMode": "Dark mode",
@@ -975,6 +997,78 @@
       "waitEmail": "Wait for email",
       "saveEmail": "Save email",
       "addTag": "Add \"lead\" tag"
+    }
+  },
+  "waTemplates": {
+    "title": "WhatsApp Templates",
+    "subtitle": "Create templates and send them to Meta for approval",
+    "explainer": "WhatsApp only lets a business start a conversation, or write after 24 hours without a reply, with a template approved by Meta. Review usually takes from a few minutes to 24 hours. Only approved templates can be used in flows.",
+    "needWhatsApp": "Connect a WhatsApp number first",
+    "needWhatsAppHint": "Templates belong to a WhatsApp Business number connected through Zernio.",
+    "goChannels": "Go to Channels",
+    "number": "WhatsApp number",
+    "refresh": "Refresh",
+    "new": "New template",
+    "loadFailed": "Could not load templates.",
+    "empty": "No templates yet",
+    "emptyHint": "Create your first template and send it for approval.",
+    "status": {
+      "PENDING": "Under review",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "IN_APPEAL": "In appeal",
+      "PAUSED": "Paused by Meta",
+      "DISABLED": "Disabled",
+      "PENDING_DELETION": "Being deleted"
+    },
+    "category": {
+      "MARKETING": "Marketing",
+      "UTILITY": "Utility",
+      "AUTHENTICATION": "Authentication"
+    },
+    "categoryLabel": "Category",
+    "categoryHint": {
+      "MARKETING": "Offers, invitations and promotions. Stricter review.",
+      "UTILITY": "Updates about something the person asked for, such as a sign-up or booking.",
+      "AUTHENTICATION": "One-time verification codes only."
+    },
+    "variablesCount": {
+      "one": "{count} variable",
+      "other": "{count} variables"
+    },
+    "reason": "Meta's reason: {reason}",
+    "pendingHint": "Waiting for Meta. Use Refresh to check again.",
+    "formTitle": "New template",
+    "name": "Name",
+    "nameSavedAs": "Will be saved as {name} (Meta only accepts lowercase letters, numbers and _).",
+    "language": "Language",
+    "languages": {
+      "pt_BR": "Portuguese (Brazil)",
+      "en_US": "English (US)",
+      "en": "English",
+      "es": "Spanish",
+      "es_MX": "Spanish (Mexico)",
+      "es_AR": "Spanish (Argentina)"
+    },
+    "header": "Header (optional)",
+    "body": "Message",
+    "bodyPlaceholder": "Hi {{1}}, your spot for the course is reserved. Reply YES to confirm.",
+    "bodyHint": "Use {{1}}, {{2}}… for parts that change for each person, like the name.",
+    "addVariable": "Add variable",
+    "examplesHint": "Meta's reviewers need an example for each variable.",
+    "exampleFor": "Example for {var}",
+    "footer": "Footer (optional)",
+    "preview": "Preview",
+    "previewEmpty": "Your message will appear here.",
+    "submit": "Send for approval",
+    "submitting": "Sending...",
+    "createFailed": "Could not send the template.",
+    "errors": {
+      "invalid_name": "Enter a name.",
+      "invalid_body": "The message is required and can have up to 1024 characters.",
+      "invalid_header": "The header can have up to 60 characters.",
+      "invalid_footer": "The footer can have up to 60 characters.",
+      "examples_required": "Fill in an example for each variable."
     }
   }
 }

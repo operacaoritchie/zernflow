@@ -135,7 +135,8 @@
       "enrollSequence": "Inscrever em sequência",
       "commentReply": "Resposta ao comentário",
       "privateReply": "Resposta privada",
-      "action": "Ação"
+      "action": "Ação",
+      "sendWhatsAppTemplate": "Template de WhatsApp"
     },
     "triggerTypes": {
       "keyword": "Palavra-chave",
@@ -185,7 +186,8 @@
       "handOff": "Transferir para atendente",
       "subscribe": "Inscrever contato",
       "unsubscribe": "Cancelar inscrição do contato",
-      "waitUpTo": "Esperar até {value} {unit}"
+      "waitUpTo": "Esperar até {value} {unit}",
+      "waTemplate": "{template} → {phone}"
     },
     "saveFailed": "Falha ao salvar",
     "deleteFailed": "Falha ao excluir",
@@ -435,6 +437,25 @@
       "sent": "Enviadas",
       "failed": "Falharam",
       "toggle": "Estatísticas"
+    },
+    "wa": {
+      "description": "Envia um template aprovado do seu número de WhatsApp para o telefone salvo no contato. Funciona mesmo se o lead veio do Instagram e nunca escreveu no WhatsApp.",
+      "noChannel": "Conecte um número de WhatsApp para usar esta etapa.",
+      "goChannels": "Ir para Canais",
+      "number": "Número do WhatsApp",
+      "selectNumber": "Selecione um número...",
+      "template": "Template aprovado",
+      "reload": "Recarregar templates",
+      "loading": "Carregando templates...",
+      "loadFailed": "Não foi possível carregar os templates.",
+      "selectTemplate": "Selecione um template...",
+      "noApproved": "Ainda não há templates aprovados neste número.",
+      "manage": "Criar ou conferir templates",
+      "phone": "Enviar para o telefone",
+      "phoneHint": "Use o campo onde o flow salvou o telefone, por exemplo {{telefone_vaga}}. Números sem DDI são tratados como do Brasil (55).",
+      "variables": "Variáveis do template",
+      "variablesHint": "Texto fixo ou variáveis como {{contact_name}} ou qualquer campo do contato.",
+      "statusHint": "O flow sempre continua. O resultado fica em {{whatsapp_template_status}} (sent, failed ou invalid_phone) para usar num nó de Condição."
     },
     "handles": {
       "invalid": "inválido",
@@ -774,6 +795,7 @@
     "analytics": "Análises",
     "growth": "Crescimento",
     "channels": "Canais",
+    "waTemplates": "Templates WhatsApp",
     "settings": "Configurações",
     "lightMode": "Modo claro",
     "darkMode": "Modo escuro",
@@ -975,6 +997,78 @@
       "waitEmail": "Aguardar e-mail",
       "saveEmail": "Salvar e-mail",
       "addTag": "Adicionar tag \"lead\""
+    }
+  },
+  "waTemplates": {
+    "title": "Templates do WhatsApp",
+    "subtitle": "Crie templates e envie para aprovação da Meta",
+    "explainer": "O WhatsApp só deixa a empresa iniciar uma conversa, ou escrever depois de 24 horas sem resposta, com um template aprovado pela Meta. A análise costuma levar de alguns minutos a 24 horas. Só templates aprovados podem ser usados nos flows.",
+    "needWhatsApp": "Conecte um número de WhatsApp primeiro",
+    "needWhatsAppHint": "Os templates pertencem a um número do WhatsApp Business conectado pela Zernio.",
+    "goChannels": "Ir para Canais",
+    "number": "Número do WhatsApp",
+    "refresh": "Atualizar",
+    "new": "Novo template",
+    "loadFailed": "Não foi possível carregar os templates.",
+    "empty": "Nenhum template ainda",
+    "emptyHint": "Crie seu primeiro template e envie para aprovação.",
+    "status": {
+      "PENDING": "Em análise",
+      "APPROVED": "Aprovado",
+      "REJECTED": "Recusado",
+      "IN_APPEAL": "Em recurso",
+      "PAUSED": "Pausado pela Meta",
+      "DISABLED": "Desativado",
+      "PENDING_DELETION": "Sendo excluído"
+    },
+    "category": {
+      "MARKETING": "Marketing",
+      "UTILITY": "Utilidade",
+      "AUTHENTICATION": "Autenticação"
+    },
+    "categoryLabel": "Categoria",
+    "categoryHint": {
+      "MARKETING": "Ofertas, convites e promoções. Revisão mais rigorosa.",
+      "UTILITY": "Avisos sobre algo que a pessoa pediu, como cadastro ou agendamento.",
+      "AUTHENTICATION": "Apenas códigos de verificação."
+    },
+    "variablesCount": {
+      "one": "{count} variável",
+      "other": "{count} variáveis"
+    },
+    "reason": "Motivo da Meta: {reason}",
+    "pendingHint": "Aguardando a Meta. Use Atualizar para conferir de novo.",
+    "formTitle": "Novo template",
+    "name": "Nome",
+    "nameSavedAs": "Será salvo como {name} (a Meta só aceita letras minúsculas, números e _).",
+    "language": "Idioma",
+    "languages": {
+      "pt_BR": "Português (Brasil)",
+      "en_US": "Inglês (EUA)",
+      "en": "Inglês",
+      "es": "Espanhol",
+      "es_MX": "Espanhol (México)",
+      "es_AR": "Espanhol (Argentina)"
+    },
+    "header": "Cabeçalho (opcional)",
+    "body": "Mensagem",
+    "bodyPlaceholder": "Oi {{1}}, sua vaga no curso está reservada. Responda SIM para confirmar.",
+    "bodyHint": "Use {{1}}, {{2}}… para as partes que mudam para cada pessoa, como o nome.",
+    "addVariable": "Adicionar variável",
+    "examplesHint": "Os revisores da Meta precisam de um exemplo para cada variável.",
+    "exampleFor": "Exemplo para {var}",
+    "footer": "Rodapé (opcional)",
+    "preview": "Prévia",
+    "previewEmpty": "Sua mensagem vai aparecer aqui.",
+    "submit": "Enviar para aprovação",
+    "submitting": "Enviando...",
+    "createFailed": "Não foi possível enviar o template.",
+    "errors": {
+      "invalid_name": "Informe um nome.",
+      "invalid_body": "A mensagem é obrigatória e pode ter até 1024 caracteres.",
+      "invalid_header": "O cabeçalho pode ter até 60 caracteres.",
+      "invalid_footer": "O rodapé pode ter até 60 caracteres.",
+      "examples_required": "Preencha um exemplo para cada variável."
     }
   }
 }

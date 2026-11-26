@@ -31,7 +31,8 @@ export type NodeData =
   | CommentReplyNodeData
   | PrivateReplyNodeData
   | AiResponseNodeData
-  | EnrollSequenceNodeData;
+  | EnrollSequenceNodeData
+  | SendWhatsAppTemplateNodeData;
 
 export interface TriggerNodeData {
   triggerType: string;
@@ -147,6 +148,20 @@ export interface AiResponseNodeData {
    * {{ai_response}} without double-sending. Defaults to true for back-compat.
    */
   sendDirectly?: boolean;
+}
+
+export interface SendWhatsAppTemplateNodeData {
+  /** WhatsApp channel (ZernFlow channel id) that sends the template */
+  channelId: string;
+  /** Recipient phone; usually a variable such as {{telefone_vaga}} */
+  phone: string;
+  /** Approved template name and language, as registered at Meta */
+  templateName: string;
+  templateLanguage: string;
+  /** One value per template variable, in order (header first, then body); may use {{variables}} */
+  params: string[];
+  /** Template text kept for the builder preview only */
+  templateBody?: string;
 }
 
 export interface EnrollSequenceNodeData {
