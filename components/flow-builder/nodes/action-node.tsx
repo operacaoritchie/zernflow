@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import type { NodeType } from "@/lib/types/database";
 import { useT } from "@/lib/i18n/provider";
 import type { Translator } from "@/lib/i18n/translator";
+import { NodeAnalyticsBadge } from "../node-analytics-badge";
 
 export interface ActionNodeProps {
   label?: string;
@@ -138,7 +139,7 @@ function getSummary(nodeData: ActionNodeProps, t: Translator): string | null {
   }
 }
 
-export function ActionNode({ data, selected }: NodeProps) {
+export function ActionNode({ id, data, selected }: NodeProps) {
   const nodeData = data as ActionNodeProps;
   const t = useT("builder");
   const actionType = nodeData.actionType || "addTag";
@@ -158,10 +159,11 @@ export function ActionNode({ data, selected }: NodeProps) {
   return (
     <div
       className={cn(
-        "w-56 rounded-lg border bg-card shadow-sm transition-shadow",
+        "relative w-56 rounded-lg border bg-card shadow-sm transition-shadow",
         selected ? "border-gray-400 shadow-md" : "border-border"
       )}
     >
+      <NodeAnalyticsBadge nodeId={id} />
       <Handle
         type="target"
         position={Position.Top}

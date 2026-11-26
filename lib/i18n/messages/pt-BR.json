@@ -424,6 +424,15 @@
       "run": "Executar teste",
       "emptyTitle": "Execute um teste para ver o caminho do flow",
       "emptyHint": "O simulador mostra o caminho da execução sem enviar mensagens reais."
+    },
+    "analytics": {
+      "loading": "Carregando estatísticas...",
+      "starts": "Inícios",
+      "completions": "Conclusões",
+      "dropOff": "Abandono",
+      "sent": "Enviadas",
+      "failed": "Falharam",
+      "toggle": "Estatísticas"
     }
   },
   "channels": {
@@ -536,7 +545,13 @@
     "conversations": "Conversas",
     "noConversations": "Nenhuma conversa",
     "noMessages": "Sem mensagens",
-    "field": "Campo"
+    "field": "Campo",
+    "notes": "Notas internas",
+    "deleteNote": "Excluir nota",
+    "noNotes": "Nenhuma nota ainda",
+    "notePlaceholder": "Adicione uma nota interna...",
+    "addingNote": "Adicionando...",
+    "addNote": "Adicionar nota"
   },
   "errors": {
     "workspaceMismatch": "Workspace não corresponde",
@@ -655,6 +670,39 @@
     "sent": "Enviada",
     "justNow": "Agora mesmo"
   },
+  "home": {
+    "title": "Painel",
+    "subtitle": "Visão geral da atividade do seu workspace",
+    "justNow": "agora mesmo",
+    "events": {
+      "flow_started": "Flow iniciado",
+      "flow_completed": "Flow concluído",
+      "message_sent": "Mensagem enviada",
+      "message_failed": "Falha na mensagem",
+      "contact_created": "Novo contato criado",
+      "broadcast_sent": "Transmissão enviada",
+      "broadcast_failed": "Falha na transmissão"
+    },
+    "loadFailed": "Não foi possível carregar os dados do painel. Tente novamente.",
+    "totalContacts": "Total de contatos",
+    "thisWeek": "+{count} nesta semana",
+    "activeConversations": "Conversas ativas",
+    "currentlyOpen": "Abertas agora",
+    "messagesSent": "Mensagens enviadas",
+    "last7": "Últimos 7 dias",
+    "activeFlows": "Flows ativos",
+    "published": "Publicados",
+    "createFlow": "Criar flow",
+    "createFlowHint": "Monte um flow de automação",
+    "sendBroadcast": "Enviar transmissão",
+    "sendBroadcastHint": "Envie mensagem para seus contatos",
+    "viewInbox": "Ver caixa de entrada",
+    "viewInboxHint": "Confira as conversas",
+    "retry": "Tentar de novo",
+    "recentActivity": "Atividade recente",
+    "noActivity": "Nenhuma atividade ainda",
+    "quickActions": "Ações rápidas"
+  },
   "inbox": {
     "title": "Caixa de entrada",
     "syncFailed": "Falha na sincronização",
@@ -698,9 +746,13 @@
     "snooze": "Adiar conversa",
     "reopen": "Reabrir conversa",
     "messagePlaceholder": "Digite uma mensagem...",
+    "messagePlaceholderSaved": "Digite uma mensagem... (/ para respostas salvas)",
+    "noSavedReplies": "Nenhuma resposta salva encontrada",
+    "savedReplies": "Respostas salvas",
     "send": "Enviar mensagem"
   },
   "nav": {
+    "home": "Início",
     "flows": "Flows",
     "inbox": "Caixa de entrada",
     "contacts": "Contatos",
@@ -715,6 +767,10 @@
     "signOut": "Sair",
     "workspaceName": "Nome do workspace",
     "createWorkspace": "Criar workspace"
+  },
+  "refLink": {
+    "title": "Iniciar uma conversa",
+    "body": "Este link está pronto para conectar você."
   },
   "segment": {
     "fields": {
