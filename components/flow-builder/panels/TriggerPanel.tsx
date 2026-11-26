@@ -58,6 +58,7 @@ const matchTypes: Array<{ value: "exact" | "contains" | "startsWith" }> = [
 export function TriggerPanel({ data: rawData, onChange }: TriggerPanelProps) {
   const data = rawData as TriggerPanelData;
   const tr = useT("builder");
+  const selectedChannelId = typeof data.channelId === "string" ? data.channelId : "";
   const triggerType = data.triggerType || "keyword";
   const keywords = data.keywords || [];
   const [newKeyword, setNewKeyword] = useState("");
@@ -120,7 +121,7 @@ export function TriggerPanel({ data: rawData, onChange }: TriggerPanelProps) {
           {tr("trigger.channel")}
         </label>
         <select
-          value={(data.channelId as string) || ""}
+          value={selectedChannelId}
           onChange={(e) => {
             const ch = channels?.find((c) => c.id === e.target.value);
             onChange({
@@ -133,8 +134,12 @@ export function TriggerPanel({ data: rawData, onChange }: TriggerPanelProps) {
           className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
         >
           <option value="">{tr("trigger.allChannels")}</option>
-          {data.channelId && !channels?.some((c) => c.id === data.channelId) && (
-            <option value={data.channelId as string}>{(data.channelLabel as string) || tr("trigger.unknownChannel")}</option>
+          {selectedChannelId && !channels?.some((c) => c.id === selectedChannelId) && (
+            <option value={selectedChannelId}>
+              {typeof data.channelLabel === "string" && data.channelLabel
+                ? data.channelLabel
+                : tr("trigger.unknownChannel")}
+            </option>
           )}
           {(channels ?? []).map((c) => (
             <option key={c.id} value={c.id}>
