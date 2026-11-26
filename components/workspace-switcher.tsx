@@ -102,7 +102,7 @@ export function WorkspaceSwitcher({
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-lg border border-border bg-popover p-1 shadow-lg">
+        <div className="absolute left-0 top-full z-50 mt-1 w-64 max-w-[85vw] rounded-lg border border-border bg-popover p-1 shadow-lg">
           {/* Workspace list */}
           {workspaces.map((ws) => {
             const isActive = ws.id === current.id;
