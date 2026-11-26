@@ -10,6 +10,8 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle2,
+  MessageCircle,
+  TriangleAlert,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -17,6 +19,8 @@ import { updateSequence, deleteSequence } from "@/lib/actions/sequences";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import type { SequenceStep } from "@/lib/types/database";
 import { useT } from "@/lib/i18n/provider";
+import { stepsAfterLongWait } from "@/lib/sequence-steps";
+import { SendWhatsAppTemplatePanel } from "@/components/flow-builder/panels/SendWhatsAppTemplatePanel";
 
 interface SequenceEditorProps {
   sequence: {
@@ -25,6 +29,7 @@ interface SequenceEditorProps {
     description: string | null;
     status: "draft" | "active" | "paused";
     steps: SequenceStep[];
+    exitOnReply: boolean;
   };
 }
 
@@ -53,13 +58,15 @@ export function SequenceEditor({ sequence }: SequenceEditorProps) {
   const [description, setDescription] = useState(sequence.description || "");
   const [steps, setSteps] = useState<SequenceStep[]>(sequence.steps);
   const [status, setStatus] = useState(sequence.status);
+  const [exitOnReply, setExitOnReply] = useState(sequence.exitOnReply);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const hasMessageStep = steps.some((s) => s.type === "message");
+  const hasMessageStep = steps.some((s) => s.type === "message" || s.type === "template");
+  const lateSteps = stepsAfterLongWait(steps);
 
   const handleSave = useCallback(async () => {
     setSaving(true);
@@ -71,16 +78,28 @@ export function SequenceEditor({ sequence }: SequenceEditorProps) {
       description: description.trim() || null,
       steps,
       status,
+      exitOnReply,
     });
 
     if (result.error) {
-      setError(result.error);
+      const problems = "problems" in result && Array.isArray(result.problems) ? result.problems : [];
+      setError(
+        problems.length
+          ? `${result.error} ${problems
+              .map((p: string) => {
+                const [code, n] = p.split(":");
+                return t(`problems.${code}`, { n: n ?? "" });
+              })
+              .join(" · ")}`
+          : result.error
+      );
     } else {
       setSuccess(tc("saved"));
       setTimeout(() => setSuccess(null), 2000);
     }
     setSaving(false);
-  }, [sequence.id, name, description, steps, status]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sequence.id, name, description, steps, status, exitOnReply]);
 
   const handleDelete = useCallback(async () => {
     setDeleting(true);
@@ -94,11 +113,13 @@ export function SequenceEditor({ sequence }: SequenceEditorProps) {
   }, [sequence.id, router]);
 
   const addStep = useCallback(
-    (index: number, type: "message" | "delay") => {
+    (index: number, type: "message" | "delay" | "template") => {
       const newStep: SequenceStep =
         type === "message"
           ? { type: "message", content: "" }
-          : { type: "delay", delayMinutes: 60 };
+          : type === "template"
+            ? { type: "template", params: [] }
+            : { type: "delay", delayMinutes: 60 };
 
       const updated = [...steps];
       updated.splice(index, 0, newStep);
@@ -228,6 +249,28 @@ export function SequenceEditor({ sequence }: SequenceEditorProps) {
             />
           </div>
 
+          <label className="flex items-start gap-3 rounded-lg border border-border bg-card p-3">
+            <input
+              type="checkbox"
+              checked={exitOnReply}
+              onChange={(e) => setExitOnReply(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-input"
+            />
+            <span>
+              <span className="block text-sm font-medium">{t("exitOnReply")}</span>
+              <span className="block text-xs text-muted-foreground">{t("exitOnReplyHint")}</span>
+            </span>
+          </label>
+
+          <p className="rounded-lg bg-muted p-3 text-xs text-muted-foreground">{t("rulesHint")}</p>
+
+          {lateSteps.length > 0 && (
+            <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+              <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+              {t("lateStepsWarning", { steps: lateSteps.join(", ") })}
+            </div>
+          )}
+
           {/* Messages */}
           {error && (
             <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-400">
@@ -287,6 +330,7 @@ function StepCard({
   onRemove: () => void;
 }) {
   const isMessage = step.type === "message";
+  const isTemplate = step.type === "template";
   const t = useT("sequences");
 
   return (
@@ -296,18 +340,24 @@ function StepCard({
           <div
             className={cn(
               "flex h-7 w-7 items-center justify-center rounded-md text-white",
-              isMessage ? "bg-blue-500" : "bg-purple-500"
+              isMessage ? "bg-blue-500" : isTemplate ? "bg-green-600" : "bg-purple-500"
             )}
           >
             {isMessage ? (
               <MessageSquare className="h-3.5 w-3.5" />
+            ) : isTemplate ? (
+              <MessageCircle className="h-3.5 w-3.5" />
             ) : (
               <Clock className="h-3.5 w-3.5" />
             )}
           </div>
           <div>
             <p className="text-sm font-medium">
-              {isMessage ? t("stepMessage", { n: index + 1 }) : t("stepWait", { n: index + 1 })}
+              {isMessage
+                ? t("stepMessage", { n: index + 1 })
+                : isTemplate
+                  ? t("stepTemplate", { n: index + 1 })
+                  : t("stepWait", { n: index + 1 })}
             </p>
           </div>
         </div>
@@ -327,6 +377,20 @@ function StepCard({
             placeholder={t("messagePlaceholder")}
             rows={3}
             className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+        ) : isTemplate ? (
+          <SendWhatsAppTemplatePanel
+            audience
+            data={step as unknown as Record<string, unknown>}
+            onChange={(next) =>
+              onChange({
+                channelId: (next.channelId as string) || undefined,
+                templateName: (next.templateName as string) || undefined,
+                templateLanguage: (next.templateLanguage as string) || undefined,
+                params: Array.isArray(next.params) ? (next.params as string[]) : [],
+                templateBody: (next.templateBody as string) || undefined,
+              })
+            }
           />
         ) : (
           <DelayPicker
@@ -409,7 +473,7 @@ function DelayPicker({
 function AddStepButton({
   onAdd,
 }: {
-  onAdd: (type: "message" | "delay") => void;
+  onAdd: (type: "message" | "delay" | "template") => void;
 }) {
   const [open, setOpen] = useState(false);
   const t = useT("sequences");
@@ -418,7 +482,7 @@ function AddStepButton({
   return (
     <div className="flex justify-center py-2">
       {open ? (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-center gap-2">
           <button
             onClick={() => {
               onAdd("message");
@@ -438,6 +502,16 @@ function AddStepButton({
           >
             <Clock className="h-3 w-3" />
             {t("wait")}
+          </button>
+          <button
+            onClick={() => {
+              onAdd("template");
+              setOpen(false);
+            }}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
+          >
+            <MessageCircle className="h-3 w-3" />
+            {t("whatsappTemplate")}
           </button>
           <button
             onClick={() => setOpen(false)}

@@ -9,6 +9,11 @@ import { processComment } from "@/lib/comment-processor";
 import type { Database } from "@/lib/types/database";
 import { messagePreview } from "@/lib/message-preview";
 import { dispatchWebhookEvent } from "@/lib/webhook-dispatcher";
+import { applyDeliveryReceipt } from "@/lib/broadcasts";
+import { onContactMessage } from "@/lib/sequence-processor";
+import { optInContact, optOutContact } from "@/lib/opt-out";
+import { parseSendingSettings } from "@/lib/workspace-settings";
+import { sendFreeform } from "@/lib/zernio-send";
 import crypto from "crypto";
 
 // ── Zernio API webhook payload ───────────────────────────────────────────────
@@ -130,6 +135,14 @@ async function handleWebhook(request: NextRequest) {
 
   if (parsed.event === "comment.received") {
     return handleCommentWebhook(parsed as CommentWebhookPayload, body, signature, eventId);
+  }
+
+  if (
+    parsed.event === "message.delivered" ||
+    parsed.event === "message.read" ||
+    parsed.event === "message.failed"
+  ) {
+    return handleReceiptWebhook(parsed as ReceiptWebhookPayload, body, signature, eventId);
   }
 
   // Everything else besides message.received is acknowledged and ignored
@@ -279,6 +292,14 @@ async function processMessageEvent(
       .then(() => {});
   }
 
+  // The contact wrote: sequences paused by the 24-hour window resume, and
+  // sequences set to stop on reply end.
+  try {
+    await onContactMessage(supabase, contactId, channel.id);
+  } catch (err) {
+    console.error("Sequence resume on reply failed:", err);
+  }
+
   // ── Auto-assign new conversations (round-robin) ──────────────────────────
   // A contact's first message opens a new conversation. When the workspace has
   // round-robin auto-assignment on, hand it to the next member in rotation.
@@ -323,7 +344,10 @@ async function processMessageEvent(
 
   // ── Flow engine ───────────────────────────────────────────────────────────
 
-  if (!conversation.is_automation_paused) {
+  // Opt-out / opt-in keywords work even when a person took over the chat.
+  const handled = await handleGlobalKeywords(supabase, channel, contactId, msg.text || undefined, conv.id);
+
+  if (!conversation.is_automation_paused && !handled) {
     const incomingMessage = {
       text: msg.text || undefined,
       postbackPayload: metadata?.postbackPayload || undefined,
@@ -336,14 +360,7 @@ async function processMessageEvent(
       },
     };
 
-    const handled = await handleGlobalKeywords(
-      supabase,
-      channel.workspace_id,
-      contactId,
-      msg.text || undefined
-    );
-
-    if (!handled) {
+    {
       // A flow paused on a "wait for reply" step must resume on ANY reply, not
       // only on one that also matches a trigger. Without this, a plain "oi"
       // matched nothing, executeFlow never ran, and the session stayed stuck.
@@ -391,6 +408,70 @@ async function processMessageEvent(
       }
     }
   }
+}
+
+// ── Delivery receipts (broadcasts) ──────────────────────────────────────────
+
+interface ReceiptWebhookPayload {
+  id?: string;
+  event: "message.delivered" | "message.read" | "message.failed";
+  message?: { id?: string; messageId?: string; platformMessageId?: string; conversationId?: string };
+  messageId?: string;
+  platformMessageId?: string;
+  error?: { code?: string | number; message?: string; title?: string } | string;
+  account?: { id?: string };
+}
+
+async function handleReceiptWebhook(
+  payload: ReceiptWebhookPayload,
+  rawBody: string,
+  signature: string | null,
+  eventId: string | null | undefined
+) {
+  const supabase = await createServiceClient();
+  const accountId = payload.account?.id;
+  if (!accountId) return NextResponse.json({ ok: true, skipped: true, reason: "no_account" });
+
+  const { data: channel } = await supabase
+    .from("channels")
+    .select("*")
+    .eq("late_account_id", accountId)
+    .eq("is_active", true)
+    .maybeSingle();
+  if (!channel) return NextResponse.json({ ok: true, skipped: true, reason: "unknown_account" });
+
+  const secret = await resolveWebhookSecret(supabase, channel);
+  if (secret && !verifyWebhookSignature(secret, rawBody, signature)) {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+  }
+  if (!(await claimWebhookEvent(supabase, eventId))) {
+    return NextResponse.json({ ok: true, skipped: true, reason: "duplicate_event" });
+  }
+
+  const ids = [
+    payload.message?.id,
+    payload.message?.messageId,
+    payload.message?.platformMessageId,
+    payload.messageId,
+    payload.platformMessageId,
+  ].filter((v): v is string => typeof v === "string" && v.length > 0);
+
+  const err = payload.error;
+  const errorText =
+    typeof err === "string"
+      ? err
+      : err
+        ? [err.code, err.title, err.message].filter(Boolean).join(" ")
+        : null;
+
+  after(async () => {
+    try {
+      await applyDeliveryReceipt(supabase, payload.event, ids, errorText);
+    } catch (e) {
+      console.error("Delivery receipt processing error:", e);
+    }
+  });
+  return NextResponse.json({ ok: true, queued: true });
 }
 
 // ── Comment webhook ─────────────────────────────────────────────────────────
@@ -468,6 +549,7 @@ const STOP_KEYWORDS = [
   "stop", "unsubscribe", "cancel", "quit", "optout", "opt-out",
   // Portuguese
   "parar", "pare", "sair", "cancelar", "descadastrar",
+  "parar promoções", "parar promocoes", "stop promotions",
   // Spanish
   "baja", "detener", "darme de baja",
 ];
@@ -484,11 +566,13 @@ const START_KEYWORDS = [
 
 async function handleGlobalKeywords(
   supabase: Awaited<ReturnType<typeof createServiceClient>>,
-  workspaceId: string,
+  channel: Database["public"]["Tables"]["channels"]["Row"],
   contactId: string,
-  text: string | undefined
+  text: string | undefined,
+  lateConversationId: string
 ): Promise<boolean> {
   if (!text) return false;
+  const workspaceId = channel.workspace_id;
 
   const normalizedText = text.toLowerCase().trim();
 
@@ -496,18 +580,13 @@ async function handleGlobalKeywords(
   // This ensures compliance-critical opt-out keywords work even if the
   // workspace hasn't configured any global keywords.
   if (STOP_KEYWORDS.includes(normalizedText)) {
-    await supabase
-      .from("contacts")
-      .update({ is_subscribed: false })
-      .eq("id", contactId);
+    await optOutContact(supabase, workspaceId, contactId, "keyword");
+    await sendOptOutReply(supabase, channel, lateConversationId);
     return true;
   }
 
   if (START_KEYWORDS.includes(normalizedText)) {
-    await supabase
-      .from("contacts")
-      .update({ is_subscribed: true })
-      .eq("id", contactId);
+    await optInContact(supabase, workspaceId, contactId);
     return true;
   }
 
@@ -529,17 +608,11 @@ async function handleGlobalKeywords(
   for (const kw of keywords) {
     if (normalizedText === kw.keyword.toLowerCase()) {
       if (kw.action === "unsubscribe") {
-        await supabase
-          .from("contacts")
-          .update({ is_subscribed: false })
-          .eq("id", contactId);
+        await optOutContact(supabase, workspaceId, contactId, "keyword");
         return true;
       }
       if (kw.action === "subscribe") {
-        await supabase
-          .from("contacts")
-          .update({ is_subscribed: true })
-          .eq("id", contactId);
+        await optInContact(supabase, workspaceId, contactId);
         return true;
       }
       return false;
@@ -547,4 +620,29 @@ async function handleGlobalKeywords(
   }
 
   return false;
+}
+
+/** Short confirmation after SAIR/STOP (the contact just wrote, so the window is open). */
+async function sendOptOutReply(
+  supabase: Awaited<ReturnType<typeof createServiceClient>>,
+  channel: Database["public"]["Tables"]["channels"]["Row"],
+  lateConversationId: string
+) {
+  try {
+    const { data: workspace } = await supabase
+      .from("workspaces")
+      .select("settings, late_api_key_encrypted")
+      .eq("id", channel.workspace_id)
+      .single();
+    const reply = parseSendingSettings(workspace?.settings).optOutReply.trim();
+    if (!reply || !workspace?.late_api_key_encrypted) return;
+    await sendFreeform(workspace.late_api_key_encrypted, {
+      accountId: channel.late_account_id,
+      conversationId: lateConversationId,
+      text: reply,
+      idempotencyKey: crypto.randomUUID(),
+    });
+  } catch (err) {
+    console.error("Opt-out confirmation failed:", err);
+  }
 }

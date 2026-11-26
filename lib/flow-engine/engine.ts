@@ -901,6 +901,18 @@ async function executeSetField(
     { onConflict: "contact_id,field_id" }
   );
 
+  // Like ManyChat's "save as WhatsApp ID": the number the contact typed is
+  // recorded as their consent to WhatsApp messages (when the node says so).
+  if (data.saveAsWhatsAppOptIn && fieldDef.type === "phone") {
+    await supabase
+      .from("contacts")
+      .update({
+        opt_in_whatsapp_at: new Date().toISOString(),
+        opt_in_source: `flow:${context.flowId}:${data.fieldSlug}`,
+      })
+      .eq("id", context.contactId);
+  }
+
   // Later nodes in the same run can use the saved value as {{<field slug>}}.
   context.variables = { ...(context.variables ?? {}), [data.fieldSlug]: checked.value };
 }

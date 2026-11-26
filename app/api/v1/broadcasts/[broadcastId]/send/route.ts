@@ -1,416 +1,83 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient, createServiceClient } from "@/lib/supabase/server";
-import { scheduleBroadcastDelivery } from "@/lib/scheduler";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database, Json, Platform } from "@/lib/types/database";
+import { BroadcastLaunchError, launchBroadcast, checkBroadcastSetup, buildAudience } from "@/lib/broadcasts";
+import { loadBroadcastForUser } from "@/lib/broadcast-api";
+import type { Json } from "@/lib/types/database";
 
-interface SegmentRule {
-  field: string;
-  operator: string;
-  value: string;
-}
-
-interface SegmentGroup {
-  combinator: "and" | "or";
-  rules: SegmentRule[];
-}
-
-interface SegmentFilter {
-  combinator: "and" | "or";
-  groups: SegmentGroup[];
-}
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 /**
  * POST /api/v1/broadcasts/:broadcastId/send
+ * Body: { confirmCount?: number, scheduleAt?: ISO string }
  *
- * Resolves the broadcast's segment filter into contacts,
- * creates broadcast_recipients, and schedules delivery jobs.
+ * Sends now (or schedules) to the recipients the send policy allows. Above
+ * the workspace's confirmation threshold, confirmCount must equal the number
+ * of eligible recipients (typed by the user after seeing the preview).
+ * Owner/admin only.
  */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ broadcastId: string }> }
 ) {
   const { broadcastId } = await params;
-  const supabase = await createClient();
-
-  // Auth check
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { data: membership } = await supabase
-    .from("workspace_members")
-    .select("workspace_id")
-    .eq("user_id", user.id)
-    .limit(1)
-    .single();
-
-  if (!membership) {
-    return NextResponse.json({ error: "No workspace" }, { status: 404 });
-  }
-
-  // Fetch the broadcast
-  const { data: broadcast, error: broadcastErr } = await supabase
-    .from("broadcasts")
-    .select("*")
-    .eq("id", broadcastId)
-    .eq("workspace_id", membership.workspace_id)
-    .single();
-
-  if (broadcastErr || !broadcast) {
-    return NextResponse.json({ error: "Broadcast not found" }, { status: 404 });
-  }
+  const auth = await loadBroadcastForUser(broadcastId, { requireSender: true });
+  if (!auth.ok) return auth.response;
+  const { broadcast, service } = auth;
 
   if (broadcast.status !== "draft" && broadcast.status !== "scheduled") {
-    return NextResponse.json(
-      { error: `Cannot send broadcast with status "${broadcast.status}"` },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "already_started", status: broadcast.status }, { status: 409 });
   }
 
-  // Allow overriding message content from the request body
-  let messageContent = broadcast.message_content as { text?: string };
+  let body: { confirmCount?: number | null; scheduleAt?: string | null } = {};
   try {
-    const body = await request.json();
-    if (body.messageContent) {
-      messageContent = body.messageContent;
-      // Update the broadcast with the message content
-      await supabase
-        .from("broadcasts")
-        .update({ message_content: messageContent as unknown as Json })
-        .eq("id", broadcastId);
-    }
+    body = await request.json();
   } catch {
-    // No body or invalid JSON, use existing message_content
+    body = {};
   }
+  const confirmCount = typeof body.confirmCount === "number" ? body.confirmCount : null;
 
-  if (!messageContent?.text?.trim()) {
-    return NextResponse.json(
-      { error: "Message content is required. Set message_content.text on the broadcast." },
-      { status: 400 }
-    );
-  }
-
-  // Resolve contacts from segment filter
-  const filter = broadcast.segment_filter as unknown as SegmentFilter | null;
-  const contactIds = await resolveContacts(
-    supabase,
-    membership.workspace_id,
-    filter
-  );
-
-  if (contactIds.length === 0) {
-    return NextResponse.json(
-      { error: "No contacts match the segment filter" },
-      { status: 400 }
-    );
-  }
-
-  // For each contact, find their first active channel link (via contact_channels)
-  const { data: contactChannels } = await supabase
-    .from("contact_channels")
-    .select("contact_id, channel_id")
-    .in("contact_id", contactIds);
-
-  if (!contactChannels?.length) {
-    return NextResponse.json(
-      { error: "No contacts have active channel connections" },
-      { status: 400 }
-    );
-  }
-
-  // Deduplicate: one recipient per contact (first channel found)
-  const seen = new Set<string>();
-  const recipientPairs: { contactId: string; channelId: string }[] = [];
-  for (const cc of contactChannels) {
-    if (!seen.has(cc.contact_id)) {
-      seen.add(cc.contact_id);
-      recipientPairs.push({
-        contactId: cc.contact_id,
-        channelId: cc.channel_id,
-      });
+  // Schedule: validate now (setup + confirmation), launch later from the cron.
+  if (body.scheduleAt) {
+    const when = new Date(body.scheduleAt);
+    if (Number.isNaN(when.getTime()) || when.getTime() < Date.now() + 60_000) {
+      return NextResponse.json({ error: "invalid_schedule" }, { status: 400 });
     }
-  }
-
-  // Create broadcast_recipients
-  const recipientRows = recipientPairs.map((r) => ({
-    broadcast_id: broadcastId,
-    contact_id: r.contactId,
-    channel_id: r.channelId,
-    status: "pending",
-  }));
-
-  // Insert in batches of 500
-  const recipientIds: string[] = [];
-  for (let i = 0; i < recipientRows.length; i += 500) {
-    const batch = recipientRows.slice(i, i + 500);
-    const { data: inserted, error: insertErr } = await supabase
-      .from("broadcast_recipients")
-      .insert(batch)
-      .select("id");
-
-    if (insertErr) {
-      console.error("Failed to insert broadcast recipients:", insertErr);
+    const setup = await checkBroadcastSetup(service, broadcast);
+    if ("problem" in setup) return NextResponse.json({ error: setup.problem }, { status: 400 });
+    const audience = await buildAudience(service, broadcast, setup.channel, setup.settings);
+    if (audience.eligible.length === 0) {
+      return NextResponse.json({ error: "no_eligible", skippedByReason: audience.skippedByReason }, { status: 400 });
+    }
+    if (audience.eligible.length > setup.settings.confirmThreshold && confirmCount !== audience.eligible.length) {
       return NextResponse.json(
-        { error: `Failed to create recipients: ${insertErr.message}` },
-        { status: 500 }
+        { error: "confirmation_required", eligible: audience.eligible.length },
+        { status: 400 }
       );
     }
-
-    if (inserted) {
-      recipientIds.push(...inserted.map((r) => r.id));
-    }
+    const { error } = await service
+      .from("broadcasts")
+      .update({ status: "scheduled", scheduled_for: when.toISOString() })
+      .eq("id", broadcast.id)
+      .in("status", ["draft", "scheduled"]);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ status: "scheduled", scheduledFor: when.toISOString(), eligible: audience.eligible.length });
   }
 
-  if (recipientIds.length === 0) {
-    return NextResponse.json(
-      { error: "Failed to create broadcast recipients" },
-      { status: 500 }
-    );
+  try {
+    const result = await launchBroadcast(service, broadcast, { confirmCount });
+    return NextResponse.json({
+      broadcastId,
+      status: "sending",
+      totalRecipients: result.eligible,
+      skipped: result.skipped,
+      startsAt: result.startsAt,
+    });
+  } catch (err) {
+    if (err instanceof BroadcastLaunchError) {
+      const status = err.code === "already_started" ? 409 : 400;
+      return NextResponse.json({ error: err.code, ...(err.extra as Record<string, Json>) }, { status });
+    }
+    console.error(`Broadcast ${broadcastId} launch failed:`, err);
+    return NextResponse.json({ error: err instanceof Error ? err.message : "launch_failed" }, { status: 500 });
   }
-
-  // Schedule delivery
-  // scheduled_jobs is service-role only; the broadcast's workspace was checked above.
-  await scheduleBroadcastDelivery(await createServiceClient(), broadcastId, recipientIds);
-
-  return NextResponse.json({
-    broadcastId,
-    totalRecipients: recipientIds.length,
-    status: "sending",
-  });
-}
-
-/**
- * Resolve segment filter into contact IDs.
- * If no filter, returns all subscribed contacts in the workspace.
- */
-async function resolveContacts(
-  supabase: SupabaseClient<Database>,
-  workspaceId: string,
-  filter: SegmentFilter | null
-): Promise<string[]> {
-  // No filter = all subscribed contacts
-  if (!filter || !filter.groups?.length) {
-    const { data } = await supabase
-      .from("contacts")
-      .select("id")
-      .eq("workspace_id", workspaceId)
-      .eq("is_subscribed", true)
-      .limit(10000);
-    return (data ?? []).map((c) => c.id);
-  }
-
-  // Start with all subscribed contacts
-  const { data: allContacts } = await supabase
-    .from("contacts")
-    .select("id")
-    .eq("workspace_id", workspaceId)
-    .eq("is_subscribed", true)
-    .limit(10000);
-
-  if (!allContacts?.length) return [];
-
-  const allIds = new Set(allContacts.map((c) => c.id));
-
-  // Evaluate each group
-  const groupResults: Set<string>[] = [];
-
-  for (const group of filter.groups) {
-    const ruleResults: Set<string>[] = [];
-
-    for (const rule of group.rules) {
-      const ids = await evaluateRule(supabase, workspaceId, rule, allIds);
-      ruleResults.push(ids);
-    }
-
-    // Combine rules within group
-    let groupIds: Set<string>;
-    if (group.combinator === "and") {
-      groupIds = intersectSets(ruleResults);
-    } else {
-      groupIds = unionSets(ruleResults);
-    }
-    groupResults.push(groupIds);
-  }
-
-  // Combine groups
-  let finalIds: Set<string>;
-  if (filter.combinator === "and") {
-    finalIds = intersectSets(groupResults);
-  } else {
-    finalIds = unionSets(groupResults);
-  }
-
-  return Array.from(finalIds);
-}
-
-async function evaluateRule(
-  supabase: SupabaseClient<Database>,
-  workspaceId: string,
-  rule: SegmentRule,
-  allContactIds: Set<string>
-): Promise<Set<string>> {
-  const contactIds = Array.from(allContactIds);
-
-  switch (rule.field) {
-    case "has_tag": {
-      // Find tag by name
-      const { data: tag } = await supabase
-        .from("tags")
-        .select("id")
-        .eq("workspace_id", workspaceId)
-        .eq("name", rule.value)
-        .single();
-
-      if (!tag) return new Set();
-
-      const { data: tagged } = await supabase
-        .from("contact_tags")
-        .select("contact_id")
-        .eq("tag_id", tag.id)
-        .in("contact_id", contactIds);
-
-      return new Set((tagged ?? []).map((t) => t.contact_id));
-    }
-
-    case "missing_tag": {
-      const { data: tag } = await supabase
-        .from("tags")
-        .select("id")
-        .eq("workspace_id", workspaceId)
-        .eq("name", rule.value)
-        .single();
-
-      if (!tag) return new Set(contactIds); // Tag doesn't exist, all contacts "miss" it
-
-      const { data: tagged } = await supabase
-        .from("contact_tags")
-        .select("contact_id")
-        .eq("tag_id", tag.id)
-        .in("contact_id", contactIds);
-
-      const taggedSet = new Set((tagged ?? []).map((t) => t.contact_id));
-      return new Set(contactIds.filter((id) => !taggedSet.has(id)));
-    }
-
-    case "platform": {
-      const { data: channels } = await supabase
-        .from("channels")
-        .select("id")
-        .eq("workspace_id", workspaceId)
-        .eq("platform", rule.value as Platform);
-
-      if (!channels?.length) {
-        return rule.operator === "not_equals" ? new Set(contactIds) : new Set();
-      }
-
-      const channelIds = channels.map((c) => c.id);
-      const { data: links } = await supabase
-        .from("contact_channels")
-        .select("contact_id")
-        .in("channel_id", channelIds)
-        .in("contact_id", contactIds);
-
-      const linkedSet = new Set((links ?? []).map((l) => l.contact_id));
-      if (rule.operator === "not_equals") {
-        return new Set(contactIds.filter((id) => !linkedSet.has(id)));
-      }
-      return linkedSet;
-    }
-
-    case "is_subscribed": {
-      // Already filtered to subscribed, but handle explicit false
-      if (rule.value === "false") {
-        return new Set(); // We only target subscribed contacts
-      }
-      return new Set(contactIds);
-    }
-
-    case "last_interaction": {
-      const date = new Date(rule.value).toISOString();
-      let query = supabase
-        .from("contacts")
-        .select("id")
-        .eq("workspace_id", workspaceId)
-        .in("id", contactIds);
-
-      if (rule.operator === "before") {
-        query = query.lt("last_interaction_at", date);
-      } else {
-        query = query.gt("last_interaction_at", date);
-      }
-
-      const { data } = await query;
-      return new Set((data ?? []).map((c) => c.id));
-    }
-
-    case "custom_field": {
-      // rule.value format: "field_slug:actual_value"
-      const [slug, ...rest] = rule.value.split(":");
-      const fieldValue = rest.join(":");
-
-      const { data: fieldDef } = await supabase
-        .from("custom_field_definitions")
-        .select("id")
-        .eq("workspace_id", workspaceId)
-        .eq("slug", slug)
-        .single();
-
-      if (!fieldDef) return new Set();
-
-      let cfQuery = supabase
-        .from("contact_custom_fields")
-        .select("contact_id")
-        .eq("field_id", fieldDef.id)
-        .in("contact_id", contactIds);
-
-      switch (rule.operator) {
-        case "equals":
-          cfQuery = cfQuery.eq("value", fieldValue);
-          break;
-        case "not_equals":
-          cfQuery = cfQuery.neq("value", fieldValue);
-          break;
-        case "contains":
-          cfQuery = cfQuery.ilike("value", `%${fieldValue}%`);
-          break;
-        case "gt":
-          cfQuery = cfQuery.gt("value", fieldValue);
-          break;
-        case "lt":
-          cfQuery = cfQuery.lt("value", fieldValue);
-          break;
-      }
-
-      const { data } = await cfQuery;
-      return new Set((data ?? []).map((c) => c.contact_id));
-    }
-
-    default:
-      return new Set(contactIds);
-  }
-}
-
-function intersectSets(sets: Set<string>[]): Set<string> {
-  if (sets.length === 0) return new Set();
-  const result = new Set(sets[0]);
-  for (let i = 1; i < sets.length; i++) {
-    for (const item of result) {
-      if (!sets[i].has(item)) result.delete(item);
-    }
-  }
-  return result;
-}
-
-function unionSets(sets: Set<string>[]): Set<string> {
-  const result = new Set<string>();
-  for (const s of sets) {
-    for (const item of s) {
-      result.add(item);
-    }
-  }
-  return result;
 }

@@ -27,6 +27,7 @@ interface ActionPanelData {
   timeoutUnit?: string;
   confirmed?: boolean;
   sequenceId?: string;
+  saveAsWhatsAppOptIn?: boolean;
   [key: string]: unknown;
 }
 
@@ -140,6 +141,18 @@ function SetFieldConfig({ data, onChange }: ActionSubPanelProps) {
           {t("act.useVariable", { var: "{{variable}}" })}
         </p>
       </div>
+      <label className="flex items-start gap-2.5 rounded-lg border border-border bg-card p-3">
+        <input
+          type="checkbox"
+          checked={data.saveAsWhatsAppOptIn === true}
+          onChange={(e) => onChange({ ...data, saveAsWhatsAppOptIn: e.target.checked })}
+          className="mt-0.5 h-4 w-4 rounded border-input"
+        />
+        <span>
+          <span className="block text-xs font-semibold text-foreground">{t("act.optInLabel")}</span>
+          <span className="mt-0.5 block text-[11px] text-muted-foreground">{t("act.optInHint")}</span>
+        </span>
+      </label>
     </div>
   );
 }

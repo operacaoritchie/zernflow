@@ -18,6 +18,7 @@ export type BroadcastStatus =
   | "draft"
   | "scheduled"
   | "sending"
+  | "paused"
   | "completed"
   | "cancelled";
 export type JobStatus = "pending" | "processing" | "completed" | "failed";
@@ -56,14 +57,29 @@ export type NodeType =
   | "sendWhatsAppTemplate";
 
 export type SequenceStatus = "draft" | "active" | "paused";
-export type SequenceEnrollmentStatus = "active" | "completed" | "cancelled";
+export type SequenceEnrollmentStatus =
+  | "active"
+  | "paused_window"
+  | "completed"
+  | "cancelled"
+  | "exited"
+  | "failed"
+  | "expired";
 
 export interface SequenceStep {
-  type: "message" | "delay";
+  type: "message" | "delay" | "template";
   /** Message text (for message steps) */
   content?: string;
   /** Delay in minutes (for delay steps) */
   delayMinutes?: number;
+  /** WhatsApp channel (for template steps) */
+  channelId?: string;
+  templateName?: string;
+  templateLanguage?: string;
+  /** Template variables; accept {{contact_name}} and field slugs */
+  params?: string[];
+  /** Template text kept for the editor preview */
+  templateBody?: string;
 }
 
 export interface Database {
@@ -82,6 +98,7 @@ export interface Database {
           global_keywords: Json | null;
           created_at: string;
           updated_at: string;
+          settings: Json;
         };
         Insert: {
           id?: string;
@@ -95,6 +112,7 @@ export interface Database {
           global_keywords?: Json | null;
           created_at?: string;
           updated_at?: string;
+          settings?: Json;
         };
         Update: {
           id?: string;
@@ -107,6 +125,7 @@ export interface Database {
           last_assigned_member_index?: number;
           global_keywords?: Json | null;
           updated_at?: string;
+          settings?: Json;
         };
         Relationships: [];
       };
@@ -226,6 +245,59 @@ export interface Database {
           },
         ];
       };
+      phone_opt_outs: {
+        Row: {
+          workspace_id: string;
+          phone: string;
+          reason: string | null;
+          created_at: string;
+        };
+        Insert: {
+          workspace_id: string;
+          phone: string;
+          reason?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          reason?: string | null;
+        };
+        Relationships: [];
+      };
+      send_attempts: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          source: string;
+          source_id: string | null;
+          contact_id: string | null;
+          channel_id: string | null;
+          kind: string | null;
+          decision: string;
+          reason: string | null;
+          platform_message_id: string | null;
+          error: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          source: string;
+          source_id?: string | null;
+          contact_id?: string | null;
+          channel_id?: string | null;
+          kind?: string | null;
+          decision: string;
+          reason?: string | null;
+          platform_message_id?: string | null;
+          error?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          decision?: string;
+          reason?: string | null;
+        };
+        Relationships: [];
+      };
       contacts: {
         Row: {
           id: string;
@@ -238,6 +310,11 @@ export interface Database {
           metadata: Json | null;
           created_at: string;
           updated_at: string;
+          opt_in_whatsapp_at: string | null;
+          opt_in_source: string | null;
+          opt_in_text: string | null;
+          opt_out_at: string | null;
+          opt_out_reason: string | null;
         };
         Insert: {
           id?: string;
@@ -250,6 +327,11 @@ export interface Database {
           metadata?: Json | null;
           created_at?: string;
           updated_at?: string;
+          opt_in_whatsapp_at?: string | null;
+          opt_in_source?: string | null;
+          opt_in_text?: string | null;
+          opt_out_at?: string | null;
+          opt_out_reason?: string | null;
         };
         Update: {
           display_name?: string | null;
@@ -259,6 +341,11 @@ export interface Database {
           last_interaction_at?: string | null;
           metadata?: Json | null;
           updated_at?: string;
+          opt_in_whatsapp_at?: string | null;
+          opt_in_source?: string | null;
+          opt_in_text?: string | null;
+          opt_out_at?: string | null;
+          opt_out_reason?: string | null;
         };
         Relationships: [
           {
@@ -760,6 +847,11 @@ export interface Database {
           failed: number;
           created_at: string;
           updated_at: string;
+          channel_id: string | null;
+          template: Json | null;
+          skipped: number;
+          read: number;
+          paused_at: string | null;
         };
         Insert: {
           id?: string;
@@ -775,6 +867,11 @@ export interface Database {
           failed?: number;
           created_at?: string;
           updated_at?: string;
+          channel_id?: string | null;
+          template?: Json | null;
+          skipped?: number;
+          read?: number;
+          paused_at?: string | null;
         };
         Update: {
           name?: string;
@@ -787,6 +884,11 @@ export interface Database {
           delivered?: number;
           failed?: number;
           updated_at?: string;
+          channel_id?: string | null;
+          template?: Json | null;
+          skipped?: number;
+          read?: number;
+          paused_at?: string | null;
         };
         Relationships: [
           {
@@ -807,6 +909,11 @@ export interface Database {
           status: string;
           sent_at: string | null;
           error_message: string | null;
+          skip_reason: string | null;
+          phone: string | null;
+          platform_message_id: string | null;
+          delivered_at: string | null;
+          read_at: string | null;
         };
         Insert: {
           id?: string;
@@ -816,11 +923,21 @@ export interface Database {
           status?: string;
           sent_at?: string | null;
           error_message?: string | null;
+          skip_reason?: string | null;
+          phone?: string | null;
+          platform_message_id?: string | null;
+          delivered_at?: string | null;
+          read_at?: string | null;
         };
         Update: {
           status?: string;
           sent_at?: string | null;
           error_message?: string | null;
+          skip_reason?: string | null;
+          phone?: string | null;
+          platform_message_id?: string | null;
+          delivered_at?: string | null;
+          read_at?: string | null;
         };
         Relationships: [
           {
@@ -874,6 +991,7 @@ export interface Database {
           attempts?: number;
           last_error?: string | null;
           claimed_at?: string | null;
+          run_at?: string;
         };
         Relationships: [];
       };
@@ -1037,6 +1155,8 @@ export interface Database {
           steps: Json;
           created_at: string;
           updated_at: string;
+          exit_on_reply: boolean;
+          max_pause_days: number;
         };
         Insert: {
           id?: string;
@@ -1047,6 +1167,8 @@ export interface Database {
           steps?: Json;
           created_at?: string;
           updated_at?: string;
+          exit_on_reply?: boolean;
+          max_pause_days?: number;
         };
         Update: {
           name?: string;
@@ -1054,6 +1176,8 @@ export interface Database {
           status?: SequenceStatus;
           steps?: Json;
           updated_at?: string;
+          exit_on_reply?: boolean;
+          max_pause_days?: number;
         };
         Relationships: [
           {
@@ -1330,6 +1454,11 @@ export interface Database {
           enrolled_at: string;
           next_step_at: string | null;
           completed_at: string | null;
+          last_error: string | null;
+          exit_reason: string | null;
+          paused_since: string | null;
+          step_job_id: string | null;
+          step_claimed_at: string | null;
         };
         Insert: {
           id?: string;
@@ -1341,12 +1470,22 @@ export interface Database {
           enrolled_at?: string;
           next_step_at?: string | null;
           completed_at?: string | null;
+          last_error?: string | null;
+          exit_reason?: string | null;
+          paused_since?: string | null;
+          step_job_id?: string | null;
+          step_claimed_at?: string | null;
         };
         Update: {
           current_step_index?: number;
           status?: SequenceEnrollmentStatus;
           next_step_at?: string | null;
           completed_at?: string | null;
+          last_error?: string | null;
+          exit_reason?: string | null;
+          paused_since?: string | null;
+          step_job_id?: string | null;
+          step_claimed_at?: string | null;
         };
         Relationships: [
           {
@@ -1377,6 +1516,12 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
+      refresh_broadcast_counts: {
+        Args: {
+          b_id: string;
+        };
+        Returns: undefined;
+      };
       increment_unread: {
         Args: {
           conv_id: string;

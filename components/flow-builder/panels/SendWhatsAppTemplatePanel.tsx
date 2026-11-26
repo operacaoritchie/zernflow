@@ -30,9 +30,12 @@ const labelCls = "mb-1.5 block text-xs font-semibold text-foreground";
 export function SendWhatsAppTemplatePanel({
   data,
   onChange,
+  audience = false,
 }: {
   data: Record<string, unknown>;
   onChange: (data: Record<string, unknown>) => void;
+  /** Broadcasts and sequences: the phone comes from the contact, no status variable. */
+  audience?: boolean;
 }) {
   const t = useT("builder");
   const channelId = (data.channelId as string) || "";
@@ -197,6 +200,9 @@ export function SendWhatsAppTemplatePanel({
         </div>
       )}
 
+      {audience ? (
+        <p className="text-[11px] text-muted-foreground">{t("wa.audiencePhoneHint")}</p>
+      ) : (
       <div>
         <label className={labelCls}>{t("wa.phone")}</label>
         <input
@@ -208,6 +214,7 @@ export function SendWhatsAppTemplatePanel({
         />
         <p className="mt-1 text-[11px] text-muted-foreground">{t("wa.phoneHint")}</p>
       </div>
+      )}
 
       {paramCount > 0 && (
         <div className="space-y-3">
@@ -228,7 +235,9 @@ export function SendWhatsAppTemplatePanel({
         </div>
       )}
 
-      <p className="rounded-lg bg-muted p-2.5 text-[11px] text-muted-foreground">{t("wa.statusHint")}</p>
+      {!audience && (
+        <p className="rounded-lg bg-muted p-2.5 text-[11px] text-muted-foreground">{t("wa.statusHint")}</p>
+      )}
     </div>
   );
 }
