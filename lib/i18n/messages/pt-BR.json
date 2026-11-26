@@ -316,7 +316,11 @@
       "payloadPlaceholder": "Digite o valor do payload...",
       "payloadHintButton": "O valor do payload a comparar quando um botão for clicado.",
       "payloadHintQuick": "O valor do payload a comparar quando uma resposta rápida for tocada.",
-      "liveHint": "Funciona com comentários feitos enquanto a conta está ao vivo no Instagram. Comentários de live nunca disparam flows de Palavra-chave em comentário, e comentários de posts nunca disparam este. A conta do Instagram precisa estar conectada pelo Login do Facebook, e {var} é o ID de mídia da live."
+      "liveHint": "Funciona com comentários feitos enquanto a conta está ao vivo no Instagram. Comentários de live nunca disparam flows de Palavra-chave em comentário, e comentários de posts nunca disparam este. A conta do Instagram precisa estar conectada pelo Login do Facebook, e {var} é o ID de mídia da live.",
+      "channel": "Canal",
+      "allChannels": "Todos os canais",
+      "unknownChannel": "Canal removido",
+      "channelHint": "Só mensagens e comentários que chegam por este canal iniciam o flow. Publique o flow de novo depois de mudar."
     },
     "preview": "Prévia",
     "act": {

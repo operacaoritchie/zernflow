@@ -77,11 +77,13 @@ export async function POST(
   // fresh set derived from the current node graph (delete-and-reinsert keeps the table
   // in sync with what was published and avoids duplicates on republish). Only
   // null-channel rows are builder-managed; channel-scoped rows belong to the Growth tab.
+  // Builder rows pinned to one channel (trigger node "Channel") are marked with
+  // config.builderManaged, so they are reconciled too.
   await supabase
     .from("triggers")
     .delete()
     .eq("flow_id", flowId)
-    .is("channel_id", null)
+    .or("channel_id.is.null,config->>builderManaged.eq.true")
     .in("type", [...BUILDER_TRIGGER_TYPES]);
 
   if (desiredTriggers.length > 0) {

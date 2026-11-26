@@ -19,7 +19,8 @@ const isBuilderTriggerType = (t: string): t is BuilderTriggerType =>
 
 export interface DesiredTrigger {
   flow_id: string;
-  channel_id: null;
+  /** null = every channel of the workspace; set = only that channel */
+  channel_id: string | null;
   type: TriggerType;
   config: Json;
   is_active: boolean;
@@ -64,9 +65,16 @@ export function buildDesiredTriggers(
         if (payload !== undefined) config.payload = payload;
       }
 
+      // A trigger node may be pinned to one channel (data.channelId). Such rows
+      // carry config.builderManaged so publish can tell them apart from the
+      // Growth tab's channel-scoped rows when reconciling.
+      const channelId =
+        typeof data.channelId === "string" && data.channelId.trim() ? data.channelId.trim() : null;
+      if (channelId) config.builderManaged = true;
+
       const row: DesiredTrigger = {
         flow_id: flowId,
-        channel_id: null,
+        channel_id: channelId,
         type: type as TriggerType,
         config,
         is_active: true,
