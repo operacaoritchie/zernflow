@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import type { Database } from "@/lib/types/database";
 import { PLATFORMS, PLATFORM_LABELS } from "@/lib/platforms";
+import { useT } from "@/lib/i18n/provider";
 
 type Tag = Database["public"]["Tables"]["tags"]["Row"];
 type CustomFieldDef =
@@ -139,6 +140,7 @@ function CombinatorToggle({
   value: "and" | "or";
   onChange: (v: "and" | "or") => void;
 }) {
+  const t = useT("segment");
   return (
     <div className="inline-flex rounded-lg border border-border bg-muted p-0.5">
       <button
@@ -151,7 +153,7 @@ function CombinatorToggle({
             : "text-muted-foreground hover:text-foreground"
         )}
       >
-        AND
+        {t("and")}
       </button>
       <button
         type="button"
@@ -163,7 +165,7 @@ function CombinatorToggle({
             : "text-muted-foreground hover:text-foreground"
         )}
       >
-        OR
+        {t("or")}
       </button>
     </div>
   );
@@ -185,6 +187,8 @@ function FilterRuleRow({
   canRemove: boolean;
 }) {
   const config = fieldConfig[rule.field];
+  const t = useT("segment");
+  const tb = useT("builder");
   const operators = config.operators;
 
   function handleFieldChange(field: FilterField) {
@@ -206,7 +210,7 @@ function FilterRuleRow({
             onChange={(e) => onChange({ ...rule, value: e.target.value })}
             className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
-            <option value="">Select tag...</option>
+            <option value="">{t("selectTag")}</option>
             {tags.map((tag) => (
               <option key={tag.id} value={tag.id}>
                 {tag.name}
@@ -226,7 +230,7 @@ function FilterRuleRow({
               }}
               className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
-              <option value="">Select field...</option>
+              <option value="">{t("selectField")}</option>
               {customFields.map((cf) => (
                 <option key={cf.id} value={cf.slug}>
                   {cf.name}
@@ -235,7 +239,7 @@ function FilterRuleRow({
             </select>
             <input
               type="text"
-              placeholder="Value..."
+              placeholder={t("value")}
               value={rule.value.split("::")[1] || ""}
               onChange={(e) => {
                 const fieldSlug = rule.value.split("::")[0] || "";
@@ -252,7 +256,7 @@ function FilterRuleRow({
             onChange={(e) => onChange({ ...rule, value: e.target.value })}
             className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
-            <option value="">Select platform...</option>
+            <option value="">{t("selectPlatform")}</option>
             {PLATFORMS.map((p) => (
               <option key={p} value={p}>
                 {PLATFORM_LABELS[p]}
@@ -267,9 +271,9 @@ function FilterRuleRow({
             onChange={(e) => onChange({ ...rule, value: e.target.value })}
             className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
-            <option value="">Select...</option>
-            <option value="true">Yes</option>
-            <option value="false">No</option>
+            <option value="">{t("select")}</option>
+            <option value="true">{tb("yes")}</option>
+            <option value="false">{tb("no")}</option>
           </select>
         );
       case "date":
@@ -285,7 +289,7 @@ function FilterRuleRow({
         return (
           <input
             type="text"
-            placeholder="Value..."
+            placeholder={t("value")}
             value={rule.value}
             onChange={(e) => onChange({ ...rule, value: e.target.value })}
             className="rounded-lg border border-input bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -305,7 +309,7 @@ function FilterRuleRow({
         {(Object.entries(fieldConfig) as [FilterField, typeof config][]).map(
           ([key, cfg]) => (
             <option key={key} value={key}>
-              {cfg.label}
+              {t(`fields.${key}`)}
             </option>
           )
         )}
@@ -322,7 +326,7 @@ function FilterRuleRow({
         >
           {operators.map((op) => (
             <option key={op.value} value={op.value}>
-              {op.label}
+              {t(`ops.${op.label === "is" ? "is" : op.label === "is not" ? "isNot" : op.value}`)}
             </option>
           ))}
         </select>
@@ -360,6 +364,7 @@ function FilterGroupCard({
   onRemove: () => void;
   canRemove: boolean;
 }) {
+  const t = useT("segment");
   function updateRule(ruleId: string, updated: FilterRule) {
     onChange({
       ...group,
@@ -386,14 +391,14 @@ function FilterGroupCard({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <span className="text-xs font-medium text-muted-foreground uppercase">
-            Match
+            {t("match")}
           </span>
           <CombinatorToggle
             value={group.combinator}
             onChange={(v) => onChange({ ...group, combinator: v })}
           />
           <span className="text-xs font-medium text-muted-foreground uppercase">
-            of the following
+            {t("ofFollowing")}
           </span>
         </div>
         {canRemove && (
@@ -413,7 +418,7 @@ function FilterGroupCard({
             {idx > 0 && (
               <div className="flex items-center gap-2 py-1 pl-2">
                 <span className="text-[10px] font-semibold uppercase text-muted-foreground">
-                  {group.combinator}
+                  {t(group.combinator === "and" ? "joinAnd" : "joinOr")}
                 </span>
                 <div className="flex-1 border-t border-border" />
               </div>
@@ -436,7 +441,7 @@ function FilterGroupCard({
         className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
       >
         <Plus className="h-3 w-3" />
-        Add filter
+        {t("addFilter")}
       </button>
     </div>
   );
@@ -454,6 +459,7 @@ export function SegmentBuilder({
   workspaceId: string;
 }) {
   const [tags, setTags] = useState<Tag[]>([]);
+  const t = useT("segment");
   const [customFields, setCustomFields] = useState<CustomFieldDef[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -503,7 +509,7 @@ export function SegmentBuilder({
   if (loading) {
     return (
       <div className="rounded-lg border border-border bg-card p-6 text-center">
-        <p className="text-sm text-muted-foreground">Loading filters...</p>
+        <p className="text-sm text-muted-foreground">{t("loading")}</p>
       </div>
     );
   }
@@ -514,7 +520,7 @@ export function SegmentBuilder({
       {value.groups.length > 1 && (
         <div className="flex items-center gap-2">
           <span className="text-xs font-medium text-muted-foreground uppercase">
-            Groups match
+            {t("groupsMatch")}
           </span>
           <CombinatorToggle
             value={value.combinator}
@@ -529,7 +535,7 @@ export function SegmentBuilder({
             <div className="flex items-center gap-2 py-2">
               <div className="flex-1 border-t border-border" />
               <span className="text-[10px] font-semibold uppercase text-muted-foreground">
-                {value.combinator}
+                {t(value.combinator === "and" ? "joinAnd" : "joinOr")}
               </span>
               <div className="flex-1 border-t border-border" />
             </div>
@@ -551,7 +557,7 @@ export function SegmentBuilder({
         className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border px-3 py-2 text-xs font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors"
       >
         <Plus className="h-3 w-3" />
-        Add filter group
+        {t("addGroup")}
       </button>
 
       {/* JSON preview (collapsible) */}
@@ -562,6 +568,7 @@ export function SegmentBuilder({
 
 function ExportPreview({ filter }: { filter: SegmentFilter }) {
   const [expanded, setExpanded] = useState(false);
+  const t = useT("segment");
 
   return (
     <div className="rounded-lg border border-border bg-muted/50">
@@ -570,7 +577,7 @@ function ExportPreview({ filter }: { filter: SegmentFilter }) {
         onClick={() => setExpanded(!expanded)}
         className="flex w-full items-center justify-between px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
       >
-        <span>Filter JSON</span>
+        <span>{t("json")}</span>
         <ChevronDown
           className={cn(
             "h-3.5 w-3.5 transition-transform",

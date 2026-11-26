@@ -24,6 +24,8 @@ import {
   type SegmentFilter,
 } from "@/components/segment-builder";
 import type { Database, BroadcastStatus, Json } from "@/lib/types/database";
+import { useT, useFormatter } from "@/lib/i18n/provider";
+import type { Formatter, Translator } from "@/lib/i18n/translator";
 
 type Broadcast = Database["public"]["Tables"]["broadcasts"]["Row"];
 
@@ -58,9 +60,9 @@ const statusConfig: Record<
   },
 };
 
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return "Not scheduled";
-  return new Date(dateStr).toLocaleDateString([], {
+function formatDate(dateStr: string | null, t: Translator, format: Formatter): string {
+  if (!dateStr) return t("notScheduled");
+  return format.date(dateStr, {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -77,6 +79,9 @@ export function BroadcastsView({
   workspaceId: string;
 }) {
   const [showCreate, setShowCreate] = useState(false);
+  const t = useT("broadcasts");
+  const tc = useT("common");
+  const format = useFormatter();
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [items, setItems] = useState(broadcasts);
@@ -145,9 +150,9 @@ export function BroadcastsView({
       <div className="border-b border-border px-8 py-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Broadcasts</h1>
+            <h1 className="text-2xl font-bold">{t("title")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Send messages to multiple contacts at once
+              {t("subtitle")}
             </p>
           </div>
           <button
@@ -155,7 +160,7 @@ export function BroadcastsView({
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
           >
             <Plus className="h-4 w-4" />
-            Create Broadcast
+            {t("create")}
           </button>
         </div>
 
@@ -165,7 +170,7 @@ export function BroadcastsView({
             <div className="flex items-center gap-3">
               <input
                 type="text"
-                placeholder="Broadcast name..."
+                placeholder={t("namePlaceholder")}
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 onKeyDown={(e) => {
@@ -180,7 +185,7 @@ export function BroadcastsView({
                 disabled={!newName.trim() || creating}
                 className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
               >
-                {creating ? "Creating..." : "Create"}
+                {creating ? tc("creating") : tc("create")}
               </button>
               <button
                 onClick={() => {
@@ -191,7 +196,7 @@ export function BroadcastsView({
                 }}
                 className="rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent"
               >
-                Cancel
+                {tc("cancel")}
               </button>
             </div>
 
@@ -208,7 +213,7 @@ export function BroadcastsView({
                 )}
               >
                 <Filter className="h-3.5 w-3.5" />
-                Target specific contacts
+                {t("target")}
                 <ChevronDown
                   className={cn(
                     "h-3 w-3 transition-transform",
@@ -237,10 +242,10 @@ export function BroadcastsView({
           <div className="flex flex-col items-center justify-center py-20">
             <Radio className="h-10 w-10 text-muted-foreground/40" />
             <p className="mt-3 text-sm font-medium text-muted-foreground">
-              No broadcasts yet
+              {t("emptyTitle")}
             </p>
             <p className="mt-1 text-xs text-muted-foreground/70">
-              Create your first broadcast to send messages to your contacts
+              {t("emptyBody")}
             </p>
           </div>
         ) : (
@@ -274,18 +279,18 @@ export function BroadcastsView({
                             broadcast.status === "sending" && "animate-spin"
                           )}
                         />
-                        {status.label}
+                        {t(`status.${broadcast.status}`)}
                       </span>
                     </div>
                     <div className="mt-1 flex items-center gap-4 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         {broadcast.scheduled_for
-                          ? formatDate(broadcast.scheduled_for)
-                          : "Not scheduled"}
+                          ? formatDate(broadcast.scheduled_for, t, format)
+                          : t("notScheduled")}
                       </span>
                       <span>
-                        Created {formatDate(broadcast.created_at)}
+                        {t("createdAt", { date: formatDate(broadcast.created_at, t, format) })}
                       </span>
                     </div>
                   </div>
@@ -295,7 +300,7 @@ export function BroadcastsView({
                     <div className="text-center">
                       <p className="text-lg font-semibold">{total}</p>
                       <p className="text-[10px] uppercase text-muted-foreground">
-                        Recipients
+                        {t("recipients")}
                       </p>
                     </div>
                     <div className="text-center">
@@ -303,7 +308,7 @@ export function BroadcastsView({
                         {broadcast.sent}
                       </p>
                       <p className="text-[10px] uppercase text-muted-foreground">
-                        Sent
+                        {t("sent")}
                       </p>
                     </div>
                     <div className="text-center">
@@ -311,7 +316,7 @@ export function BroadcastsView({
                         {broadcast.delivered}
                       </p>
                       <p className="text-[10px] uppercase text-muted-foreground">
-                        Delivered
+                        {t("delivered")}
                       </p>
                     </div>
                     <div className="text-center">
@@ -319,7 +324,7 @@ export function BroadcastsView({
                         {broadcast.failed}
                       </p>
                       <p className="text-[10px] uppercase text-muted-foreground">
-                        Failed
+                        {t("failed")}
                       </p>
                     </div>
                   </div>
@@ -347,6 +352,9 @@ function BroadcastDetail({
   const messageContent = broadcast.message_content as { text?: string } | null;
   const [messageText, setMessageText] = useState(messageContent?.text || "");
   const [sending, setSending] = useState(false);
+  const t = useT("broadcasts");
+  const tc = useT("common");
+  const format = useFormatter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -371,7 +379,7 @@ function BroadcastDetail({
       if (err) throw err;
       if (data) onUpdate(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save");
+      setError(err instanceof Error ? err.message : t("saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -379,7 +387,7 @@ function BroadcastDetail({
 
   async function handleSend() {
     if (!messageText.trim()) {
-      setError("Message cannot be empty");
+      setError(t("emptyMessage"));
       return;
     }
 
@@ -399,10 +407,10 @@ function BroadcastDetail({
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || "Failed to send broadcast");
+        throw new Error(data.error || t("sendFailedBroadcast"));
       }
 
-      setSuccess(`Sending to ${data.totalRecipients} recipients`);
+      setSuccess(t("sendingTo", { count: data.totalRecipients }));
 
       // Update the broadcast locally
       onUpdate({
@@ -412,7 +420,7 @@ function BroadcastDetail({
         message_content: { text: messageText.trim() } as unknown as Json,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to send");
+      setError(err instanceof Error ? err.message : t("sendFailed"));
     } finally {
       setSending(false);
     }
@@ -444,11 +452,11 @@ function BroadcastDetail({
                     broadcast.status === "sending" && "animate-spin"
                   )}
                 />
-                {status.label}
+                {t(`status.${broadcast.status}`)}
               </span>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Created {formatDate(broadcast.created_at)}
+              {t("createdAt", { date: formatDate(broadcast.created_at, t, format) })}
             </p>
           </div>
         </div>
@@ -462,37 +470,37 @@ function BroadcastDetail({
             <div className="grid grid-cols-4 gap-4">
               <div className="rounded-lg border border-border bg-card p-4 text-center">
                 <p className="text-2xl font-bold">{broadcast.total_recipients}</p>
-                <p className="text-xs text-muted-foreground">Recipients</p>
+                <p className="text-xs text-muted-foreground">{t("recipients")}</p>
               </div>
               <div className="rounded-lg border border-border bg-card p-4 text-center">
                 <p className="text-2xl font-bold text-green-600">{broadcast.sent}</p>
-                <p className="text-xs text-muted-foreground">Sent</p>
+                <p className="text-xs text-muted-foreground">{t("sent")}</p>
               </div>
               <div className="rounded-lg border border-border bg-card p-4 text-center">
                 <p className="text-2xl font-bold text-blue-600">{broadcast.delivered}</p>
-                <p className="text-xs text-muted-foreground">Delivered</p>
+                <p className="text-xs text-muted-foreground">{t("delivered")}</p>
               </div>
               <div className="rounded-lg border border-border bg-card p-4 text-center">
                 <p className="text-2xl font-bold text-red-600">{broadcast.failed}</p>
-                <p className="text-xs text-muted-foreground">Failed</p>
+                <p className="text-xs text-muted-foreground">{t("failed")}</p>
               </div>
             </div>
           )}
 
           {/* Message composer */}
           <div className="space-y-3">
-            <label className="text-sm font-medium">Message</label>
+            <label className="text-sm font-medium">{t("message")}</label>
             <textarea
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               disabled={!isDraft}
-              placeholder="Type your broadcast message here..."
+              placeholder={t("messagePlaceholder")}
               rows={6}
               className="w-full rounded-lg border border-input bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
             />
             {isDraft && (
               <p className="text-xs text-muted-foreground">
-                This message will be sent to all contacts matching your segment
+                {t("messageHint")}
                 filter{broadcast.segment_filter ? "" : " (all subscribed contacts)"}.
               </p>
             )}
@@ -503,7 +511,7 @@ function BroadcastDetail({
             <div className="rounded-lg border border-border bg-card p-4">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <Filter className="h-4 w-4 text-muted-foreground" />
-                Segment filter applied
+                {t("segmentApplied")}
               </div>
               <pre className="mt-2 overflow-auto rounded bg-muted p-3 text-xs text-muted-foreground">
                 {JSON.stringify(broadcast.segment_filter, null, 2)}
@@ -538,14 +546,14 @@ function BroadcastDetail({
                 ) : (
                   <Send className="h-4 w-4" />
                 )}
-                {sending ? "Sending..." : "Send Now"}
+                {sending ? t("sending") : t("sendNow")}
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving || !messageText.trim()}
                 className="inline-flex items-center gap-2 rounded-lg border border-input bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent disabled:opacity-50"
               >
-                {saving ? "Saving..." : "Save Draft"}
+                {saving ? tc("saving") : t("saveDraft")}
               </button>
             </div>
           )}

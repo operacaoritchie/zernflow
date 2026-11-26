@@ -10,6 +10,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { PlatformIcon } from "@/components/platform-icon";
+import { getT, getFormatter } from "@/lib/i18n/server";
 
 export default async function ContactDetailPage({
   params,
@@ -17,6 +18,10 @@ export default async function ContactDetailPage({
   params: Promise<{ contactId: string }>;
 }) {
   const { contactId } = await params;
+  const t = await getT("contacts");
+  const ti = await getT("inbox");
+  const tc = await getT("common");
+  const format = await getFormatter();
   const { workspace, supabase } = await getWorkspace();
 
   const [contactRes, channelsRes, conversationsRes, customFieldsRes] =
@@ -54,8 +59,8 @@ export default async function ContactDetailPage({
     .filter(Boolean) as { id: string; name: string; color: string | null }[];
 
   function formatDate(dateStr: string | null): string {
-    if (!dateStr) return "Never";
-    return new Date(dateStr).toLocaleDateString([], {
+    if (!dateStr) return t("never");
+    return format.date(dateStr, {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -73,7 +78,7 @@ export default async function ContactDetailPage({
           className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          Back to contacts
+          {t("backToContacts")}
         </Link>
         <div className="flex items-center gap-4">
           <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-muted text-lg font-semibold">
@@ -81,7 +86,7 @@ export default async function ContactDetailPage({
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={contact.avatar_url}
-                alt={contact.display_name || "Contact"}
+                alt={contact.display_name || t("contact")}
                 className="h-12 w-12 rounded-full object-cover"
               />
             ) : (
@@ -90,7 +95,7 @@ export default async function ContactDetailPage({
           </div>
           <div>
             <h1 className="text-xl font-bold">
-              {contact.display_name ?? "Unknown"}
+              {contact.display_name ?? tc("unknown")}
             </h1>
             <div className="mt-0.5 flex items-center gap-3 text-sm text-muted-foreground">
               {contact.email && (
@@ -101,17 +106,17 @@ export default async function ContactDetailPage({
               )}
               <span className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
-                Last active {formatDate(contact.last_interaction_at)}
+                {t("lastActive", { date: formatDate(contact.last_interaction_at) })}
               </span>
               {contact.is_subscribed ? (
                 <span className="flex items-center gap-1 text-green-600">
                   <CheckCircle className="h-3 w-3" />
-                  Subscribed
+                  {t("subscribed")}
                 </span>
               ) : (
                 <span className="flex items-center gap-1">
                   <XCircle className="h-3 w-3" />
-                  Unsubscribed
+                  {t("unsubscribed")}
                 </span>
               )}
             </div>
@@ -148,10 +153,10 @@ export default async function ContactDetailPage({
           {/* Connected channels */}
           <div>
             <h2 className="mb-3 text-sm font-semibold uppercase text-muted-foreground">
-              Connected Channels
+              {t("connectedChannels")}
             </h2>
             {channels.length === 0 ? (
-              <p className="text-sm text-muted-foreground/60">No channels</p>
+              <p className="text-sm text-muted-foreground/60">{t("noChannels")}</p>
             ) : (
               <div className="space-y-2">
                 {channels.map((cc) => {
@@ -172,7 +177,7 @@ export default async function ContactDetailPage({
                       />
                       <div>
                         <p className="text-sm font-medium">
-                          {ch?.display_name ?? ch?.username ?? "Unknown"}
+                          {ch?.display_name ?? ch?.username ?? tc("unknown")}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {ch?.platform} ·{" "}
@@ -191,11 +196,11 @@ export default async function ContactDetailPage({
           {/* Conversations */}
           <div>
             <h2 className="mb-3 text-sm font-semibold uppercase text-muted-foreground">
-              Conversations
+              {t("conversations")}
             </h2>
             {conversations.length === 0 ? (
               <p className="text-sm text-muted-foreground/60">
-                No conversations
+                {t("noConversations")}
               </p>
             ) : (
               <div className="space-y-2">
@@ -213,14 +218,14 @@ export default async function ContactDetailPage({
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-xs font-medium capitalize text-muted-foreground">
-                          {conv.platform} · {conv.status}
+                          {conv.platform} · {ti(`statusOne.${conv.status}`)}
                         </p>
                         <p className="text-[10px] text-muted-foreground/60">
                           {formatDate(conv.last_message_at)}
                         </p>
                       </div>
                       <p className="mt-0.5 truncate text-sm">
-                        {conv.last_message_preview || "No messages"}
+                        {conv.last_message_preview || t("noMessages")}
                       </p>
                     </div>
                   </Link>
@@ -233,7 +238,7 @@ export default async function ContactDetailPage({
           {customFields.length > 0 && (
             <div>
               <h2 className="mb-3 text-sm font-semibold uppercase text-muted-foreground">
-                Custom Fields
+                {t("customFields")}
               </h2>
               <div className="space-y-2">
                 {customFields.map((cf, i) => (
@@ -244,7 +249,7 @@ export default async function ContactDetailPage({
                     <span className="text-sm text-muted-foreground">
                       {(
                         cf.custom_field_definitions as { name?: string }
-                      )?.name ?? "Field"}
+                      )?.name ?? t("field")}
                     </span>
                     <span className="text-sm font-medium">{cf.value}</span>
                   </div>
