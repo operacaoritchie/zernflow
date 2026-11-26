@@ -1152,6 +1152,13 @@ export interface Database {
             referencedRelation: "flows";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "ref_links_channel_id_fkey";
+            columns: ["channel_id"];
+            isOneToOne: false;
+            referencedRelation: "channels";
+            referencedColumns: ["id"];
+          },
         ];
       };
       saved_replies: {
