@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Search,
   Users,
@@ -11,7 +12,10 @@ import {
   XCircle,
   Filter,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Download,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ExportDialog } from "@/components/contacts/export-dialog";
@@ -50,41 +54,65 @@ export function ContactsView({
   tags,
   workspaceId,
   canExport = false,
+  page,
+  pageSize,
+  filteredCount,
+  totalCount,
+  initialSearch,
+  selectedTagId,
 }: {
   contacts: ContactWithTags[];
   tags: Tag[];
   workspaceId: string;
   canExport?: boolean;
+  page: number;
+  pageSize: number;
+  filteredCount: number;
+  totalCount: number;
+  initialSearch: string;
+  selectedTagId: string | null;
 }) {
-  const [search, setSearch] = useState("");
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
+  const [search, setSearch] = useState(initialSearch);
   const t = useT("contacts");
   const tb = useT("builder");
   const tc = useT("common");
   const format = useFormatter();
-  const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
   const [showSegmentBuilder, setShowSegmentBuilder] = useState(false);
   const [segmentFilter, setSegmentFilter] = useState<SegmentFilter>(
     createEmptyFilter()
   );
 
-  const filtered = contacts.filter((contact) => {
-    // Search filter
-    if (search) {
-      const q = search.toLowerCase();
-      const name = contact.display_name?.toLowerCase() ?? "";
-      const email = contact.email?.toLowerCase() ?? "";
-      if (!name.includes(q) && !email.includes(q)) return false;
-    }
-    // Tag filter
-    if (selectedTagId) {
-      const hasTag = contact.contact_tags.some(
-        (ct) => ct.tag_id === selectedTagId
-      );
-      if (!hasTag) return false;
-    }
-    return true;
-  });
+  const lastPage = Math.max(1, Math.ceil(filteredCount / pageSize));
+  const firstRow = filteredCount === 0 ? 0 : (page - 1) * pageSize + 1;
+  const lastRow = Math.min(page * pageSize, filteredCount);
+
+  function navigate(next: { page?: number; q?: string; tag?: string | null }) {
+    const params = new URLSearchParams();
+    const q = next.q ?? search;
+    const tag = next.tag === undefined ? selectedTagId : next.tag;
+    const p = next.page ?? 1;
+    if (q.trim()) params.set("q", q.trim());
+    if (tag) params.set("tag", tag);
+    if (p > 1) params.set("page", String(p));
+    const qs = params.toString();
+    startTransition(() => {
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    });
+  }
+
+  // Debounced search: wait until typing stops before asking the server.
+  useEffect(() => {
+    if (search.trim() === initialSearch.trim()) return;
+    const id = setTimeout(() => navigate({ q: search, page: 1 }), 350);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
+
+  const filtered = contacts;
 
   return (
     <div className="flex h-full flex-col">
@@ -100,7 +128,7 @@ export function ContactsView({
           <div>
             <h1 className="text-xl font-bold sm:text-2xl">{t("title")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {t("countInWorkspace", { count: contacts.length })}
+              {t("countInWorkspace", { count: totalCount })}
             </p>
           </div>
           {canExport && (
@@ -161,7 +189,7 @@ export function ContactsView({
         {tags.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             <button
-              onClick={() => setSelectedTagId(null)}
+              onClick={() => navigate({ tag: null, page: 1 })}
               className={cn(
                 "rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
                 selectedTagId === null
@@ -175,7 +203,7 @@ export function ContactsView({
               <button
                 key={tag.id}
                 onClick={() =>
-                  setSelectedTagId(tag.id === selectedTagId ? null : tag.id)
+                  navigate({ tag: tag.id === selectedTagId ? null : tag.id, page: 1 })
                 }
                 className={cn(
                   "rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
@@ -200,7 +228,7 @@ export function ContactsView({
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-auto">
+      <div className={cn("flex-1 overflow-auto transition-opacity", isPending && "opacity-60")}>
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
             <Users className="h-10 w-10 text-muted-foreground/40" />
@@ -335,6 +363,39 @@ export function ContactsView({
           </table>
         )}
       </div>
+
+      {/* Pagination */}
+      {filteredCount > 0 && (
+        <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3 text-sm sm:px-8">
+          <span className="text-muted-foreground">
+            {t("pagination.range", { from: firstRow, to: lastRow, total: filteredCount })}
+          </span>
+          <div className="flex items-center gap-2">
+            {isPending && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            <button
+              onClick={() => navigate({ page: page - 1 })}
+              disabled={page <= 1 || isPending}
+              aria-label={t("pagination.previous")}
+              className="inline-flex items-center gap-1 rounded-lg border border-input px-3 py-1.5 font-medium hover:bg-accent disabled:pointer-events-none disabled:opacity-40"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">{t("pagination.previous")}</span>
+            </button>
+            <span className="tabular-nums text-muted-foreground">
+              {t("pagination.page", { page, pages: lastPage })}
+            </span>
+            <button
+              onClick={() => navigate({ page: page + 1 })}
+              disabled={page >= lastPage || isPending}
+              aria-label={t("pagination.next")}
+              className="inline-flex items-center gap-1 rounded-lg border border-input px-3 py-1.5 font-medium hover:bg-accent disabled:pointer-events-none disabled:opacity-40"
+            >
+              <span className="hidden sm:inline">{t("pagination.next")}</span>
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
