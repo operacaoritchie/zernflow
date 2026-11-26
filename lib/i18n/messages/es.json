@@ -240,7 +240,8 @@
       "contains": "contiene",
       "exists": "existe",
       "gt": "mayor que",
-      "lt": "menor que"
+      "lt": "menor que",
+      "is_phone": "es un teléfono"
     },
     "condition": {
       "match": "Cumplir",

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isPhone } from "./phone";
 import type { Database, Json } from "@/lib/types/database";
 import type {
   FlowNode,
@@ -695,6 +696,8 @@ function evaluateCondition(
       return Number(actual) > Number(expected);
     case "lt":
       return Number(actual) < Number(expected);
+    case "is_phone":
+      return isPhone(actual);
     default:
       return false;
   }

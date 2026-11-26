@@ -72,7 +72,7 @@ export interface SendMessageNodeData {
 export interface ConditionNodeData {
   conditions: Array<{
     field: string;
-    operator: "equals" | "not_equals" | "contains" | "exists" | "gt" | "lt";
+    operator: "equals" | "not_equals" | "contains" | "exists" | "gt" | "lt" | "is_phone";
     value: string;
   }>;
   logic: "and" | "or";

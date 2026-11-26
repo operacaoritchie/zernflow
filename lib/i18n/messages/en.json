@@ -240,7 +240,8 @@
       "contains": "contains",
       "exists": "exists",
       "gt": "greater than",
-      "lt": "less than"
+      "lt": "less than",
+      "is_phone": "is a phone number"
     },
     "condition": {
       "match": "Match",
