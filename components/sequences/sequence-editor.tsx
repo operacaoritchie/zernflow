@@ -98,8 +98,7 @@ export function SequenceEditor({ sequence }: SequenceEditorProps) {
       setTimeout(() => setSuccess(null), 2000);
     }
     setSaving(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sequence.id, name, description, steps, status, exitOnReply]);
+  }, [sequence.id, name, description, steps, status, exitOnReply, t, tc]);
 
   const handleDelete = useCallback(async () => {
     setDeleting(true);
