@@ -84,10 +84,10 @@ export function ContactsView({
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-border px-8 py-6">
-        <div className="flex items-center justify-between">
+      <div className="border-b border-border px-4 py-4 sm:px-8 sm:py-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold">{t("title")}</h1>
+            <h1 className="text-xl font-bold sm:text-2xl">{t("title")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {t("countInWorkspace", { count: contacts.length })}
             </p>
@@ -195,19 +195,19 @@ export function ContactsView({
           <table className="w-full">
             <thead>
               <tr className="border-b border-border bg-muted/50 text-left">
-                <th className="px-8 py-3 text-xs font-medium uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-xs sm:px-8 font-medium uppercase text-muted-foreground">
                   {t("name")}
                 </th>
-                <th className="px-4 py-3 text-xs font-medium uppercase text-muted-foreground">
+                <th className="hidden px-4 py-3 text-xs font-medium uppercase text-muted-foreground md:table-cell">
                   {t("email")}
                 </th>
-                <th className="px-4 py-3 text-xs font-medium uppercase text-muted-foreground">
+                <th className="hidden px-4 py-3 text-xs font-medium uppercase text-muted-foreground md:table-cell">
                   {t("lastInteraction")}
                 </th>
                 <th className="px-4 py-3 text-xs font-medium uppercase text-muted-foreground">
                   {t("tags")}
                 </th>
-                <th className="px-4 py-3 text-xs font-medium uppercase text-muted-foreground">
+                <th className="hidden px-4 py-3 text-xs font-medium uppercase text-muted-foreground md:table-cell">
                   {t("subscribedCol")}
                 </th>
               </tr>
@@ -223,7 +223,7 @@ export function ContactsView({
                     key={contact.id}
                     className="border-b border-border transition-colors hover:bg-accent/50"
                   >
-                    <td className="px-8 py-3">
+                    <td className="px-4 py-3 sm:px-8">
                       <Link
                         href={`/dashboard/contacts/${contact.id}`}
                         className="flex items-center gap-3"
@@ -245,7 +245,7 @@ export function ContactsView({
                         </span>
                       </Link>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="hidden px-4 py-3 md:table-cell">
                       {contact.email ? (
                         <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
                           <Mail className="h-3 w-3" />
@@ -257,7 +257,7 @@ export function ContactsView({
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="hidden px-4 py-3 md:table-cell">
                       <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
                         <Calendar className="h-3 w-3" />
                         {formatDate(contact.last_interaction_at, t, format)}
@@ -295,7 +295,7 @@ export function ContactsView({
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="hidden px-4 py-3 md:table-cell">
                       {contact.is_subscribed ? (
                         <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600">
                           <CheckCircle className="h-3.5 w-3.5" />

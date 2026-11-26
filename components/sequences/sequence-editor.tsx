@@ -140,7 +140,7 @@ export function SequenceEditor({ sequence }: SequenceEditorProps) {
   return (
     <div className="flex-1 overflow-auto">
       {/* Header */}
-      <div className="border-b border-border px-8 py-6">
+      <div className="border-b border-border px-4 py-4 sm:px-8 sm:py-6">
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push("/dashboard/sequences")}
@@ -212,7 +212,7 @@ export function SequenceEditor({ sequence }: SequenceEditorProps) {
       </div>
 
       {/* Content */}
-      <div className="px-8 py-6">
+      <div className="px-4 py-4 sm:px-8 sm:py-6">
         <div className="mx-auto max-w-2xl space-y-6">
           {/* Description */}
           <div>
@@ -250,7 +250,7 @@ export function SequenceEditor({ sequence }: SequenceEditorProps) {
             <AddStepButton onAdd={(type) => addStep(0, type)} />
 
             {steps.length === 0 && (
-              <div className="rounded-lg border border-dashed border-border p-8 text-center">
+              <div className="rounded-lg border border-dashed border-border p-4 sm:p-8 text-center">
                 <p className="text-sm text-muted-foreground">
                   No steps yet. Click the + button above to add your first step.
                 </p>

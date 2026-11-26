@@ -109,6 +109,9 @@
   "builder": {
     "nodes": "Nodes",
     "dragToCanvas": "Drag to canvas",
+    "addNode": "Add a node",
+    "tapToAdd": "Tap to add it to the canvas",
+    "closeSheet": "Close",
     "categories": {
       "triggers": "Triggers",
       "messages": "Messages",
@@ -735,6 +738,8 @@
     "syncFailed": "Sync failed",
     "syncFailedConnection": "Failed to sync. Check your connection.",
     "showContactInfo": "Show contact info",
+    "backToList": "Conversations",
+    "infoShort": "Info",
     "contactInfo": "Contact info",
     "contactInfoTitle": "Contact Info",
     "noConversations": "No conversations yet",
@@ -800,6 +805,8 @@
     "lightMode": "Light mode",
     "darkMode": "Dark mode",
     "signOut": "Sign out",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
     "workspaceName": "Workspace name",
     "createWorkspace": "Create workspace"
   },

@@ -201,7 +201,7 @@ export function ContactPanel({
     loadedDetails?.contact.id === contactId ? loadedDetails : null;
 
   return (
-    <div className="flex h-full w-80 flex-col border-l border-border bg-background">
+    <div className="flex h-full w-full flex-col border-l border-border bg-background md:w-80">
       {/* Header */}
       <div className="flex h-14 items-center justify-between border-b border-border px-4">
         <h3 className="text-sm font-semibold">{ti("contactInfoTitle")}</h3>

@@ -67,7 +67,7 @@ export function EnrollmentList({
   }
 
   return (
-    <div className="px-8 py-6">
+    <div className="px-4 py-4 sm:px-8 sm:py-6">
       <div className="mx-auto max-w-2xl">
         <h2 className="text-lg font-semibold">{t("enrollments")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -75,7 +75,7 @@ export function EnrollmentList({
         </p>
 
         {enrollments.length === 0 ? (
-          <div className="mt-6 rounded-lg border border-dashed border-border p-8 text-center">
+          <div className="mt-6 rounded-lg border border-dashed border-border p-4 sm:p-8 text-center">
             <Users className="mx-auto h-8 w-8 text-muted-foreground/40" />
             <p className="mt-2 text-sm text-muted-foreground">
               {t("noEnrollments")}

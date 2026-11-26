@@ -416,17 +416,17 @@ export function AnalyticsView({
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-border px-8 py-6">
-        <div className="flex items-center justify-between">
+      <div className="border-b border-border px-4 py-4 sm:px-8 sm:py-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold">{t("title")}</h1>
+            <h1 className="text-xl font-bold sm:text-2xl">{t("title")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {t("subtitle")}
             </p>
           </div>
 
           {/* Time range selector */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1 sm:gap-2">
             {timeRangeOptions.map((option) => (
               <button
                 key={option.value}
@@ -446,7 +446,7 @@ export function AnalyticsView({
 
         {/* Custom date range */}
         {timeRange === "custom" && (
-          <div className="mt-4 flex items-center gap-3">
+          <div className="mt-4 flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <input
@@ -475,7 +475,7 @@ export function AnalyticsView({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto p-8">
+      <div className="flex-1 overflow-auto p-4 sm:p-8">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -570,7 +570,7 @@ export function AnalyticsView({
             </div>
 
             {/* Flow performance table */}
-            <div className="rounded-xl border border-border bg-card">
+            <div className="overflow-x-auto rounded-xl border border-border bg-card">
               <div className="border-b border-border px-6 py-4">
                 <h3 className="text-sm font-semibold">{t("flowPerformance")}</h3>
               </div>
@@ -582,7 +582,7 @@ export function AnalyticsView({
                   </p>
                 </div>
               ) : (
-                <table className="w-full">
+                <table className="w-full min-w-[440px]">
                   <thead>
                     <tr className="border-b border-border bg-muted/50 text-left">
                       <th className="px-6 py-3 text-xs font-medium uppercase text-muted-foreground">

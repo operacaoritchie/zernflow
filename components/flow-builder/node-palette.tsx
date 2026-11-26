@@ -20,7 +20,7 @@ import {
 import type { DragEvent } from "react";
 import { useT } from "@/lib/i18n/provider";
 
-interface PaletteItem {
+export interface PaletteItem {
   type: string;
   nodeType: string;
   label: string;
@@ -165,8 +165,65 @@ function onDragStart(event: DragEvent, item: PaletteItem) {
   event.dataTransfer.effectAllowed = "move";
 }
 
-export function NodePalette() {
+export function NodePalette({
+  onAdd,
+  onClose,
+}: {
+  /** When set, the palette renders as a tap-to-add sheet (touch screens). */
+  onAdd?: (item: PaletteItem) => void;
+  onClose?: () => void;
+}) {
   const t = useT("builder");
+
+  // Touch devices cannot use HTML5 drag-and-drop, so the sheet adds on tap.
+  if (onAdd) {
+    const add = onAdd;
+    return (
+      <div className="flex max-h-full flex-col bg-card">
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <div>
+            <h2 className="text-sm font-semibold">{t("addNode")}</h2>
+            <p className="text-xs text-muted-foreground">{t("tapToAdd")}</p>
+          </div>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent"
+            >
+              {t("closeSheet")}
+            </button>
+          )}
+        </div>
+        <div className="safe-bottom flex-1 overflow-y-auto p-3">
+          {categories.map((category) => (
+            <div key={category.name} className="mb-4">
+              <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {t(`categories.${category.name}`)}
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                {category.items.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.nodeType}
+                      onClick={() => add(item)}
+                      className="flex min-h-11 items-center gap-2.5 rounded-lg border border-border bg-background px-3 py-2 text-left text-sm transition-colors active:bg-accent"
+                    >
+                      <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <span className="text-xs font-medium">
+                        {t(`nodeTypes.${item.nodeType === "trigger" ? "keywordTrigger" : item.nodeType}`)}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex w-56 flex-col border-r border-border bg-card">
       <div className="border-b border-border px-4 py-3">

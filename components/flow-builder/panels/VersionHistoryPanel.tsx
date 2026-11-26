@@ -73,7 +73,7 @@ export function VersionHistoryPanel({
   }
 
   return (
-    <div className="w-80 border-l border-border bg-card overflow-y-auto">
+    <div className="overflow-y-auto bg-card absolute inset-x-0 bottom-0 z-30 h-[80%] w-full rounded-t-xl border-t border-border shadow-2xl md:static md:z-auto md:h-auto md:w-80 md:rounded-none md:border-t-0 md:border-l md:shadow-none">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
           <History className="h-4 w-4 text-muted-foreground" />

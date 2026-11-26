@@ -19,13 +19,13 @@ import "@xyflow/react/dist/style.css";
 
 import { useCallback, useRef, useState, type DragEvent } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Rocket, Loader2, History, Play, Download, Trash2, BarChart3 } from "lucide-react";
+import { ArrowLeft, Save, Rocket, Loader2, History, Play, Download, Trash2, BarChart3, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { createClient } from "@/lib/supabase/client";
 import type { Database, FlowStatus, Json } from "@/lib/types/database";
 
-import { NodePalette } from "./node-palette";
+import { NodePalette, type PaletteItem } from "./node-palette";
 import { TriggerNode } from "./nodes/trigger-node";
 import { SendMessageNode } from "./nodes/send-message-node";
 import { ConditionNode } from "./nodes/condition-node";
@@ -102,7 +102,7 @@ function AnalyticsSummaryBar() {
   const { summary } = analytics;
 
   return (
-    <div className="flex items-center gap-6 border-b border-border bg-blue-50 dark:bg-blue-950/30 px-4 py-2">
+    <div className="flex items-center gap-4 overflow-x-auto whitespace-nowrap border-b border-border bg-blue-50 px-4 py-2 md:gap-6 dark:bg-blue-950/30">
       <div className="flex items-center gap-1.5">
         <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{t("analytics.starts")}</span>
         <span className="text-sm font-semibold text-foreground">{summary.starts.toLocaleString()}</span>
@@ -157,6 +157,7 @@ function FlowCanvasInner({ flow }: FlowCanvasProps) {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   // Analytics toggle and data fetching from the context provider
   const { showAnalytics, setShowAnalytics, fetchAnalytics, loading: analyticsLoading } = useFlowAnalytics();
@@ -221,6 +222,32 @@ function FlowCanvasInner({ flow }: FlowCanvasProps) {
       };
 
       setNodes((nds) => [...nds, newNode]);
+    },
+    [screenToFlowPosition, setNodes]
+  );
+
+  // Touch screens cannot drag from the palette, so nodes are added by tap,
+  // placed near the center of the visible canvas.
+  const addNodeFromPalette = useCallback(
+    (item: PaletteItem) => {
+      const rect = reactFlowWrapper.current?.getBoundingClientRect();
+      const position = screenToFlowPosition({
+        x: rect ? rect.left + rect.width / 2 - 112 : 120,
+        y: rect ? rect.top + rect.height / 3 : 120,
+      });
+
+      const newNode: Node = {
+        id: getNodeId(),
+        type: item.type,
+        position,
+        data: getDefaultData(item.type, item.actionType || item.nodeType),
+      };
+
+      setNodes((nds) => [...nds, newNode]);
+      setPaletteOpen(false);
+      setVersionPanelOpen(false);
+      setTestPanelOpen(false);
+      setSelectedNodeId(newNode.id);
     },
     [screenToFlowPosition, setNodes]
   );
@@ -353,27 +380,28 @@ function FlowCanvasInner({ flow }: FlowCanvasProps) {
   return (
     <div className="flex h-full flex-col">
       {/* Toolbar */}
-      <div className="flex items-center justify-between border-b border-border bg-card px-4 py-2">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-2 overflow-x-auto border-b border-border bg-card px-2 py-2 md:px-4">
+        <div className="flex min-w-0 shrink items-center gap-2 md:gap-3">
           <button
             onClick={() => router.push("/dashboard/flows")}
-            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+            aria-label={tc("back")}
+            className="flex h-9 shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-            {tc("back")}
+            <span className="hidden md:inline">{tc("back")}</span>
           </button>
-          <div className="h-5 w-px bg-border" />
+          <div className="hidden h-5 w-px bg-border md:block" />
           <input
             type="text"
             value={flowName}
             onChange={(e) => setFlowName(e.target.value)}
-            className="w-auto max-w-[200px] border-none bg-transparent text-sm font-semibold outline-none focus:ring-0"
+            className="w-auto min-w-0 max-w-[110px] border-none bg-transparent text-sm font-semibold outline-none focus:ring-0 sm:max-w-[200px]"
             style={{ width: `${Math.max(flowName.length, 8)}ch` }}
             placeholder={t("flowName")}
           />
           <span
             className={cn(
-              "inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium",
+              "hidden rounded-full px-2 py-0.5 text-[10px] font-medium sm:inline-flex",
               flow.status === "published"
                 ? "bg-emerald-100 text-emerald-800"
                 : flow.status === "archived"
@@ -384,14 +412,14 @@ function FlowCanvasInner({ flow }: FlowCanvasProps) {
             {tf(`status.${flow.status}`)}
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5 md:gap-2">
           {saveError && (
             <span className="text-xs font-medium text-destructive">
               {saveError}
             </span>
           )}
           {!saveError && lastSaved && (
-            <span className="text-xs text-muted-foreground">
+            <span className="hidden text-xs text-muted-foreground lg:inline">
               {t("savedAt", { time: format.time(lastSaved) })}
             </span>
           )}
@@ -399,7 +427,7 @@ function FlowCanvasInner({ flow }: FlowCanvasProps) {
             onClick={handleToggleAnalytics}
             disabled={analyticsLoading}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors",
+              "inline-flex items-center gap-1.5 rounded-lg border h-9 px-2.5 py-1.5 text-sm font-medium md:h-auto md:px-3 transition-colors",
               showAnalytics
                 ? "border-blue-500 bg-blue-500/10 text-blue-600"
                 : "border-border bg-background hover:bg-accent"
@@ -410,7 +438,7 @@ function FlowCanvasInner({ flow }: FlowCanvasProps) {
             ) : (
               <BarChart3 className="h-3.5 w-3.5" />
             )}
-            {t("analytics.toggle")}
+            <span className="hidden md:inline">{t("analytics.toggle")}</span>
           </button>
           <button
             onClick={() => {
@@ -421,14 +449,14 @@ function FlowCanvasInner({ flow }: FlowCanvasProps) {
               }
             }}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors",
+              "inline-flex items-center gap-1.5 rounded-lg border h-9 px-2.5 py-1.5 text-sm font-medium md:h-auto md:px-3 transition-colors",
               testPanelOpen
                 ? "border-primary bg-primary/10 text-primary"
                 : "border-border bg-background hover:bg-accent"
             )}
           >
             <Play className="h-3.5 w-3.5" />
-            {t("testButton")}
+            <span className="hidden md:inline">{t("testButton")}</span>
           </button>
           <button
             onClick={() => {
@@ -439,14 +467,14 @@ function FlowCanvasInner({ flow }: FlowCanvasProps) {
               }
             }}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors",
+              "inline-flex items-center gap-1.5 rounded-lg border h-9 px-2.5 py-1.5 text-sm font-medium md:h-auto md:px-3 transition-colors",
               versionPanelOpen
                 ? "border-primary bg-primary/10 text-primary"
                 : "border-border bg-background hover:bg-accent"
             )}
           >
             <History className="h-3.5 w-3.5" />
-            {t("history")}
+            <span className="hidden md:inline">{t("history")}</span>
           </button>
           <button
             onClick={() => {
@@ -467,39 +495,39 @@ function FlowCanvasInner({ flow }: FlowCanvasProps) {
               a.click();
               URL.revokeObjectURL(url);
             }}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background h-9 px-2.5 py-1.5 text-sm font-medium md:h-auto md:px-3 hover:bg-accent transition-colors"
           >
             <Download className="h-3.5 w-3.5" />
-            {t("export")}
+            <span className="hidden md:inline">{t("export")}</span>
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background h-9 px-2.5 py-1.5 text-sm font-medium md:h-auto md:px-3 hover:bg-accent transition-colors disabled:opacity-50"
           >
             {saving ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : (
               <Save className="h-3.5 w-3.5" />
             )}
-            {tc("save")}
+            <span className="hidden md:inline">{tc("save")}</span>
           </button>
           <button
             onClick={handlePublish}
             disabled={publishing}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary h-9 px-2.5 py-1.5 text-sm font-medium md:h-auto md:px-3 text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             {publishing ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : (
               <Rocket className="h-3.5 w-3.5" />
             )}
-            {t("publish")}
+            <span className="hidden md:inline">{t("publish")}</span>
           </button>
           <button
             onClick={() => setConfirmDelete(true)}
             disabled={deleting}
-            className="rounded-lg p-2 text-muted-foreground hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+            className="shrink-0 rounded-lg p-2.5 text-muted-foreground hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
             title={tf("deleteTitle")}
           >
             {deleting ? (
@@ -527,9 +555,11 @@ function FlowCanvasInner({ flow }: FlowCanvasProps) {
       <AnalyticsSummaryBar />
 
       {/* Canvas area */}
-      <div className="flex flex-1 overflow-hidden">
-        <NodePalette />
-        <div ref={reactFlowWrapper} className="flex-1">
+      <div className="relative flex flex-1 overflow-hidden">
+        <div className="hidden md:flex">
+          <NodePalette />
+        </div>
+        <div ref={reactFlowWrapper} className="min-w-0 flex-1">
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -542,6 +572,7 @@ function FlowCanvasInner({ flow }: FlowCanvasProps) {
             onPaneClick={onPaneClick}
             nodeTypes={nodeTypes}
             fitView
+            fitViewOptions={{ padding: 0.2 }}
             deleteKeyCode={["Backspace", "Delete"]}
             proOptions={{ hideAttribution: true }}
             className="bg-background"
@@ -551,12 +582,34 @@ function FlowCanvasInner({ flow }: FlowCanvasProps) {
               className="!border-border !bg-card !shadow-sm [&>button]:!border-border [&>button]:!bg-card [&>button]:!text-foreground [&>button:hover]:!bg-accent"
             />
             <MiniMap
-              className="!border-border !bg-card"
+              className="!hidden md:!block !border-border !bg-card"
               nodeColor={() => "var(--primary)"}
               maskColor="rgba(0, 0, 0, 0.1)"
             />
           </ReactFlow>
         </div>
+        {/* Mobile: add-node button + bottom sheet */}
+        <button
+          onClick={() => setPaletteOpen(true)}
+          aria-label={t("addNode")}
+          className="absolute bottom-4 right-4 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg active:opacity-90 md:hidden"
+        >
+          <Plus className="h-6 w-6" />
+        </button>
+        {paletteOpen && (
+          <div className="absolute inset-0 z-30 md:hidden">
+            <div
+              className="absolute inset-0 bg-black/40"
+              onClick={() => setPaletteOpen(false)}
+            />
+            <div className="absolute inset-x-0 bottom-0 flex max-h-[75%] flex-col overflow-hidden rounded-t-xl border-t border-border shadow-2xl">
+              <NodePalette
+                onAdd={addNodeFromPalette}
+                onClose={() => setPaletteOpen(false)}
+              />
+            </div>
+          </div>
+        )}
         {selectedNode && !versionPanelOpen && !testPanelOpen && (
           <NodeConfigSidebar
             node={selectedNode}

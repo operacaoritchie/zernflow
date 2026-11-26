@@ -94,3 +94,42 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ---- Mobile ---- */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Prevents the iOS Safari zoom-on-focus for inputs smaller than 16px */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Larger touch targets for flow-builder handles on touch screens */
+@media (pointer: coarse) {
+  .react-flow__handle {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  .react-flow__controls-button {
+    width: 32px !important;
+    height: 32px !important;
+  }
+}
+
+button,
+a,
+[role="button"] {
+  touch-action: manipulation;
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}

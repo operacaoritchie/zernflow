@@ -109,6 +109,9 @@
   "builder": {
     "nodes": "Nós",
     "dragToCanvas": "Arraste para a tela",
+    "addNode": "Adicionar nó",
+    "tapToAdd": "Toque para adicionar ao canvas",
+    "closeSheet": "Fechar",
     "categories": {
       "triggers": "Gatilhos",
       "messages": "Mensagens",
@@ -735,6 +738,8 @@
     "syncFailed": "Falha na sincronização",
     "syncFailedConnection": "Não foi possível sincronizar. Verifique sua conexão.",
     "showContactInfo": "Mostrar dados do contato",
+    "backToList": "Conversas",
+    "infoShort": "Info",
     "contactInfo": "Dados do contato",
     "contactInfoTitle": "Dados do contato",
     "noConversations": "Nenhuma conversa ainda",
@@ -800,6 +805,8 @@
     "lightMode": "Modo claro",
     "darkMode": "Modo escuro",
     "signOut": "Sair",
+    "openMenu": "Abrir menu",
+    "closeMenu": "Fechar menu",
     "workspaceName": "Nome do workspace",
     "createWorkspace": "Criar workspace"
   },

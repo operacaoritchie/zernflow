@@ -178,10 +178,11 @@ export function NodeConfigSidebar({ node, nodes, edges, onChange, onClose, onDel
   return (
     <div
       className={cn(
-        "flex w-80 flex-col border-l bg-card",
+        "flex flex-col bg-card md:border-l-[3px]",
+        "absolute inset-x-0 bottom-0 z-30 h-[80%] w-full rounded-t-xl border-t-[3px] shadow-2xl",
+        "md:static md:z-auto md:h-auto md:w-80 md:rounded-none md:border-t-0 md:shadow-none",
         config.borderColor
       )}
-      style={{ borderLeftWidth: "3px" }}
     >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">

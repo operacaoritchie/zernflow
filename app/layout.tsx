@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/lib/i18n/provider";
@@ -8,7 +8,18 @@ import { DEFAULT_LOCALE } from "@/lib/i18n/config";
 
 const inter = Inter({ subsets: ["latin"] });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#171717" },
+  ],
+};
+
 export const metadata: Metadata = {
+  manifest: "/site.webmanifest",
   title: {
     default: "ZernFlow - The Open Source ManyChat Alternative",
     template: "%s | ZernFlow",

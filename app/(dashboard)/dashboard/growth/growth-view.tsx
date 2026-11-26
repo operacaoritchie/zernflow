@@ -293,10 +293,10 @@ export function GrowthView({
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-border px-8 py-6">
-        <div className="flex items-center justify-between">
+      <div className="border-b border-border px-4 py-4 sm:px-8 sm:py-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="text-xl font-bold text-foreground sm:text-2xl">
               {t("title")}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -314,7 +314,7 @@ export function GrowthView({
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-8">
+      <div className="flex-1 overflow-auto p-4 sm:p-8">
         {/* Stats cards */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
@@ -513,7 +513,7 @@ export function GrowthView({
 
         {/* Empty state */}
         {channels.length === 0 && (
-          <div className="mt-8 rounded-xl border border-dashed border-input p-8 text-center">
+          <div className="mt-8 rounded-xl border border-dashed border-input p-4 sm:p-8 text-center">
             <MessageCircle className="mx-auto h-10 w-10 text-muted-foreground/50" />
             <h2 className="mt-3 text-lg font-semibold text-foreground">
               {t("needChannel")}
@@ -531,7 +531,7 @@ export function GrowthView({
         )}
 
         {flows.length === 0 && channels.length > 0 && (
-          <div className="mt-8 rounded-xl border border-dashed border-input p-8 text-center">
+          <div className="mt-8 rounded-xl border border-dashed border-input p-4 sm:p-8 text-center">
             <MessageCircle className="mx-auto h-10 w-10 text-muted-foreground/50" />
             <h2 className="mt-3 text-lg font-semibold text-foreground">
               {t("needFlow")}
@@ -706,8 +706,8 @@ export function GrowthView({
               {t("recentHint")}
             </p>
 
-            <div className="mt-4 overflow-hidden rounded-xl border border-border">
-              <table className="w-full text-left text-sm">
+            <div className="mt-4 overflow-x-auto rounded-xl border border-border">
+              <table className="w-full min-w-[560px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted">
                     <th className="px-4 py-3 text-xs font-medium text-muted-foreground">

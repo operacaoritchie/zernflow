@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { MessageSquare, RefreshCw, User } from "lucide-react";
+import { ArrowLeft, MessageSquare, RefreshCw, User } from "lucide-react";
 import { ConversationList } from "@/components/inbox/conversation-list";
 import { MessageThread } from "@/components/inbox/message-thread";
 import { ContactPanel } from "@/components/inbox/contact-panel";
@@ -29,6 +29,8 @@ export function InboxView({
   const [messages, setMessages] = useState<Message[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [showContactPanel, setShowContactPanel] = useState(true);
+  // On small screens the contact panel is a full-screen overlay, opened on demand
+  const [mobileInfoOpen, setMobileInfoOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
 
@@ -97,10 +99,17 @@ export function InboxView({
     loadMessages();
   }, [selected?.id]);
 
+  const hasSelected = selected !== null;
+
   return (
-    <div className="flex h-full">
-      {/* Left panel: Conversation list */}
-      <div className="w-80 flex-shrink-0">
+    <div className="relative flex h-full">
+      {/* Left panel: Conversation list (hidden on mobile while a chat is open) */}
+      <div
+        className={cn(
+          "min-w-0 flex-shrink-0 md:block md:w-80",
+          hasSelected ? "hidden" : "block w-full"
+        )}
+      >
         <ConversationList
           conversations={conversations}
           workspaceId={workspaceId}
@@ -109,11 +118,41 @@ export function InboxView({
         />
       </div>
 
-      {/* Center panel: Message thread */}
-      <div className="flex min-h-0 flex-1 flex-col">
-        {/* Toggle contact panel button */}
+      {/* Center panel: Message thread (hidden on mobile until a chat is picked) */}
+      <div
+        className={cn(
+          "min-h-0 min-w-0 flex-1 flex-col md:flex",
+          hasSelected ? "flex" : "hidden"
+        )}
+      >
+        {/* Mobile bar: back to list + contact info */}
+        {selected && (
+          <div className="flex shrink-0 items-center justify-between border-b border-border px-1 py-1 md:hidden">
+            <button
+              onClick={() => {
+                setSelected(null);
+                setMobileInfoOpen(false);
+              }}
+              className="flex h-10 items-center gap-1.5 rounded-md px-3 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {t("backToList")}
+            </button>
+            {selected.contact_id && (
+              <button
+                onClick={() => setMobileInfoOpen(true)}
+                className="flex h-10 items-center gap-1.5 rounded-md px-3 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
+                aria-label={t("showContactInfo")}
+              >
+                <User className="h-4 w-4" />
+                {t("infoShort")}
+              </button>
+            )}
+          </div>
+        )}
+        {/* Toggle contact panel button (desktop) */}
         {selected && !showContactPanel && (
-          <div className="flex shrink-0 justify-end border-b border-border px-2 py-1">
+          <div className="hidden shrink-0 justify-end border-b border-border px-2 py-1 md:flex">
             <button
               onClick={() => setShowContactPanel(true)}
               className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
@@ -159,14 +198,27 @@ export function InboxView({
         </div>
       </div>
 
-      {/* Right panel: Contact info */}
-      {showContactPanel && selected?.contact_id && (
-        <ContactPanel
-          contactId={selected.contact_id}
-          conversationId={selected.id}
-          workspaceId={workspaceId}
-          onClose={() => setShowContactPanel(false)}
-        />
+      {/* Right panel: Contact info (full-screen overlay on mobile, side panel on desktop) */}
+      {selected?.contact_id && (
+        <div
+          className={cn(
+            "absolute inset-0 z-30 bg-background md:static md:inset-auto md:z-auto",
+            mobileInfoOpen ? "block" : "hidden",
+            showContactPanel ? "md:block" : "md:hidden"
+          )}
+        >
+          <ContactPanel
+            contactId={selected.contact_id}
+            conversationId={selected.id}
+            workspaceId={workspaceId}
+            onClose={() => {
+              setMobileInfoOpen(false);
+              if (window.matchMedia("(min-width: 768px)").matches) {
+                setShowContactPanel(false);
+              }
+            }}
+          />
+        </div>
       )}
     </div>
   );

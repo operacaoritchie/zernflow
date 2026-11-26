@@ -72,7 +72,7 @@ export default async function ContactDetailPage({
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-border px-8 py-6">
+      <div className="border-b border-border px-4 py-4 sm:px-8 sm:py-6">
         <Link
           href="/dashboard/contacts"
           className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -148,7 +148,7 @@ export default async function ContactDetailPage({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto px-8 py-6">
+      <div className="flex-1 overflow-auto px-4 py-4 sm:px-8 sm:py-6">
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Connected channels */}
           <div>

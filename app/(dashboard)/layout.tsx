@@ -21,9 +21,9 @@ export default async function DashboardLayout({
     .filter((w) => w.id);
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-dvh flex-col md:flex-row">
       <Sidebar workspace={workspace} user={user} workspaces={workspaces} />
-      <main className="min-h-0 flex-1 overflow-hidden">{children}</main>
+      <main className="min-h-0 min-w-0 flex-1 overflow-hidden">{children}</main>
     </div>
   );
 }

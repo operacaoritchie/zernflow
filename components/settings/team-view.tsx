@@ -143,7 +143,7 @@ export function TeamView({
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-border px-8 py-6">
+      <div className="border-b border-border px-4 py-4 sm:px-8 sm:py-6">
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard/settings"
@@ -152,7 +152,7 @@ export function TeamView({
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold">{t("title")}</h1>
+            <h1 className="text-xl font-bold sm:text-2xl">{t("title")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {t("subtitle", { name: workspaceName })}
             </p>
@@ -161,7 +161,7 @@ export function TeamView({
       </div>
 
       <div className="flex-1 overflow-auto">
-        <div className="mx-auto max-w-2xl space-y-8 px-8 py-8">
+        <div className="mx-auto max-w-2xl space-y-8 px-4 py-6 sm:px-8 sm:py-8">
           {/* Members list */}
           <section>
             <div className="flex items-center gap-2">

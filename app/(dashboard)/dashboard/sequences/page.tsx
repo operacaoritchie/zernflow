@@ -63,10 +63,10 @@ export default async function SequencesPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b border-border px-8 py-6">
-        <div className="flex items-center justify-between">
+      <div className="border-b border-border px-4 py-4 sm:px-8 sm:py-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold">{t("title")}</h1>
+            <h1 className="text-xl font-bold sm:text-2xl">{t("title")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {t("subtitle")}
             </p>
@@ -75,7 +75,7 @@ export default async function SequencesPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto px-8 py-6">
+      <div className="flex-1 overflow-auto px-4 py-4 sm:px-8 sm:py-6">
       {!sequences || sequences.length === 0 ? (
         <div className="mt-12 rounded-xl border border-dashed border-border p-12 text-center">
           <ListOrdered className="mx-auto h-10 w-10 text-muted-foreground" />

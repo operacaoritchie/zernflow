@@ -147,10 +147,10 @@ export function BroadcastsView({
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-border px-8 py-6">
-        <div className="flex items-center justify-between">
+      <div className="border-b border-border px-4 py-4 sm:px-8 sm:py-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold">{t("title")}</h1>
+            <h1 className="text-xl font-bold sm:text-2xl">{t("title")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {t("subtitle")}
             </p>
@@ -259,10 +259,10 @@ export function BroadcastsView({
                 <button
                   key={broadcast.id}
                   onClick={() => setSelectedId(broadcast.id)}
-                  className="flex w-full items-center gap-6 px-8 py-4 text-left transition-colors hover:bg-accent/50"
+                  className="flex w-full flex-col items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-accent/50 sm:px-8 sm:py-4 md:flex-row md:items-center md:gap-6"
                 >
                   {/* Status + Name */}
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 w-full flex-1">
                     <div className="flex items-center gap-3">
                       <h3 className="truncate text-sm font-medium">
                         {broadcast.name}
@@ -282,7 +282,7 @@ export function BroadcastsView({
                         {t(`status.${broadcast.status}`)}
                       </span>
                     </div>
-                    <div className="mt-1 flex items-center gap-4 text-xs text-muted-foreground">
+                    <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         {broadcast.scheduled_for
@@ -296,7 +296,7 @@ export function BroadcastsView({
                   </div>
 
                   {/* Stats */}
-                  <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-4 md:gap-6">
                     <div className="text-center">
                       <p className="text-lg font-semibold">{total}</p>
                       <p className="text-[10px] uppercase text-muted-foreground">
@@ -429,7 +429,7 @@ function BroadcastDetail({
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-border px-8 py-6">
+      <div className="border-b border-border px-4 py-4 sm:px-8 sm:py-6">
         <div className="flex items-center gap-4">
           <button
             onClick={onBack}
@@ -439,7 +439,7 @@ function BroadcastDetail({
           </button>
           <div className="flex-1">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold">{broadcast.name}</h1>
+              <h1 className="text-xl font-bold sm:text-2xl">{broadcast.name}</h1>
               <span
                 className={cn(
                   "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium",
@@ -463,11 +463,11 @@ function BroadcastDetail({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto px-8 py-6">
+      <div className="flex-1 overflow-auto px-4 py-4 sm:px-8 sm:py-6">
         <div className="mx-auto max-w-2xl space-y-6">
           {/* Stats row for non-draft broadcasts */}
           {broadcast.total_recipients > 0 && (
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
               <div className="rounded-lg border border-border bg-card p-4 text-center">
                 <p className="text-2xl font-bold">{broadcast.total_recipients}</p>
                 <p className="text-xs text-muted-foreground">{t("recipients")}</p>

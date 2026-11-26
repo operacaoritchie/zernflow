@@ -324,8 +324,8 @@ export function TemplatesView({ workspaceId }: { workspaceId: string }) {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-border px-8 py-6">
-        <div className="flex items-center justify-between">
+      <div className="border-b border-border px-4 py-4 sm:px-8 sm:py-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-3 mb-1">
               <Link
@@ -336,7 +336,7 @@ export function TemplatesView({ workspaceId }: { workspaceId: string }) {
                 {tn("flows")}
               </Link>
             </div>
-            <h1 className="text-2xl font-bold">{t("title")}</h1>
+            <h1 className="text-xl font-bold sm:text-2xl">{t("title")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {t("subtitle")}
             </p>
@@ -353,7 +353,7 @@ export function TemplatesView({ workspaceId }: { workspaceId: string }) {
       </div>
 
       {/* Template gallery */}
-      <div className="flex-1 overflow-auto p-8">
+      <div className="flex-1 overflow-auto p-4 sm:p-8">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {templates.map((template) => {
             const isCreating = creating === template.id;

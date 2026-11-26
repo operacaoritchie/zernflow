@@ -75,7 +75,7 @@ function MessageBubble({ message }: { message: Message }) {
         </div>
       )}
 
-      <div className="max-w-[70%]">
+      <div className="max-w-[85%] md:max-w-[70%]">
         <div
           className={cn(
             "rounded-2xl px-4 py-2 text-sm",
@@ -512,7 +512,7 @@ export function MessageThread({
       </div>
 
       {/* Composer */}
-      <div className="border-t border-border p-4">
+      <div className="safe-bottom border-t border-border p-3 md:p-4">
         <MessagingWindowNotice
           platform={conversation.platform}
           lastInboundAt={conversation.last_inbound_at}

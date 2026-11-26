@@ -1,6 +1,6 @@
 export default function DashboardLoading() {
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <div className="flex items-center justify-between">
         <div>
           <div className="h-7 w-32 animate-pulse rounded-lg bg-muted" />

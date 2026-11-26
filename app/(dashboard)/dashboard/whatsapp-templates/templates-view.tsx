@@ -102,7 +102,7 @@ export function WhatsAppTemplatesView({
     return (
       <div className="flex h-full flex-col">
         <Header t={t} />
-        <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
+        <div className="flex flex-1 flex-col items-center justify-center p-4 sm:p-8 text-center">
           <FileText className="h-10 w-10 text-muted-foreground/40" />
           <p className="mt-3 text-sm font-medium">{t("needWhatsApp")}</p>
           <p className="mt-1 max-w-sm text-xs text-muted-foreground">{t("needWhatsAppHint")}</p>
@@ -153,7 +153,7 @@ export function WhatsAppTemplatesView({
         </div>
       </Header>
 
-      <div className="flex-1 overflow-auto px-8 py-6">
+      <div className="flex-1 overflow-auto px-4 py-4 sm:px-8 sm:py-6">
         <div className="mx-auto max-w-4xl space-y-6">
           <div className="rounded-xl border border-border bg-muted/40 p-4 text-xs text-muted-foreground">
             {t("explainer")}
@@ -247,10 +247,10 @@ function Header({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="border-b border-border px-8 py-6">
+    <div className="border-b border-border px-4 py-4 sm:px-8 sm:py-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">{t("title")}</h1>
+          <h1 className="text-xl font-bold sm:text-2xl">{t("title")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
         {children}

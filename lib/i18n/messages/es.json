@@ -109,6 +109,9 @@
   "builder": {
     "nodes": "Nodos",
     "dragToCanvas": "Arrastra al lienzo",
+    "addNode": "Añadir nodo",
+    "tapToAdd": "Toca para añadir al lienzo",
+    "closeSheet": "Cerrar",
     "categories": {
       "triggers": "Disparadores",
       "messages": "Mensajes",
@@ -735,6 +738,8 @@
     "syncFailed": "Error al sincronizar",
     "syncFailedConnection": "No se pudo sincronizar. Revisa tu conexión.",
     "showContactInfo": "Mostrar datos del contacto",
+    "backToList": "Conversaciones",
+    "infoShort": "Info",
     "contactInfo": "Datos del contacto",
     "contactInfoTitle": "Datos del contacto",
     "noConversations": "Aún no hay conversaciones",
@@ -800,6 +805,8 @@
     "lightMode": "Modo claro",
     "darkMode": "Modo oscuro",
     "signOut": "Cerrar sesión",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
     "workspaceName": "Nombre del espacio de trabajo",
     "createWorkspace": "Crear espacio de trabajo"
   },

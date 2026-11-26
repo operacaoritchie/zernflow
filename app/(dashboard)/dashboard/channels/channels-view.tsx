@@ -210,15 +210,15 @@ export function ChannelsView({
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-border px-8 py-6">
-        <div className="flex items-center justify-between">
+      <div className="border-b border-border px-4 py-4 sm:px-8 sm:py-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold">{t("title")}</h1>
+            <h1 className="text-xl font-bold sm:text-2xl">{t("title")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {t("subtitle")}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {syncMessage && (
               <span className="text-xs text-muted-foreground">
                 {syncMessage}
@@ -267,7 +267,7 @@ export function ChannelsView({
       </div>
 
       {/* Channel cards */}
-      <div className="flex-1 overflow-auto p-8">
+      <div className="flex-1 overflow-auto p-4 sm:p-8">
         {channels.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
             <Plug className="h-10 w-10 text-muted-foreground/40" />
