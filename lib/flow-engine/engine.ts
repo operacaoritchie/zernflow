@@ -28,6 +28,7 @@ import { createZernioClient } from "@/lib/zernio-client";
 import { requestPublicUrl } from "./request-public-url";
 import { normalizeWhatsAppPhone, sendTemplate } from "@/lib/whatsapp-templates";
 import { dispatchWebhookEvent } from "@/lib/webhook-dispatcher";
+import { toEngineNodes } from "./normalize-nodes";
 
 export async function executeFlow(
   supabase: SupabaseClient<Database>,
@@ -69,7 +70,7 @@ export async function executeFlow(
 
   if (!flow) return;
 
-  const nodes = flow.nodes as unknown as FlowNode[];
+  const nodes = toEngineNodes(flow.nodes as unknown as FlowNode[]);
   const edges = flow.edges as unknown as FlowEdge[];
 
   // Get channel platform and late_account_id
@@ -207,7 +208,7 @@ export async function resumeSession(
     return;
   }
 
-  const nodes = flow.nodes as unknown as FlowNode[];
+  const nodes = toEngineNodes(flow.nodes as unknown as FlowNode[]);
   const edges = flow.edges as unknown as FlowEdge[];
 
   const { data: channel } = await supabase
