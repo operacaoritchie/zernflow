@@ -319,7 +319,11 @@
       "payloadPlaceholder": "Enter payload value...",
       "payloadHintButton": "The payload value to match when a button is clicked.",
       "payloadHintQuick": "The payload value to match when a quick reply is tapped.",
-      "liveHint": "Runs on comments made while the account is live on Instagram. Live comments never run Comment Keyword flows, and post comments never run this one. The Instagram account must be connected with Facebook Login, and {var} is the live broadcast's media id."
+      "liveHint": "Runs on comments made while the account is live on Instagram. Live comments never run Comment Keyword flows, and post comments never run this one. The Instagram account must be connected with Facebook Login, and {var} is the live broadcast's media id.",
+      "channel": "Channel",
+      "allChannels": "All channels",
+      "unknownChannel": "Channel removed",
+      "channelHint": "Only messages and comments that arrive on this channel start the flow. Republish the flow after changing it."
     },
     "preview": "Preview",
     "act": {

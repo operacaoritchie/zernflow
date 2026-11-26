@@ -319,7 +319,11 @@
       "payloadPlaceholder": "Escribe el valor del payload...",
       "payloadHintButton": "El valor del payload que debe coincidir cuando se hace clic en un botón.",
       "payloadHintQuick": "El valor del payload que debe coincidir cuando se toca una respuesta rápida.",
-      "liveHint": "Funciona con comentarios hechos mientras la cuenta está en directo en Instagram. Los comentarios de directos nunca activan flujos de Palabra clave en comentario, y los de publicaciones nunca activan este. La cuenta de Instagram debe estar conectada con el inicio de sesión de Facebook, y {var} es el ID de medio del directo."
+      "liveHint": "Funciona con comentarios hechos mientras la cuenta está en directo en Instagram. Los comentarios de directos nunca activan flujos de Palabra clave en comentario, y los de publicaciones nunca activan este. La cuenta de Instagram debe estar conectada con el inicio de sesión de Facebook, y {var} es el ID de medio del directo.",
+      "channel": "Canal",
+      "allChannels": "Todos los canales",
+      "unknownChannel": "Canal eliminado",
+      "channelHint": "Solo los mensajes y comentarios que llegan por este canal inician el flujo. Vuelve a publicar el flujo después de cambiarlo."
     },
     "preview": "Vista previa",
     "act": {

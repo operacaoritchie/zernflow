@@ -1,10 +1,25 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TriggerType } from "@/lib/types/database";
 import { useT } from "@/lib/i18n/provider";
+import { PLATFORM_LABELS, type Platform } from "@/lib/platforms";
+
+interface ChannelOption {
+  id: string;
+  platform: string;
+  display_name: string | null;
+  username: string | null;
+  is_active: boolean;
+}
+
+function channelLabel(c: ChannelOption): string {
+  const platform = PLATFORM_LABELS[c.platform as Platform] ?? c.platform;
+  const name = c.display_name || (c.username ? `@${c.username}` : "");
+  return name ? `${platform} · ${name}` : platform;
+}
 
 interface Keyword {
   value: string;
@@ -43,10 +58,25 @@ const matchTypes: Array<{ value: "exact" | "contains" | "startsWith" }> = [
 export function TriggerPanel({ data: rawData, onChange }: TriggerPanelProps) {
   const data = rawData as TriggerPanelData;
   const tr = useT("builder");
+  const selectedChannelId = typeof data.channelId === "string" ? data.channelId : "";
   const triggerType = data.triggerType || "keyword";
   const keywords = data.keywords || [];
   const [newKeyword, setNewKeyword] = useState("");
   const [newMatchType, setNewMatchType] = useState<"exact" | "contains" | "startsWith">("contains");
+  const [channels, setChannels] = useState<ChannelOption[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/v1/channels")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((list: ChannelOption[]) => {
+        if (!cancelled) setChannels((Array.isArray(list) ? list : []).filter((c) => c.is_active));
+      })
+      .catch(() => !cancelled && setChannels([]));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleTriggerTypeChange = useCallback(
     (type: string) => {
@@ -85,6 +115,41 @@ export function TriggerPanel({ data: rawData, onChange }: TriggerPanelProps) {
 
   return (
     <div className="space-y-5">
+      {/* Channel */}
+      <div>
+        <label className="mb-1.5 block text-xs font-semibold text-foreground">
+          {tr("trigger.channel")}
+        </label>
+        <select
+          value={selectedChannelId}
+          onChange={(e) => {
+            const ch = channels?.find((c) => c.id === e.target.value);
+            onChange({
+              ...data,
+              channelId: ch ? ch.id : undefined,
+              channelPlatform: ch ? ch.platform : undefined,
+              channelLabel: ch ? channelLabel(ch) : undefined,
+            });
+          }}
+          className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+        >
+          <option value="">{tr("trigger.allChannels")}</option>
+          {selectedChannelId && !channels?.some((c) => c.id === selectedChannelId) && (
+            <option value={selectedChannelId}>
+              {typeof data.channelLabel === "string" && data.channelLabel
+                ? data.channelLabel
+                : tr("trigger.unknownChannel")}
+            </option>
+          )}
+          {(channels ?? []).map((c) => (
+            <option key={c.id} value={c.id}>
+              {channelLabel(c)}
+            </option>
+          ))}
+        </select>
+        <p className="mt-1 text-[11px] text-muted-foreground">{tr("trigger.channelHint")}</p>
+      </div>
+
       {/* Trigger Type */}
       <div>
         <label className="mb-2 block text-xs font-semibold text-foreground">

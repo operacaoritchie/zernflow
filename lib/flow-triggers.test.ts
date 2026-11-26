@@ -126,4 +126,29 @@ describe("buildDesiredTriggers", () => {
       replyText: "Te chamei no Direct!",
     });
   });
+
+  it("leaves the trigger workspace-wide when no channel is chosen", () => {
+    const rows = buildDesiredTriggers([triggerNode({ triggerType: "keyword", keywords: [] })], FLOW_ID);
+    expect(rows[0].channel_id).toBeNull();
+    expect(rows[0].config).not.toHaveProperty("builderManaged");
+  });
+
+  it("pins the trigger (and its DM row) to the chosen channel and marks it as builder-managed", () => {
+    const rows = buildDesiredTriggers(
+      [
+        triggerNode({
+          triggerType: "comment_keyword",
+          channelId: "channel-ig",
+          alsoMatchInDms: true,
+          keywords: [{ value: "curso", matchType: "contains" }],
+        }),
+      ],
+      FLOW_ID,
+    );
+    expect(rows).toHaveLength(2);
+    for (const row of rows) {
+      expect(row.channel_id).toBe("channel-ig");
+      expect(row.config).toMatchObject({ builderManaged: true });
+    }
+  });
 });

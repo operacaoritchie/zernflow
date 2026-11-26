@@ -11,6 +11,8 @@ export interface TriggerNodeProps {
   triggerType?: string;
   keywords?: Array<{ value: string; matchType: string }>;
   alsoMatchInDms?: boolean;
+  channelId?: string;
+  channelLabel?: string;
 }
 
 const triggerLabels: Record<string, string> = {
@@ -51,6 +53,9 @@ export function TriggerNode({ id, data, selected }: NodeProps) {
             </span>
           )}
         </div>
+        <p className="mt-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
+          {nodeData.channelId ? nodeData.channelLabel || t("trigger.unknownChannel") : t("trigger.allChannels")}
+        </p>
         {nodeData.keywords && nodeData.keywords.length > 0 && (
           <p className="mt-1 text-xs text-muted-foreground">
             {t("keywordsList", {
