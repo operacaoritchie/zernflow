@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS ref_links (
 );
 
 -- Slug must be unique globally (used in public URL)
-CREATE UNIQUE INDEX idx_ref_links_slug ON ref_links(slug);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_ref_links_slug ON ref_links(slug);
 CREATE INDEX IF NOT EXISTS idx_ref_links_workspace ON ref_links(workspace_id);
 
 ALTER TABLE ref_links ENABLE ROW LEVEL SECURITY;
@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS bot_fields (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE UNIQUE INDEX idx_bot_fields_workspace_slug ON bot_fields(workspace_id, slug);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_bot_fields_workspace_slug ON bot_fields(workspace_id, slug);
 CREATE INDEX IF NOT EXISTS idx_bot_fields_workspace ON bot_fields(workspace_id);
 
 ALTER TABLE bot_fields ENABLE ROW LEVEL SECURITY;
@@ -117,12 +117,12 @@ ALTER TABLE workspaces ADD COLUMN IF NOT EXISTS last_assigned_member_index INT N
 CREATE OR REPLACE FUNCTION increment_ref_link_clicks(link_id UUID)
 RETURNS void AS $$
   UPDATE ref_links SET clicks = clicks + 1 WHERE id = link_id;
-$$ LANGUAGE sql SECURITY DEFINER;
+$$ LANGUAGE sql SECURITY DEFINER SET search_path = public;
 
 CREATE OR REPLACE FUNCTION increment_ref_link_conversions(link_id UUID)
 RETURNS void AS $$
   UPDATE ref_links SET conversions = conversions + 1 WHERE id = link_id;
-$$ LANGUAGE sql SECURITY DEFINER;
+$$ LANGUAGE sql SECURITY DEFINER SET search_path = public;
 
 -- ── 7. API Keys (external developer authentication) ─────────────────────────
 
