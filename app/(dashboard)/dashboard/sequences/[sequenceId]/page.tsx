@@ -40,10 +40,13 @@ export default async function SequenceDetailPage({
           description: sequence.description,
           status: sequence.status as "draft" | "active" | "paused",
           steps: (sequence.steps as unknown as SequenceStep[]) || [],
+          exitOnReply: sequence.exit_on_reply,
         }}
       />
       <div className="border-t border-border">
         <EnrollmentList
+          sequenceId={sequence.id}
+          sequenceActive={sequence.status === "active"}
           enrollments={
             (enrollments ?? []).map((e) => ({
               id: e.id,
@@ -54,8 +57,10 @@ export default async function SequenceDetailPage({
                   ?.email ||
                 tc("unknown"),
               currentStepIndex: e.current_step_index,
-              status: e.status as "active" | "completed" | "cancelled",
+              status: e.status,
               enrolledAt: e.enrolled_at,
+              reason: e.exit_reason ?? e.last_error ?? null,
+              nextStepAt: e.next_step_at,
             }))
           }
         />

@@ -23,6 +23,8 @@ import { createClient } from "@/lib/supabase/client";
 import { useT } from "@/lib/i18n/provider";
 import { rich } from "@/lib/i18n/rich";
 import { LocaleSelect } from "@/components/locale-switcher";
+import { SendingSettingsSection } from "@/components/settings/sending-settings";
+import type { SendingSettings } from "@/lib/workspace-settings";
 
 interface WorkspaceSettings {
   id: string;
@@ -40,8 +42,12 @@ interface TestResult {
 
 export function SettingsView({
   workspace,
+  sending,
+  canEditSending,
 }: {
   workspace: WorkspaceSettings;
+  sending: SendingSettings;
+  canEditSending: boolean;
 }) {
   const [name, setName] = useState(workspace.name);
   const t = useT("settings");
@@ -200,6 +206,10 @@ export function SettingsView({
               <p className="mt-1 text-xs text-muted-foreground">{t("languageHint")}</p>
             </div>
           </section>
+
+          <hr className="border-border" />
+
+          <SendingSettingsSection initial={sending} canEdit={canEditSending} />
 
           <hr className="border-border" />
 

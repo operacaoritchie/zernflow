@@ -91,7 +91,8 @@
       "scheduled": "Agendada",
       "sending": "Enviando",
       "completed": "Concluída",
-      "cancelled": "Cancelada"
+      "cancelled": "Cancelada",
+      "paused": "Pausada"
     },
     "saveFailed": "Falha ao salvar",
     "emptyMessage": "A mensagem não pode ficar vazia",
@@ -104,7 +105,85 @@
     "segmentApplied": "Filtro de segmento aplicado",
     "sending": "Enviando...",
     "sendNow": "Enviar agora",
-    "saveDraft": "Salvar rascunho"
+    "saveDraft": "Salvar rascunho",
+    "read": "Lidas",
+    "skipped": "Puladas",
+    "reasons": {
+      "unsubscribed": "Descadastrado (pediu SAIR)",
+      "phone_opted_out": "Número descadastrado",
+      "window_closed": "Fora da janela de 24h",
+      "no_conversation": "Nunca conversou neste canal",
+      "no_phone": "Sem número de WhatsApp",
+      "no_consent": "Sem consentimento de WhatsApp",
+      "template_not_set": "Template não escolhido",
+      "channel_inactive": "Canal desconectado",
+      "human_takeover": "Atendimento humano assumiu",
+      "bulk_disabled": "Envio em massa desligado",
+      "cancelled": "Transmissão cancelada",
+      "no_api_key": "Chave da Zernio ausente",
+      "contact_deleted": "Contato apagado"
+    },
+    "errors": {
+      "no_channel": "Escolha o canal de envio.",
+      "channel_inactive": "Este canal está desconectado.",
+      "empty_message": "Escreva a mensagem primeiro.",
+      "no_template": "Escolha um template de WhatsApp aprovado.",
+      "no_api_key": "Cadastre a chave da Zernio em Configurações.",
+      "bulk_disabled": "O envio em massa está desligado em Configurações.",
+      "no_eligible": "Ninguém deste público pode receber agora.",
+      "confirmation_required": "Digite {eligible} para confirmar o envio.",
+      "already_started": "Esta transmissão já foi enviada.",
+      "invalid_schedule": "Escolha um horário daqui a pelo menos 1 minuto.",
+      "target_required": "Digite o contato de teste.",
+      "contact_not_found": "Contato não encontrado. Use o @usuário, o telefone ou o nome.",
+      "not_eligible": "Este contato não pode receber agora",
+      "send_failed": "A Zernio não aceitou a mensagem",
+      "forbidden": "Só o dono ou um admin pode enviar transmissões.",
+      "invalid_state": "Não é possível no status atual.",
+      "invalid_action": "Ação inválida."
+    },
+    "testSent": "Teste enviado para {name}.",
+    "scheduledFor": "Agendada para {date} ({count} contatos).",
+    "scheduledShort": "Agendada para {date}",
+    "pause": "Pausar",
+    "resume": "Retomar",
+    "cancelSend": "Cancelar",
+    "cancelSchedule": "Cancelar agendamento",
+    "channel": "Enviar por",
+    "noChannels": "Conecte um canal de Instagram ou WhatsApp primeiro.",
+    "whatsappRule": "WhatsApp: um template aprovado vai para o número de cada contato, a qualquer hora. Texto livre não é permitido fora da janela de 24h.",
+    "instagramRule": "Instagram: só recebe quem te escreveu nas últimas 24 horas (regra da Meta). Os outros são pulados.",
+    "variablesHint": "Use {{first_name}}, {{contact_name}} ou qualquer campo, ex.: {{telefone_vaga}}.",
+    "audienceTitle": "Quem vai receber",
+    "checkAudience": "Verificar público",
+    "audienceSummary": "{eligible} de {total} contatos podem receber agora.",
+    "quietHoursNote": "Envio só entre {start} e {end}; fora disso, espera.",
+    "audienceHint": "Verifique o público antes de enviar: aplica todas as regras sem mandar nada.",
+    "testTitle": "Enviar teste",
+    "testPlaceholderPhone": "Número do WhatsApp, ex.: 85999998888",
+    "testPlaceholderUser": "@usuário, nome ou telefone",
+    "sendTest": "Enviar teste",
+    "testHintPhone": "O número precisa estar salvo em um contato (campo ou conversa de WhatsApp).",
+    "testHintUser": "No Instagram, mande antes uma DM para a conta: a Meta só permite mensagens até 24h depois da sua última mensagem.",
+    "confirmLabel": "Digite {count} para confirmar",
+    "sendToCount": {
+      "one": "Enviar para {count} contato",
+      "other": "Enviar para {count} contatos"
+    },
+    "schedule": "Agendar",
+    "onlyAdmins": "Só o dono ou um admin pode enviar transmissões.",
+    "recipientsTitle": "Destinatários",
+    "allStatuses": "Todos",
+    "noRecipients": "Nenhum destinatário com este status.",
+    "recipientStatus": {
+      "pending": "Aguardando",
+      "sending": "Enviando",
+      "sent": "Enviada",
+      "delivered": "Entregue",
+      "read": "Lida",
+      "failed": "Falhou",
+      "skipped": "Pulada"
+    }
   },
   "builder": {
     "nodes": "Nós",
@@ -367,7 +446,9 @@
       "timeout": "Prazo",
       "timeoutHint": "Se não houver resposta nesse tempo, o flow segue pela saída \"sem resposta\" à direita; sem nada ligado nela, o flow termina. No Instagram e no Facebook, mensagens automáticas só podem sair até 24 horas depois da última mensagem do contato.",
       "handOff": "Transferir para um atendente humano",
-      "fieldTypeHint": "Campos de telefone, CPF, e-mail, número e link só salvam um valor do tipo certo (campos prontos: telefone, cpf, email). Um valor inválido não é salvo e o flow segue pela saída \"inválido\" à direita."
+      "fieldTypeHint": "Campos de telefone, CPF, e-mail, número e link só salvam um valor do tipo certo (campos prontos: telefone, cpf, email). Um valor inválido não é salvo e o flow segue pela saída \"inválido\" à direita.",
+      "optInLabel": "Salvar como opt-in de WhatsApp",
+      "optInHint": "Só para campos de telefone. Quando o contato manda um número válido, ele fica registrado como consentimento para receber mensagens no WhatsApp (como o \"salvar como WhatsApp ID\" do ManyChat). Nada muda na conversa."
     },
     "msg": {
       "variableHint": "Clique para inserir uma variável. Caminhos com ponto, como {example}, leem campos de respostas JSON.",
@@ -462,7 +543,8 @@
       "phoneHint": "Use o campo onde o flow salvou o telefone, por exemplo {{telefone_vaga}}. Números sem DDI são tratados como do Brasil (55).",
       "variables": "Variáveis do template",
       "variablesHint": "Texto fixo ou variáveis como {{contact_name}} ou qualquer campo do contato.",
-      "statusHint": "O flow sempre continua. O resultado fica em {{whatsapp_template_status}} (sent, failed ou invalid_phone) para usar num nó de Condição."
+      "statusHint": "O flow sempre continua. O resultado fica em {{whatsapp_template_status}} (sent, failed ou invalid_phone) para usar num nó de Condição.",
+      "audiencePhoneHint": "Vai para o WhatsApp de cada contato (telefone_vaga, depois telefone). Contatos sem número válido são pulados."
     },
     "handles": {
       "invalid": "inválido",
@@ -665,7 +747,10 @@
     "sequenceNoSteps": "A sequência não tem etapas",
     "alreadyEnrolled": "O contato já está inscrito nesta sequência",
     "enrollmentNotFound": "Inscrição não encontrada",
-    "noWorkspaceAccess": "Sem acesso a este workspace"
+    "noWorkspaceAccess": "Sem acesso a este workspace",
+    "noPermission": "Só o dono ou um admin pode fazer isso.",
+    "invalidQuietHours": "Horário de envio ou fuso inválido.",
+    "sequenceInvalid": "A sequência ainda não pode ser ativada:"
   },
   "flows": {
     "title": "Flows",
@@ -941,7 +1026,11 @@
     "enrollment": {
       "active": "Ativa",
       "completed": "Concluída",
-      "cancelled": "Cancelada"
+      "cancelled": "Cancelada",
+      "paused_window": "Aguardando resposta",
+      "exited": "Saiu",
+      "failed": "Falhou",
+      "expired": "Expirou"
     },
     "addStepFirst": "Adicione pelo menos uma etapa de mensagem antes de ativar",
     "namePlaceholder": "Nome da sequência",
@@ -959,7 +1048,37 @@
     "message": "Mensagem",
     "wait": "Espera",
     "stepN": "Etapa {n}",
-    "enrolledAt": "Inscrito em {date}"
+    "enrolledAt": "Inscrito em {date}",
+    "exitOnReply": "Parar quando o contato responder",
+    "exitOnReplyHint": "Bom para follow-up: quem responder sai da sequência.",
+    "rulesHint": "Passos de texto no Instagram só saem até 24h depois da última mensagem do contato; fora disso a sequência pausa até ele escrever de novo (até 30 dias). Passos de template de WhatsApp vão para o número do contato a qualquer hora. Os passos respeitam o horário de envio e o SAIR.",
+    "lateStepsWarning": "Os passos {steps} vêm depois de uma espera maior que 24h: no Instagram eles só saem se o contato escrever de novo antes. Para esperas longas, use um passo de template de WhatsApp.",
+    "stepTemplate": "Passo {n}: template de WhatsApp",
+    "whatsappTemplate": "Template de WhatsApp",
+    "problems": {
+      "no_message_step": "adicione pelo menos um passo de mensagem ou template",
+      "empty_message": "o passo {n} está sem texto",
+      "invalid_delay": "o passo {n} tem uma espera inválida",
+      "template_not_set": "o passo {n} está sem template"
+    },
+    "exitReasons": {
+      "unsubscribed": "Descadastrou",
+      "phone_opted_out": "Número descadastrado",
+      "human_takeover": "Atendimento humano assumiu",
+      "replied": "Respondeu",
+      "window_closed": "Não escreveu de novo em 30 dias",
+      "contact_deleted": "Contato apagado",
+      "channel_inactive": "Canal desconectado",
+      "no_api_key": "Chave da Zernio ausente",
+      "send_failed": "Falha no envio"
+    },
+    "enrollContact": "Inscrever contato",
+    "enrollNeedsActive": "Ative a sequência para inscrever contatos.",
+    "enrollSearchPlaceholder": "Nome ou @usuário",
+    "enrollNoResults": "Nenhum contato encontrado.",
+    "enrollVia": "pelo {platform} {username}",
+    "enrolledOk": "Contato inscrito.",
+    "nextAt": "próximo {date}"
   },
   "settings": {
     "title": "Configurações",
@@ -997,7 +1116,25 @@
     "teamHint": "Gerencie os membros e convites do workspace.",
     "manageTeam": "Gerenciar equipe",
     "saveChanges": "Salvar alterações",
-    "saved": "Configurações salvas"
+    "saved": "Configurações salvas",
+    "sending": {
+      "title": "Envios (transmissões e sequências)",
+      "hint": "Regras aplicadas a toda transmissão e mensagem de sequência. As regras da Meta (janela de 24h, templates) valem sempre.",
+      "bulkEnabled": "Envio em massa ligado",
+      "bulkEnabledHint": "Chave de emergência. Desligada: transmissões e sequências param de enviar até você ligar de novo (nada se perde).",
+      "quietHours": "Enviar só em horário definido",
+      "quietHoursHint": "Fora desse horário as mensagens esperam o próximo horário permitido.",
+      "from": "De",
+      "to": "Até",
+      "timeZone": "Fuso horário",
+      "requireConsent": "Exigir consentimento para templates de WhatsApp",
+      "requireConsentHint": "Ligado: template só vai para quem tem opt-in registrado ou já escreveu no seu WhatsApp. Desligado: qualquer contato com número válido.",
+      "confirmThreshold": "Pedir confirmação digitada acima de",
+      "confirmThresholdHint": "Transmissões para mais contatos que isso exigem digitar o número antes de enviar.",
+      "optOutReply": "Resposta após SAIR",
+      "optOutReplyHint": "Enviada quando alguém se descadastra. Deixe vazio para não responder.",
+      "save": "Salvar regras de envio"
+    }
   },
   "team": {
     "title": "Equipe",

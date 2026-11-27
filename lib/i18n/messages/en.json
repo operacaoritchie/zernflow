@@ -91,7 +91,8 @@
       "scheduled": "Scheduled",
       "sending": "Sending",
       "completed": "Completed",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "paused": "Paused"
     },
     "saveFailed": "Failed to save",
     "emptyMessage": "Message cannot be empty",
@@ -104,7 +105,85 @@
     "segmentApplied": "Segment filter applied",
     "sending": "Sending...",
     "sendNow": "Send Now",
-    "saveDraft": "Save Draft"
+    "saveDraft": "Save Draft",
+    "read": "Read",
+    "skipped": "Skipped",
+    "reasons": {
+      "unsubscribed": "Unsubscribed (said STOP)",
+      "phone_opted_out": "Phone number unsubscribed",
+      "window_closed": "Outside the 24-hour window",
+      "no_conversation": "Never talked on this channel",
+      "no_phone": "No WhatsApp number",
+      "no_consent": "No WhatsApp consent",
+      "template_not_set": "No template chosen",
+      "channel_inactive": "Channel disconnected",
+      "human_takeover": "A person took over the chat",
+      "bulk_disabled": "Mass sending switched off",
+      "cancelled": "Broadcast cancelled",
+      "no_api_key": "Zernio key missing",
+      "contact_deleted": "Contact deleted"
+    },
+    "errors": {
+      "no_channel": "Choose the channel to send from.",
+      "channel_inactive": "This channel is disconnected.",
+      "empty_message": "Write the message first.",
+      "no_template": "Choose an approved WhatsApp template.",
+      "no_api_key": "Add the Zernio API key in Settings.",
+      "bulk_disabled": "Mass sending is switched off in Settings.",
+      "no_eligible": "Nobody in this audience can receive it right now.",
+      "confirmation_required": "Type {eligible} to confirm the send.",
+      "already_started": "This broadcast was already sent.",
+      "invalid_schedule": "Choose a time at least 1 minute ahead.",
+      "target_required": "Type the test contact.",
+      "contact_not_found": "Contact not found. Use their @username, phone or name.",
+      "not_eligible": "This contact cannot receive it now",
+      "send_failed": "Zernio did not accept the message",
+      "forbidden": "Only the owner or an admin can send broadcasts.",
+      "invalid_state": "Not possible in the current status.",
+      "invalid_action": "Invalid action."
+    },
+    "testSent": "Test sent to {name}.",
+    "scheduledFor": "Scheduled for {date} ({count} contacts).",
+    "scheduledShort": "Scheduled for {date}",
+    "pause": "Pause",
+    "resume": "Resume",
+    "cancelSend": "Cancel",
+    "cancelSchedule": "Cancel schedule",
+    "channel": "Send from",
+    "noChannels": "Connect an Instagram or WhatsApp channel first.",
+    "whatsappRule": "WhatsApp: an approved template goes to each contact's number, at any time. Free text is not allowed outside the 24-hour window.",
+    "instagramRule": "Instagram: only contacts who wrote to you in the last 24 hours can receive it (Meta rule). The others are skipped.",
+    "variablesHint": "Use {{first_name}}, {{contact_name}} or any field, e.g. {{telefone_vaga}}.",
+    "audienceTitle": "Who will receive it",
+    "checkAudience": "Check audience",
+    "audienceSummary": "{eligible} of {total} contacts can receive it now.",
+    "quietHoursNote": "Sending only between {start} and {end}; outside that it waits.",
+    "audienceHint": "Check the audience before sending: it applies all the rules without sending anything.",
+    "testTitle": "Send a test",
+    "testPlaceholderPhone": "WhatsApp number, e.g. 85999998888",
+    "testPlaceholderUser": "@username, name or phone",
+    "sendTest": "Send test",
+    "testHintPhone": "The number must be saved on a contact (field or WhatsApp conversation).",
+    "testHintUser": "On Instagram, send a DM to the account first: Meta only allows messages within 24 hours of your last message.",
+    "confirmLabel": "Type {count} to confirm",
+    "sendToCount": {
+      "one": "Send to {count} contact",
+      "other": "Send to {count} contacts"
+    },
+    "schedule": "Schedule",
+    "onlyAdmins": "Only the owner or an admin can send broadcasts.",
+    "recipientsTitle": "Recipients",
+    "allStatuses": "All",
+    "noRecipients": "No recipients with this status.",
+    "recipientStatus": {
+      "pending": "Waiting",
+      "sending": "Sending",
+      "sent": "Sent",
+      "delivered": "Delivered",
+      "read": "Read",
+      "failed": "Failed",
+      "skipped": "Skipped"
+    }
   },
   "builder": {
     "nodes": "Nodes",
@@ -367,7 +446,9 @@
       "timeout": "Timeout",
       "timeoutHint": "If there is no reply within this time, the flow follows the \"no reply\" output on the right; with nothing connected there, it ends. Instagram and Facebook only allow automated messages up to 24 hours after the contact's last message.",
       "handOff": "Hand off to a human agent",
-      "fieldTypeHint": "Phone, CPF, e-mail, number and URL fields only save a value of their type (ready-made fields: telefone, cpf, email). An invalid value is not saved and the flow follows the \"invalid\" output on the right."
+      "fieldTypeHint": "Phone, CPF, e-mail, number and URL fields only save a value of their type (ready-made fields: telefone, cpf, email). An invalid value is not saved and the flow follows the \"invalid\" output on the right.",
+      "optInLabel": "Save as WhatsApp opt-in",
+      "optInHint": "Phone fields only. When the contact sends a valid number, it is recorded as consent to receive WhatsApp messages (like ManyChat's \"save as WhatsApp ID\"). Nothing changes in the chat."
     },
     "msg": {
       "variableHint": "Click to insert a variable. Dot paths like {example} read fields from JSON responses.",
@@ -462,7 +543,8 @@
       "phoneHint": "Use the field where the flow saved the phone, e.g. {{telefone_vaga}}. Numbers without country code are treated as Brazilian (55).",
       "variables": "Template variables",
       "variablesHint": "Fixed text or variables such as {{contact_name}} or any contact field.",
-      "statusHint": "The flow always continues. The result is saved in {{whatsapp_template_status}} (sent, failed or invalid_phone) for a Condition node."
+      "statusHint": "The flow always continues. The result is saved in {{whatsapp_template_status}} (sent, failed or invalid_phone) for a Condition node.",
+      "audiencePhoneHint": "Sent to each contact's WhatsApp number (telefone_vaga, then telefone). Contacts without a valid number are skipped."
     },
     "handles": {
       "invalid": "invalid",
@@ -665,7 +747,10 @@
     "sequenceNoSteps": "Sequence has no steps",
     "alreadyEnrolled": "Contact is already enrolled in this sequence",
     "enrollmentNotFound": "Enrollment not found",
-    "noWorkspaceAccess": "No access to this workspace"
+    "noWorkspaceAccess": "No access to this workspace",
+    "noPermission": "Only the owner or an admin can do this.",
+    "invalidQuietHours": "Invalid sending hours or time zone.",
+    "sequenceInvalid": "The sequence cannot be activated yet:"
   },
   "flows": {
     "title": "Flows",
@@ -941,7 +1026,11 @@
     "enrollment": {
       "active": "Active",
       "completed": "Completed",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "paused_window": "Waiting for reply",
+      "exited": "Left",
+      "failed": "Failed",
+      "expired": "Expired"
     },
     "addStepFirst": "Add at least one message step before activating",
     "namePlaceholder": "Sequence name",
@@ -959,7 +1048,37 @@
     "message": "Message",
     "wait": "Wait",
     "stepN": "Step {n}",
-    "enrolledAt": "Enrolled {date}"
+    "enrolledAt": "Enrolled {date}",
+    "exitOnReply": "Stop when the contact replies",
+    "exitOnReplyHint": "Useful for follow-ups: anyone who answers leaves the sequence.",
+    "rulesHint": "Text steps on Instagram only go out within 24 hours of the contact's last message; outside it the sequence pauses until they write again (up to 30 days). WhatsApp template steps go to the contact's number at any time. Steps respect the sending hours and STOP.",
+    "lateStepsWarning": "Steps {steps} come after a wait longer than 24 hours: on Instagram they only go out if the contact writes again first. Use a WhatsApp template step for long waits.",
+    "stepTemplate": "Step {n}: WhatsApp template",
+    "whatsappTemplate": "WhatsApp template",
+    "problems": {
+      "no_message_step": "add at least one message or template step",
+      "empty_message": "step {n} has no text",
+      "invalid_delay": "step {n} has an invalid wait",
+      "template_not_set": "step {n} has no template"
+    },
+    "exitReasons": {
+      "unsubscribed": "Unsubscribed",
+      "phone_opted_out": "Number unsubscribed",
+      "human_takeover": "A person took over",
+      "replied": "Replied",
+      "window_closed": "Did not write again within 30 days",
+      "contact_deleted": "Contact deleted",
+      "channel_inactive": "Channel disconnected",
+      "no_api_key": "Zernio key missing",
+      "send_failed": "Send failed"
+    },
+    "enrollContact": "Enroll a contact",
+    "enrollNeedsActive": "Activate the sequence to enroll contacts.",
+    "enrollSearchPlaceholder": "Name or @username",
+    "enrollNoResults": "No contacts found.",
+    "enrollVia": "via {platform} {username}",
+    "enrolledOk": "Contact enrolled.",
+    "nextAt": "next {date}"
   },
   "settings": {
     "title": "Settings",
@@ -997,7 +1116,25 @@
     "teamHint": "Manage workspace members and invitations.",
     "manageTeam": "Manage Team",
     "saveChanges": "Save Changes",
-    "saved": "Settings saved"
+    "saved": "Settings saved",
+    "sending": {
+      "title": "Sending (broadcasts and sequences)",
+      "hint": "Rules applied to every broadcast and sequence message. Meta's own rules (24-hour window, templates) always apply.",
+      "bulkEnabled": "Mass sending on",
+      "bulkEnabledHint": "Emergency switch. Off: broadcasts and sequences stop sending until you switch it back on (nothing is lost).",
+      "quietHours": "Only send at set hours",
+      "quietHoursHint": "Outside these hours messages wait for the next allowed time.",
+      "from": "From",
+      "to": "Until",
+      "timeZone": "Time zone",
+      "requireConsent": "Require consent for WhatsApp templates",
+      "requireConsentHint": "On: templates only go to contacts with a recorded opt-in or who already wrote to your WhatsApp. Off: any contact with a valid number.",
+      "confirmThreshold": "Ask for typed confirmation above",
+      "confirmThresholdHint": "Broadcasts to more contacts than this need the number typed before sending.",
+      "optOutReply": "Reply after STOP",
+      "optOutReplyHint": "Sent when someone unsubscribes. Leave empty to send nothing.",
+      "save": "Save sending rules"
+    }
   },
   "team": {
     "title": "Team",

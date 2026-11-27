@@ -1,8 +1,9 @@
 import { getWorkspace } from "@/lib/workspace";
 import { SettingsView } from "./settings-view";
+import { parseSendingSettings } from "@/lib/workspace-settings";
 
 export default async function SettingsPage() {
-  const { workspace } = await getWorkspace();
+  const { workspace, role } = await getWorkspace();
 
   return (
     <SettingsView
@@ -13,6 +14,8 @@ export default async function SettingsPage() {
         hasAiKey: !!workspace.ai_api_key,
         globalKeywords: (workspace.global_keywords as string[]) ?? [],
       }}
+      sending={parseSendingSettings(workspace.settings)}
+      canEditSending={role === "owner" || role === "admin"}
     />
   );
 }

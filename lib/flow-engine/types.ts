@@ -92,6 +92,8 @@ export interface TagNodeData {
 export interface SetFieldNodeData {
   fieldSlug: string;
   value: string;
+  /** Phone fields only: saving a valid number records a WhatsApp opt-in. */
+  saveAsWhatsAppOptIn?: boolean;
 }
 
 export interface HttpRequestNodeData {
