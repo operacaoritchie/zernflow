@@ -140,7 +140,9 @@
       "send_failed": "A Zernio não aceitou a mensagem",
       "forbidden": "Só o dono ou um admin pode enviar transmissões.",
       "invalid_state": "Não é possível no status atual.",
-      "invalid_action": "Ação inválida."
+      "invalid_action": "Ação inválida.",
+      "cancel_first": "Cancele o envio antes de excluir esta transmissão.",
+      "delete_failed": "Não foi possível excluir. Tente de novo."
     },
     "testSent": "Teste enviado para {name}.",
     "scheduledFor": "Agendada para {date} ({count} contatos).",
@@ -183,7 +185,9 @@
       "read": "Lida",
       "failed": "Falhou",
       "skipped": "Pulada"
-    }
+    },
+    "deleteTitle": "Excluir transmissão",
+    "deleteMessage": "\"{name}\" e o histórico de destinatários serão excluídos permanentemente. Isso não pode ser desfeito."
   },
   "builder": {
     "nodes": "Nós",

@@ -140,7 +140,9 @@
       "send_failed": "Zernio did not accept the message",
       "forbidden": "Only the owner or an admin can send broadcasts.",
       "invalid_state": "Not possible in the current status.",
-      "invalid_action": "Invalid action."
+      "invalid_action": "Invalid action.",
+      "cancel_first": "Cancel the send before deleting this broadcast.",
+      "delete_failed": "Could not delete. Try again."
     },
     "testSent": "Test sent to {name}.",
     "scheduledFor": "Scheduled for {date} ({count} contacts).",
@@ -183,7 +185,9 @@
       "read": "Read",
       "failed": "Failed",
       "skipped": "Skipped"
-    }
+    },
+    "deleteTitle": "Delete broadcast",
+    "deleteMessage": "\"{name}\" and its recipient history will be permanently deleted. This cannot be undone."
   },
   "builder": {
     "nodes": "Nodes",

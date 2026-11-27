@@ -21,7 +21,9 @@ import {
   ChevronDown,
   ArrowLeft,
   AlertCircle,
+  Trash2,
 } from "lucide-react";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -114,6 +116,21 @@ export function BroadcastsView({
   );
   const [showSegmentFilter, setShowSegmentFilter] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Broadcast | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  async function deleteFromList(b: Broadcast) {
+    setDeleteError(null);
+    const res = await fetch(`/api/v1/broadcasts/${b.id}`, { method: "DELETE" });
+    if (res.ok) {
+      setItems((prev) => prev.filter((x) => x.id !== b.id));
+      return;
+    }
+    const data = await res.json().catch(() => ({}));
+    setDeleteError(
+      data.error === "cancel_first" ? t("errors.cancel_first") : t("errors.delete_failed")
+    );
+  }
 
   async function handleCreate() {
     if (!newName.trim() || creating) return;
@@ -165,6 +182,10 @@ export function BroadcastsView({
           setItems((prev) =>
             prev.map((b) => (b.id === updated.id ? updated : b))
           );
+        }}
+        onDeleted={(id) => {
+          setItems((prev) => prev.filter((b) => b.id !== id));
+          setSelectedId(null);
         }}
       />
     );
@@ -281,11 +302,14 @@ export function BroadcastsView({
               const StatusIcon = status.icon;
               const total = broadcast.total_recipients;
 
+              const deletable =
+                canSend && broadcast.status !== "sending" && broadcast.status !== "paused";
+
               return (
+                <div key={broadcast.id} className="flex items-center pr-2 transition-colors hover:bg-accent/50 sm:pr-4">
                 <button
-                  key={broadcast.id}
                   onClick={() => setSelectedId(broadcast.id)}
-                  className="flex w-full flex-col items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-accent/50 sm:px-8 sm:py-4 md:flex-row md:items-center md:gap-6"
+                  className="flex min-w-0 flex-1 flex-col items-start gap-3 px-4 py-3 text-left sm:px-8 sm:py-4 md:flex-row md:items-center md:gap-6"
                 >
                   {/* Status + Name */}
                   <div className="min-w-0 w-full flex-1">
@@ -355,11 +379,38 @@ export function BroadcastsView({
                     </div>
                   </div>
                 </button>
+                {deletable && (
+                  <button
+                    onClick={() => setDeleteTarget(broadcast)}
+                    aria-label={t("deleteTitle")}
+                    title={t("deleteTitle")}
+                    className="shrink-0 rounded-lg p-2 text-muted-foreground hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+                </div>
               );
             })}
           </div>
         )}
+        {deleteError && (
+          <p className="px-4 py-3 text-sm text-red-600 sm:px-8">{deleteError}</p>
+        )}
       </div>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title={t("deleteTitle")}
+        message={t("deleteMessage", { name: deleteTarget?.name ?? "" })}
+        confirmLabel={tc("delete")}
+        destructive
+        onConfirm={() => {
+          const target = deleteTarget;
+          setDeleteTarget(null);
+          if (target) deleteFromList(target);
+        }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }
@@ -405,12 +456,14 @@ function BroadcastDetail({
   canSend,
   onBack,
   onUpdate,
+  onDeleted,
 }: {
   broadcast: Broadcast;
   channels: BroadcastChannel[];
   canSend: boolean;
   onBack: () => void;
   onUpdate: (updated: Broadcast) => void;
+  onDeleted: (id: string) => void;
 }) {
   const t = useT("broadcasts");
   const tc = useT("common");
@@ -433,6 +486,7 @@ function BroadcastDetail({
   const [success, setSuccess] = useState<string | null>(null);
   const [recipients, setRecipients] = useState<RecipientRow[]>([]);
   const [recipientFilter, setRecipientFilter] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const isDraft = broadcast.status === "draft" || broadcast.status === "scheduled";
   const isRunning = broadcast.status === "sending" || broadcast.status === "paused";
@@ -568,6 +622,24 @@ function BroadcastDetail({
     }
   }
 
+  const canDelete = canSend && !isRunning;
+
+  async function handleDelete() {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/v1/broadcasts/${broadcast.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(errorLabel(data.error ?? "delete_failed"));
+        return;
+      }
+      onDeleted(broadcast.id);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function control(action: "pause" | "resume" | "cancel") {
     setBusy(true);
     setError(null);
@@ -688,6 +760,29 @@ function BroadcastDetail({
               {t("cancelSchedule")}
             </button>
           )}
+          {canDelete && (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              disabled={busy}
+              title={t("deleteTitle")}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-input px-3 py-2 text-sm text-muted-foreground hover:border-red-300 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:hover:border-red-900 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span className="hidden sm:inline">{tc("delete")}</span>
+            </button>
+          )}
+          <ConfirmDialog
+            open={confirmDelete}
+            title={t("deleteTitle")}
+            message={t("deleteMessage", { name: broadcast.name })}
+            confirmLabel={tc("delete")}
+            destructive
+            onConfirm={() => {
+              setConfirmDelete(false);
+              handleDelete();
+            }}
+            onCancel={() => setConfirmDelete(false)}
+          />
         </div>
       </div>
 

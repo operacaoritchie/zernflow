@@ -2,6 +2,7 @@ import { getWorkspace } from "@/lib/workspace";
 import Link from "next/link";
 import { ListOrdered } from "lucide-react";
 import { CreateSequenceButton } from "@/components/sequences/create-sequence-button";
+import { DeleteSequenceButton } from "@/components/sequences/delete-sequence-button";
 import type { SequenceStatus, Json } from "@/lib/types/database";
 import { getT, getFormatter } from "@/lib/i18n/server";
 import type { Formatter } from "@/lib/i18n/translator";
@@ -99,10 +100,10 @@ export default async function SequencesPage() {
             const enrolled = enrollmentCounts[sequence.id] || 0;
 
             return (
+              <div key={sequence.id} className="relative">
               <Link
-                key={sequence.id}
                 href={`/dashboard/sequences/${sequence.id}`}
-                className="group rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/50"
+                className="group block h-full rounded-xl border border-border bg-card p-5 pr-12 transition-colors hover:border-primary/50"
               >
                 <div className="flex items-start gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
@@ -138,6 +139,10 @@ export default async function SequencesPage() {
                   {t("updated", { date: formatDate(sequence.updated_at, format) })}
                 </p>
               </Link>
+              <div className="absolute right-2 top-2 flex flex-col items-end">
+                <DeleteSequenceButton sequenceId={sequence.id} name={sequence.name} />
+              </div>
+              </div>
             );
           })}
         </div>

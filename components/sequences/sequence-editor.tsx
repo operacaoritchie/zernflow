@@ -153,7 +153,7 @@ export function SequenceEditor({ sequence }: SequenceEditorProps) {
       }
       setStatus("active");
     }
-  }, [status, hasMessageStep]);
+  }, [status, hasMessageStep, t]);
 
   const statusInfo = statusConfig[status];
 
@@ -210,10 +210,12 @@ export function SequenceEditor({ sequence }: SequenceEditorProps) {
             <button
               onClick={() => setConfirmDelete(true)}
               disabled={deleting}
-              className="rounded-lg p-2 text-muted-foreground hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-input px-3 py-2 text-sm text-muted-foreground hover:border-red-300 hover:bg-red-50 hover:text-red-600 dark:hover:border-red-900 dark:hover:bg-red-900/20 dark:hover:text-red-400"
               title={t("deleteTitle")}
+              aria-label={t("deleteTitle")}
             >
               <Trash2 className="h-4 w-4" />
+              <span className="hidden sm:inline">{tc("delete")}</span>
             </button>
             <ConfirmDialog
               open={confirmDelete}
