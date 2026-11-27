@@ -140,7 +140,9 @@
       "send_failed": "Zernio no aceptó el mensaje",
       "forbidden": "Solo el dueño o un admin puede enviar difusiones.",
       "invalid_state": "No es posible en el estado actual.",
-      "invalid_action": "Acción no válida."
+      "invalid_action": "Acción no válida.",
+      "cancel_first": "Cancela el envío antes de eliminar esta difusión.",
+      "delete_failed": "No se pudo eliminar. Inténtalo de nuevo."
     },
     "testSent": "Prueba enviada a {name}.",
     "scheduledFor": "Programada para {date} ({count} contactos).",
@@ -183,7 +185,9 @@
       "read": "Leída",
       "failed": "Falló",
       "skipped": "Omitida"
-    }
+    },
+    "deleteTitle": "Eliminar difusión",
+    "deleteMessage": "\"{name}\" y su historial de destinatarios se eliminarán permanentemente. Esto no se puede deshacer."
   },
   "builder": {
     "nodes": "Nodos",
