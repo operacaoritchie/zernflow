@@ -153,7 +153,7 @@ export function SequenceEditor({ sequence }: SequenceEditorProps) {
       }
       setStatus("active");
     }
-  }, [status, hasMessageStep]);
+  }, [status, hasMessageStep, t]);
 
   const statusInfo = statusConfig[status];
 
