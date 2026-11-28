@@ -34,6 +34,16 @@ export async function POST(request: NextRequest) {
     ? await verifyKey(supabase, token)
     : await verifyAccessToken(supabase, token);
   if (!verified) return unauthorized(origin);
+  if (verified === "login_disabled") {
+    return NextResponse.json(
+      {
+        jsonrpc: "2.0",
+        id: null,
+        error: { code: -32003, message: "Connections by login are turned off for this workspace (Settings → MCP)." },
+      },
+      { status: 403 }
+    );
+  }
 
   let body: unknown;
   try {

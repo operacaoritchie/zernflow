@@ -25,6 +25,8 @@ import { rich } from "@/lib/i18n/rich";
 import { LocaleSelect } from "@/components/locale-switcher";
 import { SendingSettingsSection } from "@/components/settings/sending-settings";
 import { McpKeysSection } from "@/components/settings/mcp-keys";
+import type { LoginUsageView } from "@/components/settings/mcp-login";
+import type { LoginSettings } from "@/lib/mcp/login-settings";
 import type { SendingSettings } from "@/lib/workspace-settings";
 
 interface WorkspaceSettings {
@@ -46,11 +48,15 @@ export function SettingsView({
   sending,
   canEditSending,
   canManageKeys,
+  mcpLogin,
+  mcpLoginUsage,
 }: {
   workspace: WorkspaceSettings;
   sending: SendingSettings;
   canEditSending: boolean;
   canManageKeys: boolean;
+  mcpLogin: LoginSettings;
+  mcpLoginUsage: LoginUsageView[];
 }) {
   const [name, setName] = useState(workspace.name);
   const t = useT("settings");
@@ -216,7 +222,7 @@ export function SettingsView({
 
           <hr className="border-border" />
 
-          <McpKeysSection canManage={canManageKeys} />
+          <McpKeysSection canManage={canManageKeys} login={mcpLogin} loginUsage={mcpLoginUsage} />
 
           <hr className="border-border" />
 

@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Bot, Check, Copy, Loader2, Trash2 } from "lucide-react";
 import { useT } from "@/lib/i18n/provider";
 import { SCOPES, type Scope } from "@/lib/mcp/scopes";
+import type { LoginSettings } from "@/lib/mcp/login-settings";
+import { McpLoginPanel, type LoginUsageView } from "./mcp-login";
 
 interface ApiKeyRow {
   id: string;
@@ -23,7 +25,15 @@ const EXPIRY_DAYS = { never: null, d30: 30, d90: 90 } as const;
 type ExpiryChoice = keyof typeof EXPIRY_DAYS;
 
 /** Settings → MCP access: create, list and revoke scoped API keys. */
-export function McpKeysSection({ canManage }: { canManage: boolean }) {
+export function McpKeysSection({
+  canManage,
+  login,
+  loginUsage,
+}: {
+  canManage: boolean;
+  login: LoginSettings;
+  loginUsage: LoginUsageView[];
+}) {
   const t = useT("settings");
   const [keys, setKeys] = useState<ApiKeyRow[] | null>(null);
   const [name, setName] = useState("");
@@ -124,6 +134,11 @@ export function McpKeysSection({ canManage }: { canManage: boolean }) {
           {origin}/api/mcp
         </code>
       </div>
+
+      <McpLoginPanel initial={login} usage={loginUsage} canManage={canManage} />
+
+      <h3 className="mt-6 text-sm font-semibold">{t("mcp.keysTitle")}</h3>
+      <p className="mt-1 text-xs text-muted-foreground">{t("mcp.keysHint")}</p>
 
       {!canManage ? (
         <p className="mt-4 text-xs text-muted-foreground">{t("mcp.adminsOnly")}</p>
