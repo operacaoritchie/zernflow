@@ -1159,6 +1159,50 @@
       "optOutReply": "Respuesta tras BAJA",
       "optOutReplyHint": "Se envía cuando alguien se da de baja. Déjalo vacío para no responder.",
       "save": "Guardar reglas de envío"
+    },
+    "mcp": {
+      "title": "Acceso por MCP (Claude y otros agentes)",
+      "hint": "Las claves permiten que Claude u otro cliente MCP lea este workspace. Cada llamada queda registrada. La clave se muestra una sola vez, al crearla.",
+      "serverUrl": "URL del servidor",
+      "nameLabel": "Nombre de la clave",
+      "namePlaceholder": "ej.: Claude (operación)",
+      "scopesLabel": "Qué puede hacer esta clave",
+      "scope": {
+        "read": "Leer",
+        "write": "Escribir",
+        "act": "Actuar"
+      },
+      "scopeHint": {
+        "read": "Consultar flujos, contactos e informes.",
+        "write": "Crear y editar borradores, contactos, etiquetas y campos. Nunca escribe a un lead.",
+        "act": "Publicar flujos y enviar mensajes a personas reales."
+      },
+      "expiresLabel": "Vencimiento",
+      "expires": {
+        "never": "Sin vencimiento",
+        "d30": "En 30 días",
+        "d90": "En 90 días"
+      },
+      "create": "Crear clave",
+      "creating": "Creando…",
+      "createdTitle": "Copia la clave ahora",
+      "createdHint": "No se mostrará de nuevo. Quien tenga esta clave puede usar los permisos de arriba.",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "dismiss": "Ya la guardé",
+      "listTitle": "Claves",
+      "empty": "Aún no hay claves.",
+      "lastUsed": "Último uso {when}",
+      "neverUsed": "Nunca usada",
+      "expiresOn": "Vence {date}",
+      "statusRevoked": "Revocada",
+      "statusExpired": "Vencida",
+      "revoke": "Revocar",
+      "revokeConfirm": "¿Revocar esta clave? Todo lo que la use deja de funcionar al instante.",
+      "loadFailed": "No se pudieron cargar las claves.",
+      "createFailed": "No se pudo crear la clave.",
+      "revokeFailed": "No se pudo revocar la clave.",
+      "adminsOnly": "Solo propietarios y administradores gestionan claves."
     }
   },
   "team": {

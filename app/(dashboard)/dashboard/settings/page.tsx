@@ -16,6 +16,7 @@ export default async function SettingsPage() {
       }}
       sending={parseSendingSettings(workspace.settings)}
       canEditSending={role === "owner" || role === "admin"}
+      canManageKeys={role === "owner" || role === "admin"}
     />
   );
 }

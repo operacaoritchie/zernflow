@@ -54,11 +54,12 @@ async function authenticateApiKey(apiKey: string): Promise<AuthResult | null> {
 
   const { data: key } = await supabase
     .from("api_keys")
-    .select("workspace_id")
+    .select("workspace_id, expires_at, revoked_at")
     .eq("key_hash", hash)
     .single();
 
-  if (!key) return null;
+  if (!key || key.revoked_at) return null;
+  if (key.expires_at && new Date(key.expires_at).getTime() <= Date.now()) return null;
 
   // Update last_used_at (fire and forget)
   supabase
