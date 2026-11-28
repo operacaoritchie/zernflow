@@ -1199,6 +1199,9 @@ export interface Database {
           last_used_at: string | null;
           created_by: string | null;
           created_at: string;
+          scopes: string[];
+          expires_at: string | null;
+          revoked_at: string | null;
         };
         Insert: {
           id?: string;
@@ -1209,10 +1212,16 @@ export interface Database {
           last_used_at?: string | null;
           created_by?: string | null;
           created_at?: string;
+          scopes?: string[];
+          expires_at?: string | null;
+          revoked_at?: string | null;
         };
         Update: {
           name?: string;
           last_used_at?: string | null;
+          scopes?: string[];
+          expires_at?: string | null;
+          revoked_at?: string | null;
         };
         Relationships: [
           {
@@ -1223,6 +1232,60 @@ export interface Database {
             referencedColumns: ["id"];
           },
         ];
+      };
+      mcp_audit_log: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          api_key_id: string | null;
+          tool: string;
+          args_summary: Json;
+          ok: boolean;
+          error: string | null;
+          duration_ms: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          api_key_id?: string | null;
+          tool: string;
+          args_summary?: Json;
+          ok: boolean;
+          error?: string | null;
+          duration_ms?: number;
+          created_at?: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      mcp_confirmations: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          api_key_id: string | null;
+          tool: string;
+          token_hash: string;
+          args_hash: string;
+          expires_at: string;
+          used_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          api_key_id?: string | null;
+          tool: string;
+          token_hash: string;
+          args_hash: string;
+          expires_at: string;
+          used_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          used_at?: string | null;
+        };
+        Relationships: [];
       };
       conversation_notes: {
         Row: {

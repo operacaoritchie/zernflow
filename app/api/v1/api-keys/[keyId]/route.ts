@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 export async function PUT(
   request: NextRequest,
@@ -26,12 +26,13 @@ export async function PUT(
   const { name } = body;
   if (!name) return NextResponse.json({ error: "name is required" }, { status: 400 });
 
-  const { data, error } = await supabase
+  const admin = await createServiceClient();
+  const { data, error } = await admin
     .from("api_keys")
     .update({ name })
     .eq("id", keyId)
     .eq("workspace_id", membership.workspace_id)
-    .select("id, name, key_prefix, last_used_at, created_at")
+    .select("id, name, key_prefix, scopes, expires_at, revoked_at, last_used_at, created_at")
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -60,11 +61,15 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { error } = await supabase
+  // Revoke instead of deleting: the key stops working at once and the audit
+  // log keeps pointing at it.
+  const admin = await createServiceClient();
+  const { error } = await admin
     .from("api_keys")
-    .delete()
+    .update({ revoked_at: new Date().toISOString() })
     .eq("id", keyId)
-    .eq("workspace_id", membership.workspace_id);
+    .eq("workspace_id", membership.workspace_id)
+    .is("revoked_at", null);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });

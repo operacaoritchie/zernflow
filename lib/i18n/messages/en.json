@@ -1159,6 +1159,50 @@
       "optOutReply": "Reply after STOP",
       "optOutReplyHint": "Sent when someone unsubscribes. Leave empty to send nothing.",
       "save": "Save sending rules"
+    },
+    "mcp": {
+      "title": "MCP access (Claude and other agents)",
+      "hint": "Keys let Claude or another MCP client read this workspace. Each call is logged. A key is shown only once, when you create it.",
+      "serverUrl": "Server URL",
+      "nameLabel": "Key name",
+      "namePlaceholder": "e.g. Claude (operations)",
+      "scopesLabel": "What this key can do",
+      "scope": {
+        "read": "Read",
+        "write": "Write",
+        "act": "Act"
+      },
+      "scopeHint": {
+        "read": "Look up flows, contacts and reports.",
+        "write": "Create and edit drafts, contacts, tags and fields. Never messages a lead.",
+        "act": "Publish flows and send messages to real people."
+      },
+      "expiresLabel": "Expires",
+      "expires": {
+        "never": "Never",
+        "d30": "In 30 days",
+        "d90": "In 90 days"
+      },
+      "create": "Create key",
+      "creating": "Creating…",
+      "createdTitle": "Copy your key now",
+      "createdHint": "It will not be shown again. Anyone with this key can use the permissions above.",
+      "copy": "Copy",
+      "copied": "Copied",
+      "dismiss": "I saved it",
+      "listTitle": "Keys",
+      "empty": "No keys yet.",
+      "lastUsed": "Last used {when}",
+      "neverUsed": "Never used",
+      "expiresOn": "Expires {date}",
+      "statusRevoked": "Revoked",
+      "statusExpired": "Expired",
+      "revoke": "Revoke",
+      "revokeConfirm": "Revoke this key? Anything using it stops working immediately.",
+      "loadFailed": "Could not load the keys.",
+      "createFailed": "Could not create the key.",
+      "revokeFailed": "Could not revoke the key.",
+      "adminsOnly": "Only owners and admins can manage keys."
     }
   },
   "team": {

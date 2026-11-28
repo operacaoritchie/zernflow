@@ -1159,6 +1159,50 @@
       "optOutReply": "Resposta após SAIR",
       "optOutReplyHint": "Enviada quando alguém se descadastra. Deixe vazio para não responder.",
       "save": "Salvar regras de envio"
+    },
+    "mcp": {
+      "title": "Acesso por MCP (Claude e outros agentes)",
+      "hint": "As chaves deixam o Claude ou outro cliente MCP ler este workspace. Toda chamada fica registrada. A chave aparece uma única vez, na hora de criar.",
+      "serverUrl": "URL do servidor",
+      "nameLabel": "Nome da chave",
+      "namePlaceholder": "ex.: Claude (operação)",
+      "scopesLabel": "O que esta chave pode fazer",
+      "scope": {
+        "read": "Ler",
+        "write": "Escrever",
+        "act": "Agir"
+      },
+      "scopeHint": {
+        "read": "Consultar flows, contatos e relatórios.",
+        "write": "Criar e editar rascunhos, contatos, etiquetas e campos. Nunca manda mensagem para um lead.",
+        "act": "Publicar flows e enviar mensagens para pessoas de verdade."
+      },
+      "expiresLabel": "Validade",
+      "expires": {
+        "never": "Sem validade",
+        "d30": "Em 30 dias",
+        "d90": "Em 90 dias"
+      },
+      "create": "Criar chave",
+      "creating": "Criando…",
+      "createdTitle": "Copie a chave agora",
+      "createdHint": "Ela não será mostrada de novo. Quem tiver esta chave pode usar as permissões acima.",
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "dismiss": "Já salvei",
+      "listTitle": "Chaves",
+      "empty": "Nenhuma chave ainda.",
+      "lastUsed": "Último uso {when}",
+      "neverUsed": "Nunca usada",
+      "expiresOn": "Vale até {date}",
+      "statusRevoked": "Revogada",
+      "statusExpired": "Expirada",
+      "revoke": "Revogar",
+      "revokeConfirm": "Revogar esta chave? Tudo que a usa para de funcionar na hora.",
+      "loadFailed": "Não foi possível carregar as chaves.",
+      "createFailed": "Não foi possível criar a chave.",
+      "revokeFailed": "Não foi possível revogar a chave.",
+      "adminsOnly": "Só donos e administradores gerenciam chaves."
     }
   },
   "team": {

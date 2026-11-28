@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { parseScopes } from "@/lib/mcp/scopes";
 import crypto from "crypto";
 
 function generateApiKey(): string {
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabase
     .from("api_keys")
-    .select("id, name, key_prefix, last_used_at, created_at")
+    .select("id, name, key_prefix, scopes, expires_at, revoked_at, last_used_at, created_at")
     .eq("workspace_id", membership.workspace_id)
     .order("created_at", { ascending: false });
 
@@ -50,12 +51,24 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const { name } = body;
   if (!name) return NextResponse.json({ error: "name is required" }, { status: 400 });
+  const scopes = parseScopes(body.scopes);
+  let expiresAt: string | null = null;
+  if (body.expires_at) {
+    const d = new Date(body.expires_at);
+    if (Number.isNaN(d.getTime()) || d.getTime() <= Date.now()) {
+      return NextResponse.json({ error: "expires_at must be a future date" }, { status: 400 });
+    }
+    expiresAt = d.toISOString();
+  }
 
   const fullKey = generateApiKey();
   const keyHash = crypto.createHash("sha256").update(fullKey).digest("hex");
   const keyPrefix = fullKey.slice(0, 10) + "..."; // "zf_abc123..."
 
-  const { data, error } = await supabase
+  // Writes go through the service role after the owner/admin check above:
+  // members can read keys under RLS but cannot create or change them directly.
+  const admin = await createServiceClient();
+  const { data, error } = await admin
     .from("api_keys")
     .insert({
       workspace_id: membership.workspace_id,
@@ -63,8 +76,10 @@ export async function POST(request: NextRequest) {
       key_hash: keyHash,
       key_prefix: keyPrefix,
       created_by: user.id,
+      scopes,
+      expires_at: expiresAt,
     })
-    .select("id, name, key_prefix, created_at")
+    .select("id, name, key_prefix, scopes, expires_at, created_at")
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
