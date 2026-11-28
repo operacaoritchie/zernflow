@@ -873,37 +873,110 @@
     "justNow": "Just now"
   },
   "home": {
-    "title": "Dashboard",
-    "subtitle": "Overview of your workspace activity",
+    "title": "Home",
+    "subtitle": "What the operation brought in and what needs you now",
     "justNow": "just now",
-    "events": {
-      "flow_started": "Flow started",
-      "flow_completed": "Flow completed",
-      "message_sent": "Message sent",
-      "message_failed": "Message failed",
-      "contact_created": "New contact created",
-      "broadcast_sent": "Broadcast sent",
-      "broadcast_failed": "Broadcast failed"
+    "loadWarning": "Some numbers did not load. Refresh the page to try again.",
+    "period": {
+      "label": "Period",
+      "today": "Today",
+      "d7": "7 days",
+      "d30": "30 days"
     },
-    "loadFailed": "Failed to load dashboard data. Please try again.",
-    "totalContacts": "Total Contacts",
-    "thisWeek": "+{count} this week",
-    "activeConversations": "Active Conversations",
-    "currentlyOpen": "Currently open",
-    "messagesSent": "Messages Sent",
-    "last7": "Last 7 days",
-    "activeFlows": "Active Flows",
-    "published": "Published",
-    "createFlow": "Create Flow",
-    "createFlowHint": "Build an automation flow",
-    "sendBroadcast": "Send Broadcast",
-    "sendBroadcastHint": "Message your contacts",
-    "viewInbox": "View Inbox",
-    "viewInboxHint": "Check conversations",
-    "retry": "Retry",
-    "recentActivity": "Recent Activity",
-    "noActivity": "No activity yet",
-    "quickActions": "Quick Actions"
+    "sections": {
+      "result": "Results",
+      "act": "Act now",
+      "funnel": "Funnel by step",
+      "origin": "Source",
+      "health": "Health",
+      "trend": "Trend",
+      "feed": "Business activity"
+    },
+    "results": {
+      "leads": "Leads captured",
+      "leadsHint": "People who left their phone",
+      "conversion": "Conversion rate",
+      "conversionHint": "{leads} of {entrants} people who entered a flow",
+      "conversionEmpty": "Nobody entered a flow in this period",
+      "conversionPrev": "Previous period: {rate}%",
+      "people": "People who came in",
+      "peopleHint": "New contacts who actually wrote",
+      "imported": "{count} imported contacts are not counted"
+    },
+    "delta": {
+      "up": "{pct}% more than the previous period ({previous})",
+      "down": "{pct}% less than the previous period ({previous})",
+      "new": "New: the previous period had {previous}",
+      "flat": "Same as the previous period ({previous})"
+    },
+    "act": {
+      "waiting": "Waiting for a reply",
+      "waitingHint": "People in the middle of a flow, waiting for their answer",
+      "waitingNone": "Nobody is waiting for a reply right now.",
+      "waitingMore": "and {count} more",
+      "windows": "Open 24h windows",
+      "windowsHint": "Who you can still reach with a free-form message",
+      "windowsNone": "No open window right now.",
+      "windowsClosing": "{count} close within the next 6 hours",
+      "openInbox": "Open inbox"
+    },
+    "funnel": {
+      "entered": "Entered the flow",
+      "people": "{count} people entered",
+      "waiting": "{count} waiting",
+      "dropped": "{count} stopped",
+      "invalid": "{attempts} invalid answers ({people} people)",
+      "empty": "Nobody entered a published flow in this period."
+    },
+    "origin": {
+      "hint": "Posts and lives whose comments triggered a flow",
+      "colSource": "Source",
+      "colComments": "Comments",
+      "colDms": "DMs",
+      "colLeads": "Leads",
+      "live": "Live",
+      "post": "Post",
+      "empty": "No comment triggered a flow in this period."
+    },
+    "health": {
+      "ok": "All good: no failures in this period.",
+      "messagesFailed": "Failed sends",
+      "messagesFailedHint": "{previous} in the previous period",
+      "invalid": "Invalid answers",
+      "invalidHint": "{people} people typed something the flow rejected",
+      "broadcasts": "Broadcasts",
+      "broadcastsHint": "{blocked} blocked · {failed} failed",
+      "channels": "Inactive channels",
+      "channelsHint": "Connections that need to be redone",
+      "optOuts": "{count} asked to opt out in this period"
+    },
+    "reasons": {
+      "unsubscribed": "unsubscribed",
+      "phone_opted_out": "phone opted out",
+      "window_closed": "24h window closed",
+      "no_conversation": "no conversation on the channel",
+      "no_phone": "no phone",
+      "no_consent": "no consent",
+      "template_not_set": "template not set",
+      "channel_inactive": "channel inactive",
+      "human_takeover": "human takeover",
+      "bulk_disabled": "bulk sending off"
+    },
+    "trend": {
+      "hint": "Leads and new people per day",
+      "leads": "Leads",
+      "people": "New people",
+      "aria": "{leads} leads and {people} new people in the last {days} days"
+    },
+    "feed": {
+      "someone": "someone",
+      "empty": "Nothing new yet.",
+      "lead": "{name} left their phone",
+      "newPerson": "{name} came in",
+      "messageFailed": "Failed to send a message to {name}",
+      "fieldInvalid": "{name} typed an invalid answer",
+      "broadcastFailed": "Broadcast failed"
+    }
   },
   "inbox": {
     "title": "Inbox",
