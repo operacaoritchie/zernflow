@@ -5,12 +5,20 @@ import { parseScopes, type Scope } from "./scopes";
 
 export interface VerifiedKey {
   keyId: string;
+  userId: null;
   workspaceId: string;
   scopes: Scope[];
 }
 
 export function hashKey(key: string): string {
   return crypto.createHash("sha256").update(key).digest("hex");
+}
+
+/** Any bearer token: an API key (zf_…) or an OAuth access token. */
+export function bearerToken(header: string | null): string | null {
+  if (!header) return null;
+  const m = /^Bearer\s+(\S+)\s*$/.exec(header);
+  return m ? m[1] : null;
 }
 
 /** Extracts "zf_..." from "Authorization: Bearer zf_...". */
@@ -33,7 +41,7 @@ export function evaluateKeyRow(row: KeyRow | null, now = new Date()): VerifiedKe
   if (!row) return null;
   if (row.revoked_at) return null;
   if (row.expires_at && new Date(row.expires_at).getTime() <= now.getTime()) return null;
-  return { keyId: row.id, workspaceId: row.workspace_id, scopes: parseScopes(row.scopes) };
+  return { keyId: row.id, userId: null, workspaceId: row.workspace_id, scopes: parseScopes(row.scopes) };
 }
 
 export async function verifyKey(supabase: SupabaseClient<Database>, key: string): Promise<VerifiedKey | null> {

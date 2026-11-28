@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/provider";
+import { safeNext } from "@/lib/safe-next";
 
 export default function LoginPage() {
   const t = useT("auth");
@@ -42,7 +43,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
+    router.push(safeNext(new URLSearchParams(window.location.search).get("next")));
     router.refresh();
   }
 
@@ -50,7 +51,9 @@ export default function LoginPage() {
     await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+          safeNext(new URLSearchParams(window.location.search).get("next"))
+        )}`,
       },
     });
   }

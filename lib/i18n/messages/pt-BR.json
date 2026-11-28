@@ -1345,5 +1345,20 @@
       "invalid_footer": "O rodapé pode ter até 60 caracteres.",
       "examples_required": "Preencha um exemplo para cada variável."
     }
+  },
+  "oauth": {
+    "title": "{client} quer acessar o seu workspace",
+    "titleLoading": "Verificando o pedido…",
+    "unknownClient": "Um aplicativo",
+    "willBeAbleTo": "Se você permitir, ele poderá:",
+    "canRead": "Ler seus flows, contatos, etiquetas, campos e relatórios.",
+    "canWrite": "Criar e editar rascunhos, contatos, etiquetas e campos, dentro do que o seu papel permite.",
+    "limits": "Qualquer coisa que publique ou envie mensagem para pessoas de verdade pede uma segunda confirmação.",
+    "revokeHint": "Para encerrar este acesso, remova o conector no aplicativo que você está conectando.",
+    "allow": "Permitir",
+    "deny": "Negar",
+    "missingRequest": "Esta página foi aberta sem um pedido de acesso. Comece de novo pelo aplicativo.",
+    "loadFailed": "Não foi possível carregar o pedido de acesso. Ele pode ter expirado; comece de novo pelo aplicativo.",
+    "decideFailed": "Não foi possível concluir. Comece de novo pelo aplicativo."
   }
 }

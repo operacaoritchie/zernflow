@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
-import { bearerKey, verifyKey } from "@/lib/mcp/auth";
+import { bearerToken, verifyKey } from "@/lib/mcp/auth";
+import { verifyAccessToken, wwwAuthenticate } from "@/lib/mcp/oauth";
 import { callsInLastMinute, isOverLimit, writeAudit } from "@/lib/mcp/audit";
 import { handleMessage, type RpcResponse } from "@/lib/mcp/protocol";
 import { MCP_TOOLS } from "@/lib/mcp/tools";
@@ -8,10 +9,10 @@ import { MCP_TOOLS } from "@/lib/mcp/tools";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
-const unauthorized = () =>
+const unauthorized = (origin: string) =>
   NextResponse.json(
     { jsonrpc: "2.0", id: null, error: { code: -32001, message: "Unauthorized" } },
-    { status: 401, headers: { "WWW-Authenticate": 'Bearer realm="zernflow-mcp"' } }
+    { status: 401, headers: { "WWW-Authenticate": wwwAuthenticate(origin) } }
   );
 
 export async function POST(request: NextRequest) {
@@ -22,12 +23,17 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const key = bearerKey(request.headers.get("authorization"));
-  if (!key) return unauthorized();
+  const origin = request.nextUrl.origin;
+  const token = bearerToken(request.headers.get("authorization"));
+  if (!token) return unauthorized(origin);
 
+  // "zf_…" is an API key (n8n, scripts); anything else is an OAuth access token
+  // issued by Supabase Auth after the user signed in and approved the client.
   const supabase = await createServiceClient();
-  const verified = await verifyKey(supabase, key);
-  if (!verified) return unauthorized();
+  const verified = token.startsWith("zf_")
+    ? await verifyKey(supabase, token)
+    : await verifyAccessToken(supabase, token);
+  if (!verified) return unauthorized(origin);
 
   let body: unknown;
   try {
@@ -41,7 +47,7 @@ export async function POST(request: NextRequest) {
 
   const messages = Array.isArray(body) ? body : [body];
   const callsTools = messages.some((m) => (m as { method?: string })?.method === "tools/call");
-  if (callsTools && isOverLimit(await callsInLastMinute(supabase, verified.keyId))) {
+  if (callsTools && isOverLimit(await callsInLastMinute(supabase, verified))) {
     return NextResponse.json(
       { jsonrpc: "2.0", id: null, error: { code: -32002, message: "Rate limit: 60 calls per minute" } },
       { status: 429, headers: { "Retry-After": "30" } }

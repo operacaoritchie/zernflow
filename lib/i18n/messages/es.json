@@ -1345,5 +1345,20 @@
       "invalid_footer": "El pie puede tener hasta 60 caracteres.",
       "examples_required": "Completa un ejemplo para cada variable."
     }
+  },
+  "oauth": {
+    "title": "{client} quiere acceder a tu workspace",
+    "titleLoading": "Verificando la solicitud…",
+    "unknownClient": "Una aplicación",
+    "willBeAbleTo": "Si lo permites, podrá:",
+    "canRead": "Leer tus flujos, contactos, etiquetas, campos e informes.",
+    "canWrite": "Crear y editar borradores, contactos, etiquetas y campos, dentro de lo que permite tu rol.",
+    "limits": "Todo lo que publique o envíe mensajes a personas reales pide una segunda confirmación.",
+    "revokeHint": "Para terminar este acceso, elimina el conector en la aplicación que estás conectando.",
+    "allow": "Permitir",
+    "deny": "Denegar",
+    "missingRequest": "Esta página se abrió sin una solicitud de acceso. Empieza de nuevo desde la aplicación.",
+    "loadFailed": "No se pudo cargar la solicitud de acceso. Puede haber expirado; empieza de nuevo desde la aplicación.",
+    "decideFailed": "No se pudo completar. Empieza de nuevo desde la aplicación."
   }
 }

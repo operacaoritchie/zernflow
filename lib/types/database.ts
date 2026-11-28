@@ -1238,6 +1238,7 @@ export interface Database {
           id: string;
           workspace_id: string;
           api_key_id: string | null;
+          user_id: string | null;
           tool: string;
           args_summary: Json;
           ok: boolean;
@@ -1249,6 +1250,7 @@ export interface Database {
           id?: string;
           workspace_id: string;
           api_key_id?: string | null;
+          user_id?: string | null;
           tool: string;
           args_summary?: Json;
           ok: boolean;

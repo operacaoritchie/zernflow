@@ -15,7 +15,7 @@ const tool = (name: string, scope: McpTool["scope"], run: McpTool["run"] = async
 });
 
 const ctx = (scopes: McpContext["scopes"]): McpContext =>
-  ({ workspaceId: "w1", keyId: "k1", scopes, supabase: {} as McpContext["supabase"] });
+  ({ workspaceId: "w1", keyId: "k1", userId: null, scopes, supabase: {} as McpContext["supabase"] });
 
 describe("scopes", () => {
   it("falls back to read for empty or invalid input", () => {
@@ -41,7 +41,7 @@ describe("key verification", () => {
   });
   const row = { id: "k", workspace_id: "w", scopes: ["read"], expires_at: null, revoked_at: null };
   it("accepts a live key", () => {
-    expect(evaluateKeyRow(row)).toEqual({ keyId: "k", workspaceId: "w", scopes: ["read"] });
+    expect(evaluateKeyRow(row)).toEqual({ keyId: "k", userId: null, workspaceId: "w", scopes: ["read"] });
   });
   it("rejects revoked, expired and unknown keys", () => {
     expect(evaluateKeyRow({ ...row, revoked_at: "2026-11-01T00:00:00Z" })).toBeNull();
