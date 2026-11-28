@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { BroadcastLaunchError, launchBroadcast } from "@/lib/broadcasts";
+import { isCronAuthorized } from "@/lib/cron-auth";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -10,16 +11,11 @@ export const maxDuration = 30;
  * scheduled_for <= now). Same launch as "send now": recipients are checked by
  * the send policy and one delivery job per eligible recipient is queued.
  *
- * Auth: CRON_SECRET via query param or Authorization header.
- * GET /api/cron/broadcasts?key=CRON_SECRET
+ * Auth: "Authorization: Bearer <CRON_SECRET>".
+ * GET /api/cron/broadcasts
  */
 export async function GET(request: NextRequest) {
-  const cronSecret = process.env.CRON_SECRET;
-  const providedSecret =
-    request.nextUrl.searchParams.get("key") ||
-    request.headers.get("authorization")?.replace("Bearer ", "");
-
-  if (!cronSecret || providedSecret !== cronSecret) {
+  if (!isCronAuthorized(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

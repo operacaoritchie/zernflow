@@ -25,9 +25,11 @@ import { cn } from "@/lib/utils";
 import { WorkspaceSwitcher } from "@/components/workspace-switcher";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { useT } from "@/lib/i18n/provider";
-import type { Database } from "@/lib/types/database";
-
-type Workspace = Database["public"]["Tables"]["workspaces"]["Row"];
+/** Only what the menu shows. Never the full row: it carries API keys. */
+interface Workspace {
+  id: string;
+  name: string;
+}
 
 interface WorkspaceItem {
   id: string;
