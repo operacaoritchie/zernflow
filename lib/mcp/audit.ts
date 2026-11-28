@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/lib/types/database";
 import type { ToolCallInfo } from "./types";
+import { maskText } from "./mask";
 
 export const RATE_LIMIT_PER_MINUTE = 60;
 
@@ -8,7 +9,11 @@ export const RATE_LIMIT_PER_MINUTE = 60;
 export function summarizeArgs(args: Record<string, unknown>): Record<string, Json> {
   const out: Record<string, Json> = {};
   for (const [k, v] of Object.entries(args).slice(0, 20)) {
-    if (typeof v === "string") out[k] = v.length > 120 ? `${v.slice(0, 120)}…(${v.length})` : v;
+    if (typeof v === "string") {
+      // Names, phones and CPFs can arrive in free text (notes, field values): mask before logging.
+      const safe = maskText(v) ?? "";
+      out[k] = safe.length > 120 ? `${safe.slice(0, 120)}…(${v.length})` : safe;
+    }
     else if (typeof v === "number" || typeof v === "boolean" || v === null) out[k] = v;
     else if (Array.isArray(v)) out[k] = `[array:${v.length}]`;
     else out[k] = "[object]";
