@@ -81,5 +81,18 @@ export async function updateSession(request: NextRequest) {
     return redirectResponse;
   }
 
+  // The OAuth consent page needs a signed-in user; come back here after login.
+  if (!user && pathname === "/oauth/consent") {
+    const url = request.nextUrl.clone();
+    const back = `${pathname}${request.nextUrl.search}`;
+    url.pathname = "/login";
+    url.search = `?next=${encodeURIComponent(back)}`;
+    const redirectResponse = NextResponse.redirect(url);
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie);
+    });
+    return redirectResponse;
+  }
+
   return supabaseResponse;
 }

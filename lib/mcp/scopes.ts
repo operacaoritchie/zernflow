@@ -16,3 +16,8 @@ export function parseScopes(raw: unknown): Scope[] {
 export function hasScope(granted: readonly Scope[], needed: Scope): boolean {
   return granted.includes(needed);
 }
+
+/** What a signed-in (OAuth) user may do through MCP, from their workspace role. */
+export function scopesForRole(role: string | null | undefined): Scope[] {
+  return role === "owner" || role === "admin" ? ["read", "write", "act"] : ["read"];
+}

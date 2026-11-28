@@ -21,24 +21,30 @@ export function isOverLimit(callsLastMinute: number, limit = RATE_LIMIT_PER_MINU
 }
 
 /** Counts this key's tool calls in the last 60 seconds, from the audit log itself. */
-export async function callsInLastMinute(supabase: SupabaseClient<Database>, keyId: string): Promise<number> {
+export async function callsInLastMinute(
+  supabase: SupabaseClient<Database>,
+  caller: { keyId: string | null; userId: string | null }
+): Promise<number> {
+  if (!caller.keyId && !caller.userId) return 0;
   const since = new Date(Date.now() - 60_000).toISOString();
-  const { count } = await supabase
+  let q = supabase
     .from("mcp_audit_log")
     .select("id", { count: "exact", head: true })
-    .eq("api_key_id", keyId)
     .gte("created_at", since);
+  q = caller.keyId ? q.eq("api_key_id", caller.keyId) : q.eq("user_id", caller.userId!);
+  const { count } = await q;
   return count ?? 0;
 }
 
 export async function writeAudit(
   supabase: SupabaseClient<Database>,
-  ctx: { workspaceId: string; keyId: string },
+  ctx: { workspaceId: string; keyId: string | null; userId: string | null },
   info: ToolCallInfo
 ): Promise<void> {
   await supabase.from("mcp_audit_log").insert({
     workspace_id: ctx.workspaceId,
     api_key_id: ctx.keyId,
+    user_id: ctx.userId,
     tool: info.tool,
     args_summary: summarizeArgs(info.args),
     ok: info.ok,

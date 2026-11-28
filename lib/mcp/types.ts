@@ -4,7 +4,10 @@ import type { Scope } from "./scopes";
 
 export interface McpContext {
   workspaceId: string;
-  keyId: string;
+  /** API key id, or null when the caller signed in with OAuth. */
+  keyId: string | null;
+  /** Signed-in user id (OAuth), or null for API keys. */
+  userId: string | null;
   scopes: Scope[];
   /** Service-role client: RLS does not apply, so every query MUST filter by workspaceId. */
   supabase: SupabaseClient<Database>;

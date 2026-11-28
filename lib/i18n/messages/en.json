@@ -1345,5 +1345,20 @@
       "invalid_footer": "The footer can have up to 60 characters.",
       "examples_required": "Fill in an example for each variable."
     }
+  },
+  "oauth": {
+    "title": "{client} wants to access your workspace",
+    "titleLoading": "Checking the request…",
+    "unknownClient": "An app",
+    "willBeAbleTo": "If you allow, it will be able to:",
+    "canRead": "Read your flows, contacts, tags, fields and reports.",
+    "canWrite": "Create and edit drafts, contacts, tags and fields, within what your role allows.",
+    "limits": "Anything that publishes or messages real people asks for a second confirmation.",
+    "revokeHint": "To end this access, remove the connector in the app you are connecting.",
+    "allow": "Allow",
+    "deny": "Deny",
+    "missingRequest": "This page was opened without an access request. Start again from the app.",
+    "loadFailed": "Could not load the access request. It may have expired; start again from the app.",
+    "decideFailed": "Could not finish. Start again from the app."
   }
 }
