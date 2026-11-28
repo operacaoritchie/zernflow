@@ -22,7 +22,12 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex h-dvh flex-col">
-      <TopNav workspace={workspace} user={user} workspaces={workspaces} />
+      {/* Only id and name cross to the browser: the full row carries the Zernio key. */}
+      <TopNav
+        workspace={{ id: workspace.id, name: workspace.name }}
+        user={{ id: user.id, email: user.email }}
+        workspaces={workspaces}
+      />
       <main className="min-h-0 min-w-0 flex-1 overflow-hidden">{children}</main>
     </div>
   );

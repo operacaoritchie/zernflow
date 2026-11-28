@@ -193,7 +193,7 @@ async function handleWebhook(request: NextRequest) {
   // Verify HMAC-SHA256 signature against the workspace-level secret
   // (falls back to the legacy per-channel secret during transition).
   const secret = await resolveWebhookSecret(supabase, channel);
-  if (secret && !verifyWebhookSignature(secret, body, signature)) {
+  if (!secret || !verifyWebhookSignature(secret, body, signature)) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
@@ -441,7 +441,7 @@ async function handleReceiptWebhook(
   if (!channel) return NextResponse.json({ ok: true, skipped: true, reason: "unknown_account" });
 
   const secret = await resolveWebhookSecret(supabase, channel);
-  if (secret && !verifyWebhookSignature(secret, rawBody, signature)) {
+  if (!secret || !verifyWebhookSignature(secret, rawBody, signature)) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
   if (!(await claimWebhookEvent(supabase, eventId))) {
@@ -505,7 +505,7 @@ async function handleCommentWebhook(
   }
 
   const secret = await resolveWebhookSecret(supabase, channel);
-  if (secret && !verifyWebhookSignature(secret, rawBody, signature)) {
+  if (!secret || !verifyWebhookSignature(secret, rawBody, signature)) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 

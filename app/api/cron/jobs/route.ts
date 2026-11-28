@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { FlowLoadError, resumeSession } from "@/lib/flow-engine/engine";
 import type { Json } from "@/lib/types/database";
 import { JobRequeueError } from "@/lib/job-errors";
+import { isCronAuthorized } from "@/lib/cron-auth";
 import { deliverBroadcastRecipient, settleRecipientAfterRetries } from "@/lib/broadcasts";
 import { processSequenceStepJob, settleSequenceStepAfterRetries } from "@/lib/sequence-processor";
 
@@ -34,16 +35,10 @@ function wasSessionWrittenRecently(updatedAt: string): boolean {
 /**
  * Cron job handler that processes scheduled jobs.
  * Call via Vercel Cron or external cron every 10-30 seconds.
- * GET /api/cron/jobs?key=CRON_SECRET
+ * GET /api/cron/jobs with "Authorization: Bearer <CRON_SECRET>"
  */
 export async function GET(request: NextRequest) {
-  // Simple auth via query param or header
-  const cronSecret = process.env.CRON_SECRET;
-  const providedSecret =
-    request.nextUrl.searchParams.get("key") ||
-    request.headers.get("authorization")?.replace("Bearer ", "");
-
-  if (!cronSecret || providedSecret !== cronSecret) {
+  if (!isCronAuthorized(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
