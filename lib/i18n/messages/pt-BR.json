@@ -1162,7 +1162,7 @@
     },
     "mcp": {
       "title": "Acesso por MCP (Claude e outros agentes)",
-      "hint": "As chaves deixam o Claude ou outro cliente MCP ler este workspace. Toda chamada fica registrada. A chave aparece uma única vez, na hora de criar.",
+      "hint": "Deixe o Claude ou outro cliente MCP consultar este workspace. Toda chamada fica registrada.",
       "serverUrl": "URL do servidor",
       "nameLabel": "Nome da chave",
       "namePlaceholder": "ex.: Claude (operação)",
@@ -1202,7 +1202,24 @@
       "loadFailed": "Não foi possível carregar as chaves.",
       "createFailed": "Não foi possível criar a chave.",
       "revokeFailed": "Não foi possível revogar a chave.",
-      "adminsOnly": "Só donos e administradores gerenciam chaves."
+      "adminsOnly": "Só donos e administradores gerenciam chaves.",
+      "login": {
+        "title": "Conexão por login (recomendada)",
+        "hint": "Cole a URL acima no Claude e entre com a sua conta. Não precisa de chave: o acesso vale para quem entrou, limitado ao papel dele neste workspace e ao que você liberar aqui.",
+        "enabled": "Permitir conexão por login",
+        "enabledHint": "Desligado, ninguém mais consegue usar o Claude conectado por login. Vale na hora.",
+        "scopesLabel": "O que a conexão por login pode fazer",
+        "roleNote": "Só owner e admin recebem Escrever e Agir. Os demais membros leem, no máximo.",
+        "save": "Salvar",
+        "saved": "Salvo. Vale na próxima chamada.",
+        "usageTitle": "Quem usou nos últimos 30 dias",
+        "usageEmpty": "Ninguém conectou por login ainda.",
+        "usageRow": "{calls} chamadas · último uso {when}",
+        "usageFailed": "{failed} com erro",
+        "disconnectNote": "Para desconectar uma pessoa, desligue a conexão acima ou remova o conector nas configurações do Claude dela."
+      },
+      "keysTitle": "Chaves de acesso (scripts e automações)",
+      "keysHint": "Para n8n, scripts ou outro cliente que não faz login. Cada chave tem as suas próprias permissões e validade. A chave aparece uma única vez."
     }
   },
   "team": {

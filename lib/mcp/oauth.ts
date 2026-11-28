@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/types/database";
-import { scopesForRole, type Scope } from "./scopes";
+import { effectiveLoginScopes, parseLoginSettings } from "./login-settings";
+import type { Scope } from "./scopes";
 
 export interface VerifiedUser {
   keyId: null;
@@ -37,12 +38,14 @@ export function wwwAuthenticate(origin: string): string {
 /**
  * Validates a Supabase-issued OAuth access token with the Auth server and maps
  * the user to their workspace and role. Returns null when the token is not valid
- * or the user belongs to no workspace.
+ * or the user belongs to no workspace, and "login_disabled" when the workspace
+ * turned off connections by login. Scopes are the member's role limit capped by
+ * the workspace's own setting (Settings → MCP), re-read on every call.
  */
 export async function verifyAccessToken(
   supabase: SupabaseClient<Database>,
   token: string
-): Promise<VerifiedUser | null> {
+): Promise<VerifiedUser | "login_disabled" | null> {
   const { data, error } = await supabase.auth.getUser(token);
   if (error || !data.user) return null;
 
@@ -55,10 +58,18 @@ export async function verifyAccessToken(
     .maybeSingle();
   if (!membership) return null;
 
+  const { data: ws } = await supabase
+    .from("workspaces")
+    .select("settings")
+    .eq("id", membership.workspace_id)
+    .maybeSingle();
+  const login = parseLoginSettings(ws?.settings);
+  if (!login.enabled) return "login_disabled";
+
   return {
     keyId: null,
     userId: data.user.id,
     workspaceId: membership.workspace_id,
-    scopes: scopesForRole(membership.role),
+    scopes: effectiveLoginScopes(membership.role, login),
   };
 }

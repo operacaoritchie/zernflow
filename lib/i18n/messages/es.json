@@ -1162,7 +1162,7 @@
     },
     "mcp": {
       "title": "Acceso por MCP (Claude y otros agentes)",
-      "hint": "Las claves permiten que Claude u otro cliente MCP lea este workspace. Cada llamada queda registrada. La clave se muestra una sola vez, al crearla.",
+      "hint": "Deja que Claude u otro cliente MCP trabaje con este workspace. Cada llamada queda registrada.",
       "serverUrl": "URL del servidor",
       "nameLabel": "Nombre de la clave",
       "namePlaceholder": "ej.: Claude (operación)",
@@ -1202,7 +1202,24 @@
       "loadFailed": "No se pudieron cargar las claves.",
       "createFailed": "No se pudo crear la clave.",
       "revokeFailed": "No se pudo revocar la clave.",
-      "adminsOnly": "Solo propietarios y administradores gestionan claves."
+      "adminsOnly": "Solo propietarios y administradores gestionan claves.",
+      "login": {
+        "title": "Conexión por inicio de sesión (recomendada)",
+        "hint": "Pega la URL de arriba en Claude e inicia sesión con tu cuenta. No hace falta clave: el acceso es de quien inició sesión, limitado a su rol en este workspace y a lo que permitas aquí.",
+        "enabled": "Permitir conexión por inicio de sesión",
+        "enabledHint": "Apagado, nadie puede usar Claude conectado por inicio de sesión. Vale al instante.",
+        "scopesLabel": "Qué puede hacer la conexión por inicio de sesión",
+        "roleNote": "Solo owner y admin reciben Escribir y Actuar. Los demás miembros leen, como máximo.",
+        "save": "Guardar",
+        "saved": "Guardado. Vale desde la próxima llamada.",
+        "usageTitle": "Quién la usó en los últimos 30 días",
+        "usageEmpty": "Nadie se ha conectado por inicio de sesión todavía.",
+        "usageRow": "{calls} llamadas · último uso {when}",
+        "usageFailed": "{failed} con error",
+        "disconnectNote": "Para desconectar a alguien, apaga la conexión arriba o quita el conector en los ajustes de Claude de esa persona."
+      },
+      "keysTitle": "Claves de acceso (scripts y automatizaciones)",
+      "keysHint": "Para n8n, scripts u otro cliente que no inicia sesión. Cada clave tiene sus propios permisos y vigencia. La clave se muestra una sola vez."
     }
   },
   "team": {

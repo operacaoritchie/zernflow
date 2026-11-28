@@ -1162,7 +1162,7 @@
     },
     "mcp": {
       "title": "MCP access (Claude and other agents)",
-      "hint": "Keys let Claude or another MCP client read this workspace. Each call is logged. A key is shown only once, when you create it.",
+      "hint": "Let Claude or another MCP client work with this workspace. Every call is logged.",
       "serverUrl": "Server URL",
       "nameLabel": "Key name",
       "namePlaceholder": "e.g. Claude (operations)",
@@ -1202,7 +1202,24 @@
       "loadFailed": "Could not load the keys.",
       "createFailed": "Could not create the key.",
       "revokeFailed": "Could not revoke the key.",
-      "adminsOnly": "Only owners and admins can manage keys."
+      "adminsOnly": "Only owners and admins can manage keys.",
+      "login": {
+        "title": "Connect by signing in (recommended)",
+        "hint": "Paste the URL above into Claude and sign in with your account. No key needed: access belongs to whoever signed in, limited to their role in this workspace and to what you allow here.",
+        "enabled": "Allow connections by sign-in",
+        "enabledHint": "When off, nobody can use Claude connected by sign-in. Takes effect immediately.",
+        "scopesLabel": "What a sign-in connection can do",
+        "roleNote": "Only owners and admins get Write and Act. Other members can read at most.",
+        "save": "Save",
+        "saved": "Saved. Applies from the next call.",
+        "usageTitle": "Who used it in the last 30 days",
+        "usageEmpty": "Nobody has connected by sign-in yet.",
+        "usageRow": "{calls} calls · last used {when}",
+        "usageFailed": "{failed} failed",
+        "disconnectNote": "To disconnect someone, turn the connection off above or remove the connector in their Claude settings."
+      },
+      "keysTitle": "Access keys (scripts and automations)",
+      "keysHint": "For n8n, scripts or any client that cannot sign in. Each key has its own permissions and expiry. A key is shown only once."
     }
   },
   "team": {
