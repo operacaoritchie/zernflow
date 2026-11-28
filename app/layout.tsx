@@ -5,6 +5,7 @@ import { I18nProvider } from "@/lib/i18n/provider";
 import { getLocale } from "@/lib/i18n/server";
 import { getMessages } from "@/lib/i18n/messages";
 import { DEFAULT_LOCALE } from "@/lib/i18n/config";
+import { RecoveryRedirect } from "@/components/recovery-redirect";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -94,6 +95,7 @@ export default async function RootLayout({
           messages={getMessages(locale)}
           fallback={getMessages(DEFAULT_LOCALE)}
         >
+          <RecoveryRedirect />
           {children}
         </I18nProvider>
       </body>

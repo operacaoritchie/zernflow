@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
@@ -14,7 +14,17 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [notice, setNotice] = useState<string | null>(null);
   const supabase = createClient();
+
+  // Messages coming from the e-mail links and from the reset-password page.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("reset") === "ok") setNotice(t("resetDone"));
+    else if (params.get("confirmed") === "1") setNotice(t("emailConfirmed"));
+    else if (params.get("error") === "confirm") setError(t("confirmError"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -92,6 +102,16 @@ export default function LoginPage() {
               placeholder={t("passwordPlaceholder")}
             />
           </div>
+
+          <div className="text-right">
+            <Link href="/forgot-password" className="text-xs text-muted-foreground hover:underline">
+              {t("forgotLink")}
+            </Link>
+          </div>
+
+          {notice && (
+            <p className="text-sm text-green-600 dark:text-green-400">{notice}</p>
+          )}
 
           {error && (
             <p className="text-sm text-destructive">{error}</p>

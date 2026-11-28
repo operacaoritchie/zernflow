@@ -48,7 +48,7 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   const isAuthPage = pathname === "/login" || pathname === "/register";
-  const isAuthCallback = pathname === "/auth/callback";
+  const isAuthCallback = pathname === "/auth/callback" || pathname.startsWith("/auth/confirm");
   const isDashboard = pathname.startsWith("/dashboard");
   const isApiRoute = pathname.startsWith("/api/");
 
