@@ -873,37 +873,110 @@
     "justNow": "Agora mesmo"
   },
   "home": {
-    "title": "Painel",
-    "subtitle": "Visão geral da atividade do seu workspace",
+    "title": "Início",
+    "subtitle": "O que a operação trouxe e o que precisa de você agora",
     "justNow": "agora mesmo",
-    "events": {
-      "flow_started": "Flow iniciado",
-      "flow_completed": "Flow concluído",
-      "message_sent": "Mensagem enviada",
-      "message_failed": "Falha na mensagem",
-      "contact_created": "Novo contato criado",
-      "broadcast_sent": "Transmissão enviada",
-      "broadcast_failed": "Falha na transmissão"
+    "loadWarning": "Alguns números não carregaram. Atualize a página para tentar de novo.",
+    "period": {
+      "label": "Período",
+      "today": "Hoje",
+      "d7": "7 dias",
+      "d30": "30 dias"
     },
-    "loadFailed": "Não foi possível carregar os dados do painel. Tente novamente.",
-    "totalContacts": "Total de contatos",
-    "thisWeek": "+{count} nesta semana",
-    "activeConversations": "Conversas ativas",
-    "currentlyOpen": "Abertas agora",
-    "messagesSent": "Mensagens enviadas",
-    "last7": "Últimos 7 dias",
-    "activeFlows": "Flows ativos",
-    "published": "Publicados",
-    "createFlow": "Criar flow",
-    "createFlowHint": "Monte um flow de automação",
-    "sendBroadcast": "Enviar transmissão",
-    "sendBroadcastHint": "Envie mensagem para seus contatos",
-    "viewInbox": "Ver caixa de entrada",
-    "viewInboxHint": "Confira as conversas",
-    "retry": "Tentar de novo",
-    "recentActivity": "Atividade recente",
-    "noActivity": "Nenhuma atividade ainda",
-    "quickActions": "Ações rápidas"
+    "sections": {
+      "result": "Resultado",
+      "act": "Agir agora",
+      "funnel": "Funil por etapa",
+      "origin": "Origem",
+      "health": "Saúde",
+      "trend": "Tendência",
+      "feed": "Atividade do negócio"
+    },
+    "results": {
+      "leads": "Leads captados",
+      "leadsHint": "Pessoas que deixaram o telefone",
+      "conversion": "Taxa de conversão",
+      "conversionHint": "{leads} de {entrants} pessoas que entraram em um fluxo",
+      "conversionEmpty": "Ninguém entrou em um fluxo no período",
+      "conversionPrev": "Período anterior: {rate}%",
+      "people": "Pessoas que entraram",
+      "peopleHint": "Contatos novos que realmente escreveram",
+      "imported": "{count} contatos importados não entram na conta"
+    },
+    "delta": {
+      "up": "{pct}% a mais que o período anterior ({previous})",
+      "down": "{pct}% a menos que o período anterior ({previous})",
+      "new": "Novo: o período anterior teve {previous}",
+      "flat": "Igual ao período anterior ({previous})"
+    },
+    "act": {
+      "waiting": "Aguardando resposta",
+      "waitingHint": "Pessoas no meio de um fluxo, esperando a resposta delas",
+      "waitingNone": "Ninguém esperando resposta agora.",
+      "waitingMore": "e mais {count}",
+      "windows": "Janelas de 24h abertas",
+      "windowsHint": "Quem ainda dá para alcançar com mensagem livre",
+      "windowsNone": "Nenhuma janela aberta agora.",
+      "windowsClosing": "{count} fecham nas próximas 6 horas",
+      "openInbox": "Abrir caixa de entrada"
+    },
+    "funnel": {
+      "entered": "Entraram no fluxo",
+      "people": "{count} pessoas entraram",
+      "waiting": "{count} aguardando",
+      "dropped": "{count} pararam",
+      "invalid": "{attempts} respostas inválidas ({people} pessoas)",
+      "empty": "Nenhuma pessoa entrou em um fluxo publicado neste período."
+    },
+    "origin": {
+      "hint": "Posts e lives cujos comentários dispararam um fluxo",
+      "colSource": "Origem",
+      "colComments": "Comentários",
+      "colDms": "DMs",
+      "colLeads": "Leads",
+      "live": "Live",
+      "post": "Post",
+      "empty": "Nenhum comentário disparou um fluxo no período."
+    },
+    "health": {
+      "ok": "Tudo certo: sem falhas no período.",
+      "messagesFailed": "Envios com falha",
+      "messagesFailedHint": "{previous} no período anterior",
+      "invalid": "Respostas inválidas",
+      "invalidHint": "{people} pessoas digitaram algo que o fluxo recusou",
+      "broadcasts": "Transmissões",
+      "broadcastsHint": "{blocked} bloqueados · {failed} com falha",
+      "channels": "Canais inativos",
+      "channelsHint": "Conexões que precisam ser refeitas",
+      "optOuts": "{count} pediram para sair no período"
+    },
+    "reasons": {
+      "unsubscribed": "descadastrado",
+      "phone_opted_out": "telefone pediu para sair",
+      "window_closed": "janela de 24h fechada",
+      "no_conversation": "sem conversa no canal",
+      "no_phone": "sem telefone",
+      "no_consent": "sem consentimento",
+      "template_not_set": "template não definido",
+      "channel_inactive": "canal inativo",
+      "human_takeover": "atendimento humano",
+      "bulk_disabled": "envio em massa desligado"
+    },
+    "trend": {
+      "hint": "Leads e pessoas novas por dia",
+      "leads": "Leads",
+      "people": "Pessoas novas",
+      "aria": "{leads} leads e {people} pessoas novas nos últimos {days} dias"
+    },
+    "feed": {
+      "someone": "alguém",
+      "empty": "Nada de novo ainda.",
+      "lead": "{name} deixou o telefone",
+      "newPerson": "{name} entrou",
+      "messageFailed": "Falha ao enviar mensagem para {name}",
+      "fieldInvalid": "{name} digitou um dado inválido",
+      "broadcastFailed": "Falha em transmissão"
+    }
   },
   "inbox": {
     "title": "Caixa de entrada",
