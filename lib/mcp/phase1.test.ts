@@ -73,11 +73,12 @@ describe("argument helpers", () => {
 });
 
 describe("tool registry", () => {
-  it("has unique names and only read tools", () => {
+  it("has unique names and 20 read-only tools (the write tools are checked in phase2.test.ts)", () => {
     const names = MCP_TOOLS.map((t) => t.name);
     expect(new Set(names).size).toBe(names.length);
-    expect(names.length).toBe(18);
-    for (const t of MCP_TOOLS) {
+    const reads = MCP_TOOLS.filter((t) => t.scope === "read");
+    expect(reads.length).toBe(20);
+    for (const t of reads) {
       expect(t.scope).toBe("read");
       expect(t.annotations.readOnlyHint).toBe(true);
       expect(t.annotations.destructiveHint).toBe(false);

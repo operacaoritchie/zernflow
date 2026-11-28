@@ -104,3 +104,50 @@ export const paging = {
   limit: { type: "integer", minimum: 1, maximum: MAX_PAGE, description: "Items per page (default 20, max 50)." },
   offset: { type: "integer", minimum: 0, description: "Items to skip (use next_offset from the previous page)." },
 };
+
+interface WriteToolDef extends ReadToolDef {
+  idempotent?: boolean;
+}
+
+/** A tool that changes data but never talks to a lead (scope "write"). */
+export function writeTool(def: WriteToolDef): McpTool {
+  return {
+    name: def.name,
+    description: def.description,
+    scope: "write",
+    inputSchema: {
+      type: "object",
+      properties: def.properties ?? {},
+      ...(def.required?.length ? { required: def.required } : {}),
+      additionalProperties: false,
+    },
+    annotations: { title: def.title, readOnlyHint: false, destructiveHint: false, idempotentHint: def.idempotent ?? false, openWorldHint: false },
+    run: def.run,
+  };
+}
+
+export function strList(args: Args, key: string, maxItems = 50, maxLen = 80): string[] {
+  const v = args[key];
+  if (v === undefined || v === null) return [];
+  if (!Array.isArray(v)) throw new Error(`${key} must be a list of strings`);
+  if (v.length > maxItems) throw new Error(`${key} can have at most ${maxItems} items`);
+  return v.map((x) => {
+    if (typeof x !== "string" || !x.trim()) throw new Error(`${key} must contain only non-empty strings`);
+    return x.trim().slice(0, maxLen);
+  });
+}
+
+export function arrArg(args: Args, key: string, max: number): unknown[] | undefined {
+  const v = args[key];
+  if (v === undefined || v === null) return undefined;
+  if (!Array.isArray(v)) throw new Error(`${key} must be a list`);
+  if (v.length > max) throw new Error(`${key} can have at most ${max} items`);
+  return v;
+}
+
+export function objArg(args: Args, key: string): Record<string, unknown> | undefined {
+  const v = args[key];
+  if (v === undefined || v === null) return undefined;
+  if (typeof v !== "object" || Array.isArray(v)) throw new Error(`${key} must be an object`);
+  return v as Record<string, unknown>;
+}
